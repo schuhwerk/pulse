@@ -54,6 +54,10 @@ textarea{resize:vertical;min-height:60px}
 .training-card .name{font-weight:700;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .training-card .meta{font-size:13px;color:var(--text2);margin-top:3px;font-family:'Space Mono',monospace}
 .training-card .arrow{color:var(--text3);flex-shrink:0}
+.training-card .play-btn{flex-shrink:0;width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .15s}
+.training-card .play-btn:hover{transform:scale(1.1)}
+.training-card .play-btn:active{transform:scale(.94);opacity:.85}
+.training-card .play-btn svg{fill:var(--bg);margin-left:2px}
 .training-count{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#000;font-weight:700;font-size:12px;width:28px;height:28px;border-radius:50%;font-family:'Space Mono',monospace}
 
 /* Exercise Card */
@@ -102,10 +106,16 @@ textarea{resize:vertical;min-height:60px}
 .search-box input{padding-left:40px}
 .search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text3)}
 .search-results{margin-top:8px}
-.search-result{padding:14px;cursor:pointer;border-radius:var(--radius-sm);transition:background .1s}
+.search-result{padding:10px 12px;cursor:pointer;border-radius:var(--radius-sm);transition:background .1s;display:flex;align-items:center;gap:10px}
 .search-result:hover{background:var(--surface2)}
+.search-result .sr-thumb{width:48px;height:48px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.search-result .sr-thumb img{width:100%;height:100%;object-fit:contain}
+.search-result .sr-info{flex:1;min-width:0}
 .search-result .sr-name{font-weight:600;font-size:15px}
 .search-result .sr-cat{font-size:12px;color:var(--text2);margin-top:2px}
+.lang-toggle{display:inline-flex;border-radius:6px;overflow:hidden;background:var(--surface);font-size:12px;font-weight:600}
+.lang-toggle button{padding:4px 10px;background:none;color:var(--text2);border:none;cursor:pointer;transition:all .15s}
+.lang-toggle button.active{background:var(--accent);color:#000}
 .search-loader{text-align:center;padding:30px;color:var(--text2);font-size:14px}
 
 /* Modal */
@@ -123,10 +133,14 @@ textarea{resize:vertical;min-height:60px}
 
 /* Player View */
 .player{background:var(--bg);display:grid;grid-template-rows:1fr auto auto;height:100%;padding:20px 20px 0;text-align:center;position:relative;overflow:hidden}
-.player-top-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden;position:relative}
+.player-top-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden;overflow-y:auto;position:relative}
 .player-phase{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--text2);margin-bottom:8px}
 .player-exercise{font-size:26px;font-weight:800;margin-bottom:4px;line-height:1.2;padding:0 20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.player-desc{font-size:14px;color:var(--text2);min-height:64px;max-height:110px;overflow-y:auto;padding:0 20px;line-height:1.5;flex-shrink:0}
+.player-desc-wrap{position:relative;flex-shrink:0;padding:0 20px;min-height:0}
+.player-desc{font-size:14px;color:var(--text2);line-height:1.5;max-height:12em;overflow:hidden}
+.player-desc-wrap.expanded .player-desc{max-height:none;overflow:visible}
+.player-desc-wrap .more-btn{display:none;margin-top:4px;font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;padding:2px 0}
+.player-desc-wrap.has-overflow .more-btn{display:inline-block}
 .player-image-wrap{position:relative;flex-shrink:0;margin-bottom:24px}
 .player-image{width:140px;height:140px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px;border:3px solid var(--surface3)}
 .player-image.has-img{border-radius:16px}
@@ -232,11 +246,15 @@ textarea{resize:vertical;min-height:60px}
       <div class="tab" data-tab="manual" onclick="switchTab(this,'manual')">Manual</div>
     </div>
     <div id="tab-search">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-        <input id="wger-search" type="text" placeholder="Search body-weight exercises…" oninput="debounceSearch()">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+        <div class="search-box" style="flex:1;margin-bottom:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input id="wger-search" type="text" placeholder="Search exercises…" oninput="debounceSearch()">
+        </div>
+        <div class="lang-toggle" id="lang-toggle"></div>
       </div>
-      <a href="https://wger.de/en/exercise/overview/" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--text3);margin:-8px 0 12px;text-decoration:none">Browse all exercises on wger.de →</a>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px" id="equip-filters"></div>
+      <a href="https://wger.de/en/exercise/overview/" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--text3);margin:0 0 12px;text-decoration:none">Browse all exercises on wger.de →</a>
       <div id="wger-results"></div>
     </div>
     <div id="tab-manual" style="display:none">
@@ -267,7 +285,10 @@ textarea{resize:vertical;min-height:60px}
         <div id="pl-upnext"></div>
       </div>
       <div class="player-exercise" id="pl-name">—</div>
-      <div class="player-desc" id="pl-desc"></div>
+      <div class="player-desc-wrap" id="pl-desc-wrap">
+        <div class="player-desc" id="pl-desc"></div>
+        <button class="more-btn" id="pl-more" onclick="toggleDesc()">more ▾</button>
+      </div>
     </div>
     <div class="player-mid-zone">
       <div class="player-timer" id="pl-timer">0</div>
@@ -335,7 +356,7 @@ function defaultState(){
       ex('Pull-ups','Hang from bar, pull chin above bar.','🏋️',30,'pull-up'),
       ex('Side Plank Right','Hold side plank on right forearm.','↗️',30,'side plank'),
     ]
-  }], settings:{ restDefault:8 }, _wgerEnriched:false};
+  }], settings:{ restDefault:8, audioEnabled:true }, _wgerEnriched:false};
 }
 function ex(name,desc,emoji,dur,hint){ return {id:uid(),name,description:desc,imageUrl:'',emoji:emoji||'💪',durationSeconds:dur,_hint:hint||''}; }
 function uid(){ return Math.random().toString(36).slice(2,10); }
@@ -360,7 +381,7 @@ function renderHome(){
     return `<div class="card training-card" onclick="openTraining('${t.id}')">
       <span class="training-count">${t.exercises.length}</span>
       <div class="info"><div class="name">${esc(t.name)}</div><div class="meta">${mins}:${String(secs).padStart(2,'0')} total</div>${ago?`<div class="last-done">✓ ${ago}</div>`:''}</div>
-      <span class="arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></span>
+      <button class="play-btn" title="Start workout" onclick="event.stopPropagation();currentTrainingId='${t.id}';startPlayer()"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button>
     </div>`;
   }).join('');
 }
@@ -563,7 +584,54 @@ function drEndT(){drFinish();}
 function drEndM(){document.removeEventListener('mousemove',drMoveM);document.removeEventListener('mouseup',drEndM);drFinish();}
 
 // ─── Add Exercise ─────────────────────────────────────────────
-function openAddExercise(){ showView('view-add'); document.getElementById('wger-search').value=''; document.getElementById('wger-results').innerHTML='<div class="search-loader">Type to search wger.de body-weight exercises</div>'; }
+// Equipment definitions for wger filters
+const WGER_EQUIPMENT=[
+  {id:7,name:'Body weight'},
+  {id:1,name:'Barbell'},
+  {id:3,name:'Dumbbell'},
+  {id:4,name:'Gym mat'},
+  {id:5,name:'Pull-up bar'},
+  {id:6,name:'Swiss ball'},
+  {id:8,name:'Bench'},
+  {id:9,name:'Incline bench'},
+  {id:10,name:'Kettlebell'},
+  {id:0,name:'None (all)'},
+];
+let selectedEquipment=new Set([7]);
+let wgerSearchResults=[];
+let wgerLang='en'; // 'en' or 'de'
+
+function openAddExercise(){
+  showView('view-add');
+  document.getElementById('wger-search').value='';
+  document.getElementById('wger-results').innerHTML='<div class="search-loader">Type to search exercises</div>';
+  renderEquipFilters();
+  renderLangToggle();
+}
+
+function renderLangToggle(){
+  document.getElementById('lang-toggle').innerHTML=
+    ['en','de'].map(l=>`<button class="${wgerLang===l?'active':''}" onclick="setWgerLang('${l}')">${l.toUpperCase()}</button>`).join('');
+}
+
+function setWgerLang(l){ wgerLang=l; renderLangToggle(); debounceSearch(); }
+
+function renderEquipFilters(){
+  const c=document.getElementById('equip-filters');
+  c.innerHTML=WGER_EQUIPMENT.map(eq=>{
+    const active=eq.id===0?selectedEquipment.size===0:selectedEquipment.has(eq.id);
+    return `<button class="tab${active?' active':''}" style="font-size:11px;padding:5px 10px;border-radius:12px" onclick="toggleEquip(${eq.id})">${esc(eq.name)}</button>`;
+  }).join('');
+}
+
+function toggleEquip(id){
+  if(id===0){selectedEquipment.clear();}
+  else{
+    if(selectedEquipment.has(id))selectedEquipment.delete(id); else selectedEquipment.add(id);
+  }
+  renderEquipFilters();
+  debounceSearch();
+}
 
 function switchTab(el,tab){
   el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -574,37 +642,87 @@ function switchTab(el,tab){
 
 function debounceSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(searchWger,400); }
 
+const LANG_IDS={en:2,de:1};
+
 async function searchWger(){
   const q=document.getElementById('wger-search').value.trim();
   const c=document.getElementById('wger-results');
   if(!q){c.innerHTML='<div class="search-loader">Type to search…</div>';return;}
   c.innerHTML='<div class="search-loader">Searching…</div>';
   try{
-    const r=await fetch(`https://wger.de/api/v2/exerciseinfo/?format=json&language=2&equipment=7&limit=40&offset=0`);
+    const equipParams=[...selectedEquipment].map(id=>'&equipment='+id).join('');
+    // When searching in German, include English results too
+    const langCodes=wgerLang==='de'?'de,en':'en';
+    const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(q)}&language__code=${langCodes}${equipParams}&limit=50&offset=0`;
+    const r=await fetch(url);
     const data=await r.json();
-    const exercises=data.results.filter(e=>{
-      const name=(e.translations||[]).find(t=>t.language===2);
-      return name && name.name.toLowerCase().includes(q.toLowerCase());
-    }).slice(0,15);
-    if(!exercises.length){c.innerHTML='<div class="search-loader">No body-weight exercises found for "'+esc(q)+'"</div>';return;}
-    c.innerHTML=exercises.map(e=>{
-      const tr=(e.translations||[]).find(t=>t.language===2)||{};
+    const exercises=(data.results||[]).slice(0,25);
+    wgerSearchResults=exercises;
+    if(!exercises.length){c.innerHTML='<div class="search-loader">No exercises found for "'+esc(q)+'"</div>';return;}
+    c.innerHTML=exercises.map((e,i)=>{
+      const tr=wgerTr(e);
+      const desc=wgerDesc(e);
       const cat=e.category?e.category.name:'';
       const muscles=(e.muscles||[]).map(m=>m.name_en||m.name).join(', ');
-      return `<div class="card search-result" onclick='pickWger(${JSON.stringify({
-        name:tr.name||'Exercise',
-        description:(tr.description||'').replace(/<[^>]*>/g,'').trim(),
-        imageUrl:wgerImg((e.images&&e.images[0])?e.images[0].image:''),
-        category:cat,muscles
-      }).replace(/'/g,"&#39;")})'>
-        <div class="sr-name">${esc(tr.name||'?')}</div>
-        <div class="sr-cat">${esc(cat)}${muscles?' · '+esc(muscles):''}</div>
+      const equip=(e.equipment||[]).map(eq=>eq.name).join(', ');
+      const img=(e.images&&e.images[0])?wgerImg(e.images[0].image):'';
+      const descFlat=desc.replace(/\n+/g,' ');
+      const descSnip=descFlat.length>80?descFlat.slice(0,80)+'…':descFlat;
+      return `<div class="card search-result" onclick="pickWgerResult(${i})">
+        ${img?`<div class="sr-thumb"><img src="${esc(img)}" alt="" loading="lazy"></div>`:''}
+        <div class="sr-info"><div class="sr-name">${esc(tr.name||'?')}</div>
+        <div class="sr-cat">${esc(cat)}${muscles?' · '+esc(muscles):''}${equip?' · '+esc(equip):''}</div>
+        ${descSnip?`<div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.3">${esc(descSnip)}</div>`:''}</div>
       </div>`;
     }).join('');
   }catch(err){c.innerHTML='<div class="search-loader">⚠️ Cannot reach wger.de<br><small style="color:var(--text3);margin-top:6px;display:block">This is blocked in the Claude preview. Download the file and open it locally, or use the Manual tab.</small></div>';}
 }
 
-function pickWger(data){
+// Pick best translation for current language, fallback to English
+function wgerTr(e){
+  const lid=LANG_IDS[wgerLang];
+  return (e.translations||[]).find(t=>t.language===lid)
+    ||(e.translations||[]).find(t=>t.language===2)
+    ||(e.translations||[])[0]||{};
+}
+// Get best description: prefer selected lang, fall back to English, then any
+function cleanDesc(s){
+  if(!s)return '';
+  return s
+    .replace(/<\/?(p|div|br|hr)\s*\/?>/gi,'\n')
+    .replace(/<li\s*>/gi,'\n• ')
+    .replace(/<\/li>/gi,'')
+    .replace(/<\/?(ol|ul)\s*>/gi,'\n')
+    .replace(/<[^>]*>/g,'')
+    .replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'")
+    .replace(/[ \t]+/g,' ')
+    .replace(/ ?\n ?/g,'\n')
+    .replace(/\n{3,}/g,'\n\n')
+    .trim();
+}
+function wgerDesc(e){
+  const lid=LANG_IDS[wgerLang];
+  const tryLangs=[lid,2];
+  for(const l of tryLangs){
+    const tr=(e.translations||[]).find(t=>t.language===l);
+    const d=cleanDesc(tr&&tr.description);
+    if(d)return d;
+  }
+  for(const tr of(e.translations||[])){
+    const d=cleanDesc(tr.description);
+    if(d)return d;
+  }
+  return '';
+}
+
+function pickWgerResult(idx){
+  const e=wgerSearchResults[idx]; if(!e)return;
+  const tr=wgerTr(e);
+  const data={
+    name:tr.name||'Exercise',
+    description:wgerDesc(e),
+    imageUrl:wgerImg((e.images&&e.images[0])?e.images[0].image:''),
+  };
   const t=getTraining(); if(!t)return;
   t.exercises.push({id:uid(),name:data.name,description:data.description,imageUrl:data.imageUrl,emoji:'🏋️',durationSeconds:30});
   save(); toast('Added: '+data.name); goDetail();
@@ -641,6 +759,7 @@ function countdown(n,cb){
 function beginExercise(){
   const e=pl.training.exercises[pl.exerciseIdx];
   pl.isRest=false; pl.secondsLeft=e.durationSeconds; pl.running=true;
+  pl_shownId=null;
   document.getElementById('pl-upnext').classList.replace('visible','out');
   renderPlayer(); startTick();
 }
@@ -648,36 +767,51 @@ function beginExercise(){
 function beginRest(){
   const e=pl.training.exercises[pl.exerciseIdx];
   pl.isRest=true; pl.secondsLeft=getRestAfter(e,pl.training); pl.running=true;
+  pl_shownId=null;
   const u=document.getElementById('pl-upnext');
   u.innerHTML='😮‍💨 UP NEXT'; u.classList.remove('out'); u.classList.add('visible');
   renderPlayer(); startTick();
 }
 
-function renderPlayer(){
+let pl_shownId=null; // track which exercise is displayed to avoid re-rendering description on tick
+
+function renderPlayerExercise(){
   const e=pl.training.exercises[pl.exerciseIdx];
   const total=pl.training.exercises.length;
   const next=pl.exerciseIdx+1<total?pl.training.exercises[pl.exerciseIdx+1]:null;
   const imgEl=document.getElementById('pl-image');
-
-  // During rest: show the upcoming exercise's content — only phase label and badge differ.
   const shown = pl.isRest ? (next || e) : e;
+  const shownKey=shown.id+(pl.isRest?'_rest':'');
 
-  document.getElementById('pl-phase').textContent = pl.isRest ? 'REST' : 'EXERCISE';
+  if(pl_shownId!==shownKey){
+    pl_shownId=shownKey;
+    document.getElementById('pl-phase').textContent = pl.isRest ? 'REST' : 'EXERCISE';
+    document.getElementById('pl-name').textContent = shown.name;
+    const descWrap=document.getElementById('pl-desc-wrap');
+    const descEl=document.getElementById('pl-desc');
+    descWrap.classList.remove('expanded','has-overflow');
+    descEl.innerHTML = autolink(shown.description || '');
+    document.getElementById('pl-more').textContent='more ▾';
+    requestAnimationFrame(()=>{
+      if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
+    });
+    const hasImg = !!shown.imageUrl;
+    imgEl.className = 'player-image' + (hasImg ? ' has-img' : '');
+    imgEl.innerHTML = hasImg ? `<img src="${esc(shown.imageUrl)}" alt="">` : (shown.emoji || '💪');
+    document.getElementById('pl-next').innerHTML = !pl.isRest && next ? `Next: <span>${esc(next.name)}</span>` : !pl.isRest ? 'Last exercise!' : next ? `<span>${esc(next.name)}</span>` : '';
+    document.getElementById('pl-counter').textContent = `${pl.exerciseIdx+1} / ${total}`;
+  }
+}
 
-  document.getElementById('pl-name').textContent = shown.name;
-  document.getElementById('pl-desc').textContent = shown.description || '';
-  const hasImg = !!shown.imageUrl;
-  imgEl.className = 'player-image' + (hasImg ? ' has-img' : '');
-  imgEl.innerHTML = hasImg ? `<img src="${esc(shown.imageUrl)}" alt="">` : (shown.emoji || '💪');
-
+function renderPlayer(){
+  const e=pl.training.exercises[pl.exerciseIdx];
+  renderPlayerExercise();
   document.getElementById('pl-timer').textContent = pl.secondsLeft;
   document.getElementById('pl-timer').className = 'player-timer' + (pl.isRest ? ' rest-time' : '');
   const maxDur = pl.isRest ? getRestAfter(e, pl.training) : e.durationSeconds;
   const pct = ((maxDur - pl.secondsLeft) / maxDur) * 100;
   const bar = document.getElementById('pl-bar');
   bar.style.width = pct + '%'; bar.className = 'player-progress-bar' + (pl.isRest ? ' resting' : '');
-  document.getElementById('pl-counter').textContent = `${pl.exerciseIdx+1} / ${total}`;
-  document.getElementById('pl-next').innerHTML = !pl.isRest && next ? `Next: <span>${esc(next.name)}</span>` : !pl.isRest ? 'Last exercise!' : next ? `<span>${esc(next.name)}</span>` : '';
   document.getElementById('pp-pause').style.display = pl.running ? '' : 'none';
   document.getElementById('pp-play').style.display = pl.running ? 'none' : '';
 }
@@ -701,6 +835,11 @@ function startTick(){
 }
 
 function playerToggle(){ pl.running=!pl.running; if(pl.running)startTick(); else clearInterval(pl.timer); renderPlayer(); }
+function toggleDesc(){
+  const w=document.getElementById('pl-desc-wrap'),b=document.getElementById('pl-more');
+  const exp=w.classList.toggle('expanded');
+  b.textContent=exp?'less ▴':'more ▾';
+}
 function playerNext(){
   clearInterval(pl.timer);
   if(pl.isRest){pl.exerciseIdx++;beginExercise();}
@@ -713,15 +852,17 @@ function playerPrev(){
   else if(pl.exerciseIdx>0){pl.exerciseIdx--;beginExercise();}
   else{beginExercise();}
 }
-function exitPlayer(){ clearInterval(pl.timer); pl.running=false; releaseWakeLock(); goDetail(); }
+function exitPlayer(){ clearInterval(pl.timer); pl.running=false; pl_shownId=null; releaseWakeLock(); goDetail(); }
 function finishWorkout(){
   clearInterval(pl.timer); pl.running=false; releaseWakeLock();
   // Record completion
   const t=getTraining();
   if(t){t.lastCompleted=new Date().toISOString();save();}
+  pl_shownId=null;
   document.getElementById('pl-phase').textContent='DONE';
   document.getElementById('pl-name').textContent='Great job! 🎉';
   document.getElementById('pl-desc').textContent='Workout complete.';
+  document.getElementById('pl-desc-wrap').classList.remove('expanded','has-overflow');
   document.getElementById('pl-image').className='player-image';
   document.getElementById('pl-image').innerHTML='🏆';
   document.getElementById('pl-timer').textContent='✓';
@@ -735,7 +876,7 @@ function finishWorkout(){
 
 // Audio beep
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-function beep(dur){try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=880;g.gain.value=0.08;o.start();o.stop(audioCtx.currentTime+dur/1000);}catch(e){}}
+function beep(dur){if(state.settings.audioEnabled===false)return;try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=880;g.gain.value=0.08;o.start();o.stop(audioCtx.currentTime+dur/1000);}catch(e){}}
 
 // ─── Wake Lock ────────────────────────────────────────────────
 let wakeLock=null;
@@ -745,11 +886,24 @@ function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&pl.running)requestWakeLock();});
 
 // ─── Settings / Import / Export ───────────────────────────────
+function toggleAudio(){
+  if(state.settings.audioEnabled===undefined)state.settings.audioEnabled=true;
+  state.settings.audioEnabled=!state.settings.audioEnabled;
+  save(); openSettings();
+}
 function openSettings(){
+  const audioOn=state.settings.audioEnabled!==false;
   openModal('Settings',`
+    <div class="setting-row"><div class="setting-label">Audio<small>Beep sounds during workout</small></div><button class="btn ${audioOn?'btn-primary':'btn-secondary'}" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="toggleAudio()">${audioOn?'Enabled':'Disabled'}</button></div>
     <div class="setting-row"><div class="setting-label">Export Data<small>Download all trainings as JSON</small></div><button class="btn btn-secondary" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="exportData()">Export</button></div>
     <div class="setting-row"><div class="setting-label">Import Data<small>Load trainings from JSON file</small></div><button class="btn btn-secondary" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="document.getElementById('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
     <div class="setting-row"><div class="setting-label">Reset All<small>Delete everything and start fresh</small></div><button class="btn btn-danger" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="resetAll()">Reset</button></div>
+    <div style="padding:18px 0 4px;text-align:center;color:var(--text2);font-size:13px;line-height:1.7">
+      <strong style="color:var(--text);font-size:15px;letter-spacing:.03em">PULSE</strong><br>
+      Open-source interval workout timer.<br>
+      Exercise data from <a href="https://wger.de" target="_blank" rel="noopener" style="color:var(--accent)">wger.de</a>.<br>
+      <a href="https://github.com/schuhwerk/pulse/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">github.com/schuhwerk/pulse</a>
+    </div>
   `);
 }
 function exportData(){
@@ -774,6 +928,7 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 
 // ─── Helpers ──────────────────────────────────────────────────
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+function autolink(s){return esc(s).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');}
 function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger.de'+url:url;}
 
 // ─── Init ─────────────────────────────────────────────────────
@@ -793,7 +948,7 @@ async function enrichFromWger(){
         if(!match)return;
         const tr=(match.translations||[]).find(t=>t.language===2);
         if(ex._hint&&tr&&tr.description){
-          const clean=tr.description.replace(/<[^>]*>/g,'').trim();
+          const clean=cleanDesc(tr.description);
           if(clean)ex.description=clean;
         }
         if(!ex.imageUrl&&match.images&&match.images.length){
