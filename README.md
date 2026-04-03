@@ -30,6 +30,13 @@ python3 -m http.server
 | `index.html` | Entire app (HTML + CSS + JS) |
 | `manifest.json` | PWA manifest |
 | `icon.svg` | App icon (dumbbell) |
+| `images/` | Exercise illustrations (SVG) |
+
+## License
+
+Code and exercise illustrations © Vitus Schuhwerk, released under the [MIT License](LICENSE).
+
+If you use or adapt this project or its images, please keep the license notice. A link back is appreciated but not required.
 
 ## Screen wake lock
 
