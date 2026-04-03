@@ -41,7 +41,7 @@ textarea{resize:vertical;min-height:60px}
 .btn-icon svg{width:20px;height:20px}
 
 /* Scrollable Content */
-.content{flex:1;overflow-y:auto;padding:0 20px 100px;-webkit-overflow-scrolling:touch}
+.content{flex:1;overflow-y:auto;padding:0 20px 130px;-webkit-overflow-scrolling:touch}
 .content::-webkit-scrollbar{display:none}
 
 /* Cards */
@@ -62,8 +62,9 @@ textarea{resize:vertical;min-height:60px}
 
 /* Exercise Card */
 .exercise-card{display:flex;gap:8px;align-items:center;padding:12px}
-.exercise-card .thumb{width:42px;height:42px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px}
-.exercise-card .thumb img{width:100%;height:100%;object-fit:cover}
+.exercise-card .thumb{width:56px;height:56px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px}
+.exercise-card .thumb img{width:100%;height:100%;object-fit:contain;border-radius:4px;padding:4px;box-sizing:border-box}
+.wger-img{background:#ede8e1}
 .exercise-card .info{flex:1;min-width:0}
 .exercise-card .ex-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exercise-card .ex-dur{font-size:12px;color:var(--accent);font-family:'Space Mono',monospace;margin-top:1px;display:flex;align-items:center;gap:6px}
@@ -143,7 +144,7 @@ textarea{resize:vertical;min-height:60px}
 .player-desc-wrap.has-overflow .more-btn{display:inline-block}
 .player-image-wrap{position:relative;flex-shrink:0;margin-bottom:24px}
 .player-image{width:140px;height:140px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px;border:3px solid var(--surface3)}
-.player-image.has-img{border-radius:16px}
+.player-image.has-img{border-radius:16px;width:200px;height:200px;padding:12px}
 .player-image img{width:100%;height:100%;object-fit:contain}
 #pl-upnext{position:absolute;bottom:-14px;left:50%;background:rgba(0,0,0,.85);color:var(--warn);font-size:12px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:2px;padding:3px 12px;border-radius:20px;white-space:nowrap;z-index:3;backdrop-filter:blur(4px);pointer-events:none;transform:translateX(-50%);opacity:0}
 #pl-upnext.visible{animation:badge-in .3s cubic-bezier(.34,1.4,.64,1) forwards}
@@ -225,6 +226,7 @@ textarea{resize:vertical;min-height:60px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </button>
   </div>
+  <p id="detail-desc" style="margin:0 16px 8px;font-size:14px;color:var(--text3);display:none"></p>
   <div class="content" id="detail-exercises"></div>
   <button class="play-fab fab" onclick="startPlayer()" title="Start">
     <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
@@ -339,26 +341,49 @@ let searchTimeout = null;
 let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, training:null };
 
 function defaultState(){
-  const id = uid();
-  return { trainings:[{
-    id, name:'Full Body Starter', restSeconds:8,
-    exercises:[
-      ex('Squats','Stand, lower hips until thighs are parallel, push back up.','🦵',30,'squats'),
-      ex('Push-ups','Plank position, lower chest to floor, push up.','💪',30,'push-up'),
-      ex('Forearm Plank','Hold body straight on forearms and toes.','🧘',30,'front plank'),
-      ex('Step-ups','Step onto a chair/step, alternate legs.','🪜',30,'step'),
-      ex('Chair Dips','Hands on chair edge, lower body by bending arms.','🪑',30,'dips'),
-      ex('Crunches','Lie on back, curl shoulders toward pelvis.','🔥',30,'crunches'),
-      ex('Prone YTWL with Chin Tuck','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.','🦅',30),
-      ex('Wall Sit','Back flat against wall, thighs parallel to ground.','🧱',30,'wall sit'),
-      ex('Push-up Rotations','Push-up, then rotate to side plank, alternate sides.','🔄',30,'push-up rotation'),
-      ex('Side Plank Left','Hold side plank on left forearm.','↙️',30,'side plank'),
-      ex('Pull-ups','Hang from bar, pull chin above bar.','🏋️',30,'pull-up'),
-      ex('Side Plank Right','Hold side plank on right forearm.','↗️',30,'side plank'),
-    ]
-  }], settings:{ restDefault:8, audioEnabled:true }, _wgerEnriched:false};
+  return { trainings:[
+    { id:uid(), name:'7 Minute Workout', restSeconds:10, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
+      ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
+      ex('Wall Sit','🧱',30,'','images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
+      ex('Push-ups','💪',30,'','images/push-ups.svg','Plank position, lower chest to floor, push up.'),
+      ex('Abdominal Crunches','🔥',30,'','images/crunches.svg','Lie on back, feet flat, curl shoulders toward pelvis.'),
+      ex('Step-ups','🪜',30,'','images/step-ups.svg','Step onto a chair alternating legs at a steady pace.'),
+      ex('Squats','🦵',30,'','images/squats.svg','Feet shoulder-width apart, lower hips until thighs are parallel, push back up.'),
+      ex('Triceps Dips','🪑',30,'','images/triceps-dips.svg','Hands on chair edge behind you, lower body by bending arms, push back up.'),
+      ex('Plank','🧘',30,'','images/plank.svg','Hold body straight on forearms and toes, core tight.'),
+      ex('High Knees','🏃',30,'','images/high-knees.svg','Run in place, driving knees up to hip height alternately.'),
+      ex('Lunges','🚶',30,'','images/lunges.svg','Step one foot forward, lower back knee toward floor, alternate legs.'),
+      ex('Push-ups with Rotation','🔄',30,'','images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
+      ex('Side Plank','↗️',30,'','images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
+    ]},
+    { id:uid(), name:'7 Minute Workout (Advanced)', restSeconds:10, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
+      ex('Reverse Lunge with Rotation','🔀',30,'','','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
+      ex('Lateral Pillar Bridge (Left)','↙️',30,'side plank','','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
+      ex('Push-up to Row to Burpee','💥',60,'','','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
+      ex('Lateral Pillar Bridge (Right)','↗️',30,'side plank','','Lie on right side, raise hips off floor supported on right forearm and feet. Hold straight.'),
+      ex('Single-Leg Deadlift to Curl to Press (Left)','🏋️',60,'','','Balance on left foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
+      ex('Single-Leg Deadlift to Curl to Press (Right)','🏋️',60,'','','Balance on right foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
+      ex('Plank with Arm Lift','🧘',30,'plank','','Hold forearm plank, alternately lift one arm forward and hold briefly.'),
+      ex('Lateral Lunge to Triceps Extension','💪',60,'','','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
+      ex('Bent-Over Row','🚣',60,'bent over row','','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
+    ]},
+    { id:uid(), name:'Full Body Starter', restSeconds:8, exercises:[
+      ex('Squats','🦵',30,'squats','','Stand, lower hips until thighs are parallel, push back up.'),
+      ex('Push-ups','💪',30,'push-up','','Plank position, lower chest to floor, push up.'),
+      ex('Forearm Plank','🧘',30,'plank','','Hold body straight on forearms and toes.'),
+      ex('Step-ups','🪜',30,'step','','Step onto a chair/step, alternate legs.'),
+      ex('Chair Dips','🪑',30,'dips','','Hands on chair edge, lower body by bending arms.'),
+      ex('Crunches','🔥',30,'crunches','','Lie on back, curl shoulders toward pelvis.'),
+      ex('Prone YTWL with Chin Tuck','🦅',30,'','','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
+      ex('Wall Sit','🧱',30,'wall sit','','Back flat against wall, thighs parallel to ground.'),
+      ex('Push-up Rotations','🔄',30,'push-up rotation','','Push-up, then rotate to side plank, alternate sides.'),
+      ex('Side Plank Left','↙️',30,'side plank','','Hold side plank on left forearm.'),
+      ex('Pull-ups','🏋️',30,'pull-up','','Hang from bar, pull chin above bar.'),
+      ex('Side Plank Right','↗️',30,'side plank','','Hold side plank on right forearm.'),
+    ]},
+  ], settings:{ restDefault:8, audioEnabled:true }, _wgerEnriched:false};
 }
-function ex(name,desc,emoji,dur,hint){ return {id:uid(),name,description:desc,imageUrl:'',emoji:emoji||'💪',durationSeconds:dur,_hint:hint||''}; }
+function ex(name,emoji,dur,hint,img,desc){ return {id:uid(),name,description:desc||'',imageUrl:img||'',emoji:emoji||'💪',durationSeconds:dur,_hint:img?'':hint||''}; }
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function load(){ try{const d=localStorage.getItem(LS_KEY);return d?JSON.parse(d):defaultState();}catch(e){return defaultState();} }
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
@@ -404,10 +429,13 @@ function renderDetail(){
   const dur=t.exercises.reduce((s,e,i)=>s+e.durationSeconds+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
   const mins=Math.floor(dur/60), secs=dur%60;
   document.getElementById('detail-duration').textContent=`${mins}:${String(secs).padStart(2,'0')}`;
+  const descEl=document.getElementById('detail-desc');
+  if(t.description){descEl.textContent=t.description;descEl.style.display='';}else{descEl.style.display='none';}
   const c=document.getElementById('detail-exercises');
   if(!t.exercises.length){ c.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No exercises yet.<br>Tap + to add some.</p></div>'; return; }
   c.innerHTML=`<div class="reorder-hint">long-press to reorder</div>`+t.exercises.map((e,i)=>{
-    const thumb=e.imageUrl?`<img src="${esc(e.imageUrl)}" alt="" loading="lazy">`:(e.emoji||'💪');
+    const isWger=e.imageUrl&&e.imageUrl.includes('wger.de');
+    const thumb=e.imageUrl?`<img src="${esc(e.imageUrl)}" alt="" loading="lazy" class="${isWger?'wger-img':''}">`:(e.emoji||'💪');
     return `<div class="card exercise-card" data-idx="${i}">
       <div class="thumb">${thumb}</div>
       <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button>${e.durationSeconds}s<button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
@@ -450,13 +478,34 @@ function editExercise(i){
   openModal('Edit Exercise',`
     <div class="field"><label>Name</label><input id="ed-ename" value="${esc(e.name)}"></div>
     <div class="field"><label>Description</label><textarea id="ed-edesc">${esc(e.description||'')}</textarea></div>
-    <div class="field"><label>Image URL</label><input id="ed-eimg" value="${esc(e.imageUrl||'')}"></div>
+    <div class="field"><label>Image URL</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="ed-eimg" value="${esc(e.imageUrl||'')}" style="flex:1">
+        <button class="btn" style="white-space:nowrap;padding:8px 12px;font-size:13px" onclick="enhanceExerciseFromWger(${i})">Enhance with wger</button>
+      </div>
+      <div id="ed-wger-status" style="font-size:12px;color:var(--text3);margin-top:4px;min-height:16px"></div>
+    </div>
     <div style="display:flex;gap:12px">
       <div class="field" style="flex:1"><label>Duration</label><div class="dur-input"><input id="ed-edur" type="number" value="${e.durationSeconds}" min="5" max="600"><span>s</span></div></div>
       <div class="field" style="flex:1"><label>Rest after</label><div class="dur-input"><input id="ed-erest" type="number" value="${e.restAfterSeconds!=null?e.restAfterSeconds:''}" min="0" max="300" placeholder="${t.restSeconds}"><span>s</span></div></div>
     </div>
     <button class="btn btn-primary" style="width:100%;padding:14px;border-radius:var(--radius-sm);font-weight:700;margin-top:4px" onclick="saveExerciseEdit(${i})">Save</button>
   `);
+}
+async function enhanceExerciseFromWger(i){
+  const status=document.getElementById('ed-wger-status');
+  const name=document.getElementById('ed-ename').value.trim();
+  if(!name)return;
+  status.textContent='Searching wger…';
+  try{
+    const match=await wgerFetchBest(name);
+    if(!match){status.textContent='No match found on wger.';return;}
+    const tr=(match.translations||[]).find(t=>t.language===2);
+    if(tr&&tr.description){const clean=cleanDesc(tr.description);if(clean)document.getElementById('ed-edesc').value=clean;}
+    if(match.images&&match.images.length)document.getElementById('ed-eimg').value=wgerImg(match.images[0].image);
+    const matchName=tr?tr.name:'exercise';
+    status.textContent=`Matched "${matchName}"${match.images&&match.images.length?' — image applied':' — no image available'}.`;
+  }catch(e){status.textContent='Could not reach wger.de.';}
 }
 function saveExerciseEdit(i){
   const t=getTraining(),e=t.exercises[i];
@@ -796,7 +845,8 @@ function renderPlayerExercise(){
       if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
     });
     const hasImg = !!shown.imageUrl;
-    imgEl.className = 'player-image' + (hasImg ? ' has-img' : '');
+    const isWger=hasImg&&shown.imageUrl.includes('wger.de');
+    imgEl.className = 'player-image' + (hasImg ? ' has-img' : '') + (isWger ? ' wger-img' : '');
     imgEl.innerHTML = hasImg ? `<img src="${esc(shown.imageUrl)}" alt="">` : (shown.emoji || '💪');
     document.getElementById('pl-next').innerHTML = !pl.isRest && next ? `Next: <span>${esc(next.name)}</span>` : !pl.isRest ? 'Last exercise!' : next ? `<span>${esc(next.name)}</span>` : '';
     document.getElementById('pl-counter').textContent = `${pl.exerciseIdx+1} / ${total}`;
@@ -931,35 +981,35 @@ function esc(s){const d=document.createElement('div');d.textContent=s||'';return
 function autolink(s){return esc(s).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');}
 function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger.de'+url:url;}
 
+async function wgerFetchBest(name){
+  const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(name)}&language__code=en&limit=10`;
+  const data=await (await fetch(url)).json();
+  const results=data.results||[];
+  const nl=name.toLowerCase();
+  return results.find(w=>(w.translations||[]).find(t=>t.language===2&&t.name.toLowerCase()===nl))
+    ||results.find(w=>(w.translations||[]).find(t=>t.language===2&&t.name.toLowerCase().includes(nl)))
+    ||null;
+}
+
 // ─── Init ─────────────────────────────────────────────────────
 async function enrichFromWger(){
   if(state._wgerEnriched)return;
   try{
-    const r=await fetch('https://wger.de/api/v2/exerciseinfo/?format=json&language=2&equipment=7&limit=100&offset=0');
-    const data=await r.json();
-    const all=data.results||[];
-    state.trainings.forEach(t=>{
-      t.exercises.forEach(ex=>{
-        const searchTerm=ex._hint||ex.name;
-        const match=all.find(w=>{
-          const tr=(w.translations||[]).find(t=>t.language===2);
-          return tr&&tr.name.toLowerCase().includes(searchTerm.toLowerCase());
-        });
+    const toEnrich=[];
+    state.trainings.forEach(t=>t.exercises.forEach(ex=>{if(ex._hint)toEnrich.push(ex);}));
+    await Promise.all(toEnrich.map(async ex=>{
+      try{
+        const match=await wgerFetchBest(ex._hint);
         if(!match)return;
         const tr=(match.translations||[]).find(t=>t.language===2);
-        if(ex._hint&&tr&&tr.description){
-          const clean=cleanDesc(tr.description);
-          if(clean)ex.description=clean;
-        }
-        if(!ex.imageUrl&&match.images&&match.images.length){
-          ex.imageUrl=wgerImg(match.images[0].image);
-        }
-        delete ex._hint;
-      });
-    });
+        if(tr&&tr.description){const clean=cleanDesc(tr.description);if(clean)ex.description=clean;}
+        if(!ex.imageUrl&&match.images&&match.images.length)ex.imageUrl=wgerImg(match.images[0].image);
+      }catch(e){/* skip */}
+      finally{delete ex._hint;}
+    }));
     state._wgerEnriched=true;
     save();
-  }catch(e){/* offline or blocked, keep fallback descriptions */}
+  }catch(e){/* offline or blocked */}
   renderHome();
 }
 renderHome();
