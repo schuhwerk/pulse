@@ -795,7 +795,7 @@ function startPlayer(){
   showView('view-player');
   document.querySelector('.player-controls').style.display='';
   requestWakeLock();
-  countdown(3,()=>{ beginExercise(); });
+  countdown(location.hostname==='localhost'?0:3,()=>{ beginExercise(); }); // skip countdown on localhost for dev
 }
 
 function countdown(n,cb){
