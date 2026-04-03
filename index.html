@@ -392,8 +392,21 @@ function getRestAfter(e,t){ return (e.restAfterSeconds!=null)?e.restAfterSeconds
 
 // ─── Navigation ───────────────────────────────────────────────
 function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active'); }
-function goHome(){ showView('view-home'); renderHome(); }
-function goDetail(){ showView('view-detail'); renderDetail(); }
+function goHome(){ location.hash='home'; }
+function goDetail(){ location.hash='detail:'+currentTrainingId; }
+
+window.addEventListener('hashchange',()=>routeHash());
+function routeHash(){
+  const h=location.hash.slice(1);
+  if(!h||h==='home'){ showView('view-home'); renderHome(); }
+  else if(h.startsWith('detail:')){
+    currentTrainingId=h.slice(7);
+    const t=getTraining(); if(!t){goHome();return;}
+    showView('view-detail'); renderDetail();
+  }
+  else if(h.startsWith('add:')){ currentTrainingId=h.slice(4); const t=getTraining(); if(!t){goHome();return;} showView('view-add'); }
+  else if(h.startsWith('player:')){ currentTrainingId=h.slice(7); if(pl.training){showView('view-player');}else{goDetail();} } // fall back to detail on reload (no player state)
+}
 
 // ─── Home View ────────────────────────────────────────────────
 function renderHome(){
@@ -418,7 +431,7 @@ function promptNewTraining(){
   save(); renderHome();
 }
 
-function openTraining(id){ currentTrainingId=id; showView('view-detail'); renderDetail(); }
+function openTraining(id){ currentTrainingId=id; goDetail(); }
 
 // ─── Detail View ──────────────────────────────────────────────
 function getTraining(){ return state.trainings.find(t=>t.id===currentTrainingId); }
@@ -651,6 +664,7 @@ let wgerSearchResults=[];
 let wgerLang='en'; // 'en' or 'de'
 
 function openAddExercise(){
+  location.hash='add:'+currentTrainingId;
   showView('view-add');
   document.getElementById('wger-search').value='';
   document.getElementById('wger-results').innerHTML='<div class="search-loader">Type to search exercises</div>';
@@ -792,6 +806,7 @@ function startPlayer(){
   const t=getTraining(); if(!t||!t.exercises.length){toast('Add exercises first');return;}
   pl.training={...t,exercises:[...t.exercises]};
   pl.exerciseIdx=0; pl.isRest=false;
+  location.hash='player:'+currentTrainingId;
   showView('view-player');
   document.querySelector('.player-controls').style.display='';
   requestWakeLock();
@@ -1012,6 +1027,8 @@ async function enrichFromWger(){
   }catch(e){/* offline or blocked */}
   renderHome();
 }
+if(!location.hash||location.hash==='#')location.hash='home';
+routeHash();
 renderHome();
 enrichFromWger();
 </script>
