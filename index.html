@@ -331,7 +331,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.0.1';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -495,6 +495,7 @@ function editTrainingName(){
   const t=getTraining(); if(!t)return;
   openModal('Edit Training',`
     <div class="field"><label>Name</label><input id="ed-tname" value="${esc(t.name)}"></div>
+    <div class="field"><label>Description</label><textarea id="ed-tdesc" rows="2">${esc(t.description||'')}</textarea></div>
     <div class="field"><label>Default rest between exercises</label><div class="dur-input"><input id="ed-trest" type="number" value="${t.restSeconds}" min="0" max="120"><span>seconds</span></div></div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn btn-primary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="saveTrainingEdit()">Save</button>
@@ -505,6 +506,7 @@ function editTrainingName(){
 }
 function saveTrainingEdit(){
   const t=getTraining(); t.name=document.getElementById('ed-tname').value||t.name;
+  t.description=document.getElementById('ed-tdesc').value;
   t.restSeconds=parseInt(document.getElementById('ed-trest').value)||0;
   save(); closeModal(); renderDetail();
 }
@@ -630,6 +632,12 @@ function drActivate(card,idx){
 function drMoveAt(x,y){
   if(drag.active){
     if(drag.ghost)drag.ghost.style.top=(y-30)+'px';
+    // Auto-scroll when near edges of the scroll container
+    const container=document.getElementById(CONTAINER_ID);
+    const cr=container.getBoundingClientRect();
+    const edge=50;
+    if(y<cr.top+edge)container.scrollTop-=8;
+    else if(y>cr.bottom-edge)container.scrollTop+=8;
     drag.cards.forEach(c=>{c.classList.remove('drag-over-top','drag-over-bot');});
     let over=null;
     drag.cards.forEach(c=>{
