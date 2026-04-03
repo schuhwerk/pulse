@@ -31,12 +31,24 @@ python3 -m http.server
 | `manifest.json` | PWA manifest |
 | `icon.svg` | App icon (dumbbell) |
 | `images/` | Exercise illustrations (SVG) |
+| `sw.js` | Service worker (caching + update flow) |
+| `hooks/pre-commit` | Git hook: auto-bumps version on commit |
 
 ## License
 
 Code and exercise illustrations © Vitus Schuhwerk, released under the [MIT License](LICENSE).
 
 If you use or adapt this project or its images, please keep the license notice. A link back is appreciated but not required.
+
+## Versioning
+
+`APP_VERSION` in `index.html` and `CACHE_NAME` in `sw.js` are auto-bumped (patch) on every commit that touches `index.html`, via a pre-commit hook. If you bump the version manually before committing, the hook detects the change and skips.
+
+After cloning, enable the hook:
+
+```bash
+git config core.hooksPath hooks
+```
 
 ## Screen wake lock
 

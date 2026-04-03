@@ -1,0 +1,45 @@
+#!/bin/bash
+# Auto-bump version (patch) on commits that touch index.html or sw.js.
+# Skips if APP_VERSION was already changed manually in this commit.
+
+# Only act if index.html is staged
+if ! git diff --cached --name-only | grep -q 'index.html'; then
+  exit 0
+fi
+
+# Get APP_VERSION from HEAD and from the staged file
+HEAD_VER=$(git show HEAD:index.html 2>/dev/null | grep -oP "APP_VERSION\s*=\s*'\\K[^']+")
+STAGED_VER=$(git diff --cached -p index.html | grep -oP "^\+.*APP_VERSION\s*=\s*'\\K[^']+" || true)
+
+# If staged diff shows a changed APP_VERSION, user bumped manually — do nothing
+if [ -n "$STAGED_VER" ] && [ "$STAGED_VER" != "$HEAD_VER" ]; then
+  echo "pre-commit: APP_VERSION already bumped to $STAGED_VER — skipping auto-bump"
+  exit 0
+fi
+
+# Read current version from the working file
+CUR_VER=$(grep -oP "APP_VERSION\s*=\s*'\\K[^']+" index.html)
+if [ -z "$CUR_VER" ]; then
+  echo "pre-commit: could not read APP_VERSION — skipping"
+  exit 0
+fi
+
+# Bump patch: 1.0.2 -> 1.0.3
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CUR_VER"
+PATCH=$((PATCH + 1))
+NEW_VER="$MAJOR.$MINOR.$PATCH"
+
+# Update APP_VERSION in index.html
+sed -i "s/APP_VERSION = '$CUR_VER'/APP_VERSION = '$NEW_VER'/" index.html
+
+# Update CACHE_NAME in sw.js (pulse-v<N> where N is a running integer)
+OLD_CACHE=$(grep -oP "CACHE_NAME = 'pulse-v\\K[0-9]+" sw.js)
+NEW_CACHE=$((OLD_CACHE + 1))
+sed -i "s/CACHE_NAME = 'pulse-v$OLD_CACHE'/CACHE_NAME = 'pulse-v$NEW_CACHE'/" sw.js
+
+# Re-stage the modified files
+git add index.html sw.js
+
+# Leave a marker for prepare-commit-msg to pick up
+export PULSE_BUMPED="$CUR_VER → $NEW_VER"
+echo "$PULSE_BUMPED" > /tmp/.pulse-version-bump

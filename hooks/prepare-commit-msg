@@ -1,0 +1,10 @@
+#!/bin/bash
+# Append version bump note to commit message if pre-commit bumped the version.
+
+BUMP_FILE="/tmp/.pulse-version-bump"
+if [ -f "$BUMP_FILE" ]; then
+  BUMP=$(cat "$BUMP_FILE")
+  rm -f "$BUMP_FILE"
+  echo "" >> "$1"
+  echo "version: $BUMP" >> "$1"
+fi
