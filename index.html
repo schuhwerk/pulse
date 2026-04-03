@@ -331,6 +331,35 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
+const APP_VERSION = '1.0.0';
+let _swWaiting = null; // holds waiting service worker
+
+// ─── Service Worker Registration ─────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    // Check if there's already a waiting worker
+    if (reg.waiting) _swWaiting = reg.waiting;
+
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          _swWaiting = newSW;
+          toast('New version available!');
+          // Re-render settings if open
+          if (document.getElementById('modal').classList.contains('open')) openSettings();
+        }
+      });
+    });
+  });
+
+  // Reload once the new SW takes over
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; location.reload(); }
+  });
+}
+
 // ─── State ────────────────────────────────────────────────────
 const LS_KEY = 'pulse_data';
 let state = load();
@@ -963,6 +992,7 @@ function openSettings(){
     <div class="setting-row"><div class="setting-label">Export Data<small>Download all trainings as JSON</small></div><button class="btn btn-secondary" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="exportData()">Export</button></div>
     <div class="setting-row"><div class="setting-label">Import Data<small>Load trainings from JSON file</small></div><button class="btn btn-secondary" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="document.getElementById('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
     <div class="setting-row"><div class="setting-label">Reset All<small>Delete everything and start fresh</small></div><button class="btn btn-danger" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="resetAll()">Reset</button></div>
+    <div class="setting-row"><div class="setting-label">Version<small>v${APP_VERSION}</small></div><button class="btn ${_swWaiting?'btn-primary':'btn-secondary'}" style="padding:8px 16px;border-radius:var(--radius-sm);font-weight:600;font-size:13px" onclick="checkForUpdate()">${_swWaiting?'Update now':'Check for update'}</button></div>
     <div style="padding:18px 0 4px;text-align:center;color:var(--text2);font-size:13px;line-height:1.7">
       <strong style="color:var(--text);font-size:15px;letter-spacing:.03em">PULSE</strong><br>
       Open-source interval workout timer.<br>
@@ -986,6 +1016,22 @@ function importData(ev){
   r.readAsText(file);
 }
 function resetAll(){if(!confirm('Delete all data?'))return;state=defaultState();save();closeModal();goHome();toast('Reset!');}
+
+function checkForUpdate(){
+  if(_swWaiting){
+    _swWaiting.postMessage({type:'SKIP_WAITING'});
+    toast('Updating…');
+    return;
+  }
+  if(!('serviceWorker' in navigator)){toast('Not supported');return;}
+  navigator.serviceWorker.getRegistration().then(reg=>{
+    if(!reg){toast('No service worker');return;}
+    reg.update().then(()=>{
+      if(reg.waiting){_swWaiting=reg.waiting;openSettings();}
+      else toast('Already up to date');
+    }).catch(()=>toast('Update check failed'));
+  });
+}
 
 // ─── Modal ────────────────────────────────────────────────────
 function openModal(title,html){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').classList.add('open');}
