@@ -339,7 +339,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.10'; 
+const APP_VERSION = '1.0.11'; 
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -378,7 +378,7 @@ let searchTimeout = null;
 let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, training:null };
 
 const BUILTIN_TRAININGS=[
-    { name:'7 Minute Workout', restSeconds:10, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
+    { name:'7 Minute Workout', restSeconds:7, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
       ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
       ex('Wall Sit','🧱',30,'','images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
       ex('Push-ups','💪',30,'','images/push-ups.svg','Plank position, lower chest to floor, push up.'),
@@ -392,7 +392,7 @@ const BUILTIN_TRAININGS=[
       ex('Push-ups with Rotation','🔄',30,'','images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
       ex('Side Plank','↗️',30,'','images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
     ]},
-    { name:'7 Minute Workout (Advanced)', restSeconds:10, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
+    { name:'7 Minute Workout (Advanced)', restSeconds:5, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
       ex('Reverse Lunge with Rotation','🔀',30,'','','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
       ex('Lateral Pillar Bridge (Left)','↙️',30,'side plank','','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
       ex('Push-up to Row to Burpee','💥',60,'','','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
