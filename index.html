@@ -334,7 +334,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.6'; 
+const APP_VERSION = '1.0.7'; 
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -398,19 +398,25 @@ const BUILTIN_TRAININGS=[
       ex('Lateral Lunge to Triceps Extension','💪',60,'','','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
       ex('Bent-Over Row','🚣',60,'bent over row','','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
-    { name:'Full Body Starter', restSeconds:8, exercises:[
-      ex('Squats','🦵',30,'squats','','Stand, lower hips until thighs are parallel, push back up.'),
-      ex('Push-ups','💪',30,'push-up','','Plank position, lower chest to floor, push up.'),
-      ex('Forearm Plank','🪵',30,'plank','','Hold body straight on forearms and toes.'),
-      ex('Step-ups','🪜',30,'step','','Step onto a chair/step, alternate legs.'),
-      ex('Chair Dips','🪑',30,'dips','','Hands on chair edge, lower body by bending arms.'),
-      ex('Crunches','🔥',30,'crunches','','Lie on back, curl shoulders toward pelvis.'),
-      ex('Prone YTWL with Chin Tuck','🦅',30,'','','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
-      ex('Wall Sit','🧱',30,'wall sit','','Back flat against wall, thighs parallel to ground.'),
-      ex('Push-up Rotations','🔄',30,'push-up rotation','','Push-up, then rotate to side plank, alternate sides.'),
-      ex('Side Plank Left','↙️',30,'side plank','','Hold side plank on left forearm.'),
-      ex('Pull-ups','🏋️',30,'pull-up','','Hang from bar, pull chin above bar.'),
-      ex('Side Plank Right','↗️',30,'side plank','','Hold side plank on right forearm.'),
+    { name:'Vitus 2026', restSeconds:15, description:'Prepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Band on Door + Hip\n- 1kg weights (bottles?)', exercises:[
+      ex('Pistol Squat','🦵',40,'pistol squat','','Single-leg squat: extend one leg forward and lower into a full squat on the other leg, then drive back up. Optional load: dumbbell or kettlebell at chest.'),
+      ex('Push-ups','🙇',50,'push-up','','Plank position, lower chest to floor, push up.'),
+      ex('Prone YTWL with Chin Tuck','🦅',40,'','','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
+      ex('Wall Sit','🧱',40,'wall sit','','Back flat against wall, thighs parallel to ground.'),
+      ex('Chair Dips','🪑',40,'dips','','Hands on chair edge, lower body by bending arms, push back up.'),
+      ex('Hip Raise, Lying, with Band','🍑',50,'hip raise','','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.'),
+      ex('Handstand Pushup','🤸',30,'handstand push-up','','Handstand position against a wall, lower head toward floor, press back up.'),
+      ex('Crunches','🔥',50,'crunches','','Lie on back, curl shoulders toward pelvis, engaging the core.'),
+      ex('Pull-ups','🧗',40,'pull-up','','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar.'),
+      ex('Side Plank Left','↙️',50,'side plank','','Hold side plank on left forearm.'),
+      ex('Internal Rotator','🔁',40,'internal rotation','','Shoulder internal rotation with resistance band.'),
+      ex('Push-up Rotations','🔄',40,'push-up rotation','','Push-up, then rotate to side plank, alternate sides.'),
+      ex('Reverse Wood Chops','🪓',60,'wood chop','','Band anchored low: grip with both hands at hip, rotate hips and pull the band up and over the opposite shoulder like a baseball swing.'),
+      ex('Cable Tri Extension - Internal Rotation','💪',40,'triceps extension','','Single-arm: hold cable at opposite shoulder with elbow bent, rotate toward the cable and straighten the elbow across the body.'),
+      ex('Side Plank Right','↗️',50,'side plank','','Hold side plank on right forearm.'),
+      ex('Forearm Plank','🪵',60,'plank','','Hold body straight on forearms and toes, core tight.'),
+      ex('Finger Training','🤏',60,'','','Hang/grip holds for finger strength.'),
+      ex('Prone YTWL with Chin Tuck + Weight','🦅',50,'','','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades.'),
     ]},
 ];
 function defaultSecondstate(){
