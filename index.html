@@ -36,7 +36,7 @@ textarea{resize:vertical;min-height:60px}
 .header{padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
 .header h1{font-family:'Space Mono',monospace;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent)}
 .header .subtitle{font-size:12px;color:var(--text2);margin-left:auto;font-family:'Space Mono',monospace}
-.btn-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--surface2);transition:all .15s}
+.btn-icon{width:40px;height:40px;flex:0 0 40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--surface2);transition:all .15s}
 .btn-icon:hover{background:var(--surface3)}
 .btn-icon svg{width:20px;height:20px}
 
@@ -222,6 +222,9 @@ textarea{resize:vertical;min-height:60px}
     </button>
     <h1 id="detail-title">Training</h1>
     <span class="subtitle" id="detail-duration">0:00</span>
+    <button class="btn-icon" onclick="shareTraining()" title="Share">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+    </button>
     <button class="btn-icon" onclick="editTrainingName()" title="Edit">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </button>
@@ -331,7 +334,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.5'; 
+const APP_VERSION = '1.0.6'; 
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -362,16 +365,15 @@ if ('serviceWorker' in navigator) {
 
 // ─── State ────────────────────────────────────────────────────
 const LS_KEY = 'pulse_data';
-let state = load();
+let state;
 let currentTrainingId = null;
 let searchTimeout = null;
 
 // Player state
 let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, training:null };
 
-function defaultState(){
-  return { trainings:[
-    { id:uid(), name:'7 Minute Workout', restSeconds:10, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
+const BUILTIN_TRAININGS=[
+    { name:'7 Minute Workout', restSeconds:10, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
       ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
       ex('Wall Sit','🧱',30,'','images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
       ex('Push-ups','💪',30,'','images/push-ups.svg','Plank position, lower chest to floor, push up.'),
@@ -379,13 +381,13 @@ function defaultState(){
       ex('Step-ups','🪜',30,'','images/step-ups.svg','Step onto a chair alternating legs at a steady pace.'),
       ex('Squats','🦵',30,'','images/squats.svg','Feet shoulder-width apart, lower hips until thighs are parallel, push back up.'),
       ex('Triceps Dips','🪑',30,'','images/triceps-dips.svg','Hands on chair edge behind you, lower body by bending arms, push back up.'),
-      ex('Plank','🧘',30,'','images/plank.svg','Hold body straight on forearms and toes, core tight.'),
+      ex('Plank','🪵',30,'','images/plank.svg','Hold body straight on forearms and toes, core tight.'),
       ex('High Knees','🏃',30,'','images/high-knees.svg','Run in place, driving knees up to hip height alternately.'),
       ex('Lunges','🚶',30,'','images/lunges.svg','Step one foot forward, lower back knee toward floor, alternate legs.'),
       ex('Push-ups with Rotation','🔄',30,'','images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
       ex('Side Plank','↗️',30,'','images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
     ]},
-    { id:uid(), name:'7 Minute Workout (Advanced)', restSeconds:10, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
+    { name:'7 Minute Workout (Advanced)', restSeconds:10, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
       ex('Reverse Lunge with Rotation','🔀',30,'','','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
       ex('Lateral Pillar Bridge (Left)','↙️',30,'side plank','','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
       ex('Push-up to Row to Burpee','💥',60,'','','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
@@ -396,10 +398,10 @@ function defaultState(){
       ex('Lateral Lunge to Triceps Extension','💪',60,'','','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
       ex('Bent-Over Row','🚣',60,'bent over row','','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
-    { id:uid(), name:'Full Body Starter', restSeconds:8, exercises:[
+    { name:'Full Body Starter', restSeconds:8, exercises:[
       ex('Squats','🦵',30,'squats','','Stand, lower hips until thighs are parallel, push back up.'),
       ex('Push-ups','💪',30,'push-up','','Plank position, lower chest to floor, push up.'),
-      ex('Forearm Plank','🧘',30,'plank','','Hold body straight on forearms and toes.'),
+      ex('Forearm Plank','🪵',30,'plank','','Hold body straight on forearms and toes.'),
       ex('Step-ups','🪜',30,'step','','Step onto a chair/step, alternate legs.'),
       ex('Chair Dips','🪑',30,'dips','','Hands on chair edge, lower body by bending arms.'),
       ex('Crunches','🔥',30,'crunches','','Lie on back, curl shoulders toward pelvis.'),
@@ -410,23 +412,148 @@ function defaultState(){
       ex('Pull-ups','🏋️',30,'pull-up','','Hang from bar, pull chin above bar.'),
       ex('Side Plank Right','↗️',30,'side plank','','Hold side plank on right forearm.'),
     ]},
-  ], settings:{ restDefault:8, audioEnabled:true }, _wgerEnriched:false};
+];
+function defaultSecondstate(){
+  return { trainings: BUILTIN_TRAININGS.map(hydrateTraining), settings:{ restDefault:8, audioEnabled:true }, _wgerEnriched:false };
 }
-function ex(name,emoji,dur,hint,img,desc){ return {id:uid(),name,description:desc||'',imageUrl:img||'',emoji:emoji||'💪',durationSeconds:dur,_hint:img?'':hint||''}; }
+function ex(name,emoji,dur,hint,img,desc){ return {name,emoji,s:dur,description:desc,imageUrl:img,_hint:img?'':hint}; }
+function validateSharePayload(obj){
+  if(!obj || typeof obj!=='object' || !Array.isArray(obj.exercises)) throw new Error('Invalid training payload');
+  return obj;
+}
+let _pendingImport=null;
+// Show a confirmation modal with a quick overview before importing.
+function confirmImportTraining(payload){
+  try{ validateSharePayload(payload); }
+  catch(e){ toast(e.message||'Invalid training'); return; }
+  const t=hydrateTraining(payload);
+  const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
+  const mins=Math.floor(dur/60), secs=dur%60;
+  const list=t.exercises.map(e=>`<li style="margin:2px 0">${e.emoji} ${esc(e.name)} <span style="color:var(--text3)">· ${e.s}s</span></li>`).join('');
+  _pendingImport=t;
+  openModal('Import Training',`
+    <div style="font-weight:700;font-size:16px;margin-bottom:4px">${esc(t.name)}</div>
+    ${t.description?`<div style="color:var(--text3);font-size:13px;margin-bottom:8px">${esc(t.description)}</div>`:''}
+    <div style="color:var(--text2);font-size:13px;margin-bottom:8px">${t.exercises.length} exercises · ${mins}:${String(secs).padStart(2,'0')} total</div>
+    <ul style="margin:0 0 12px;padding-left:18px;font-size:13px;max-height:220px;overflow:auto">${list}</ul>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="cancelPendingImport()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="commitPendingImport()">Import</button>
+    </div>
+  `);
+}
+function cancelPendingImport(){ _pendingImport=null; closeModal(); if(location.hash.startsWith('#import=')) history.replaceState(null,'',location.pathname+location.search); }
+function commitPendingImport(){
+  const t=_pendingImport; if(!t) return;
+  _pendingImport=null;
+  closeModal();
+  state.trainings.push(t); save();
+  currentTrainingId=t.id;
+  toast('Imported: '+t.name);
+  location.hash='detail:'+t.id;
+}
+// Normalize a plain training (builtin, imported, or exported) → stored training with fresh ids.
+function hydrateTraining(t){
+  const defaultSeconds = Number.isFinite(t.defaultSeconds) ? t.defaultSeconds : 30;
+  return {
+    id: uid(),
+    name: String(t.name||'Untitled'),
+    description: t.description||'',
+    restSeconds: Number.isFinite(t.restSeconds)?t.restSeconds:8,
+    exercises: (t.exercises||[]).map(e=>{
+      const o={ id:uid(), name:String(e.name||''), description:e.description||'', imageUrl:e.imageUrl||'', emoji:e.emoji||'💪', s:Number.isFinite(e.s)?e.s:defaultSeconds };
+      if(e.restAfterSeconds!=null) o.restAfterSeconds=Number(e.restAfterSeconds);
+      if(e._hint) o._hint=e._hint;
+      return o;
+    }),
+  };
+}
+// Serialize a training to a compact payload (shared by share-link and JSON export).
+// Picks the most common exercise duration as `defaultSeconds`; exercises matching it omit `s`.
+function toSharePayload(t){
+  const counts={};
+  for(const e of t.exercises){ counts[e.s]=(counts[e.s]||0)+1; }
+  let defaultSeconds=null, best=0;
+  for(const k in counts){ if(counts[k]>best){ best=counts[k]; defaultSeconds=Number(k); } }
+  const p={ name:t.name, restSeconds:t.restSeconds };
+  if(t.description) p.description=t.description;
+  if(defaultSeconds!=null) p.defaultSeconds=defaultSeconds;
+  p.exercises=t.exercises.map(e=>{
+    const o={ name:e.name, emoji:e.emoji };
+    if(e.s!==defaultSeconds) o.s=e.s;
+    if(e.description) o.description=e.description;
+    if(e.imageUrl) o.imageUrl=e.imageUrl;
+    if(e.restAfterSeconds!=null) o.restAfterSeconds=e.restAfterSeconds;
+    return o;
+  });
+  return p;
+}
+function encodeShareUrl(t){
+  const json=JSON.stringify(toSharePayload(t));
+  const b64=btoa(unescape(encodeURIComponent(json))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return location.origin+location.pathname+'#import='+b64;
+}
+function decodeSharePayload(s){
+  const b64=s.replace(/-/g,'+').replace(/_/g,'/');
+  const json=decodeURIComponent(escape(atob(b64)));
+  return JSON.parse(json);
+}
+async function shareTraining(){
+  const t=getTraining(); if(!t) return;
+  const url=encodeShareUrl(t);
+  try{
+    if(navigator.share){ await navigator.share({title:t.name,url}); }
+    else{ await navigator.clipboard.writeText(url); toast('Link copied'); }
+  }catch(e){ /* user cancelled */ }
+}
+function exportTraining(){
+  const t=getTraining(); if(!t) return;
+  const blob=new Blob([JSON.stringify(toSharePayload(t),null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(t.name||'training').replace(/[^a-z0-9-_ ]/gi,'_')+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 function uid(){ return Math.random().toString(36).slice(2,10); }
-function load(){ try{const d=localStorage.getItem(LS_KEY);return d?JSON.parse(d):defaultState();}catch(e){return defaultState();} }
+function load(){
+  try{
+    const d=localStorage.getItem(LS_KEY);
+    if(!d) return defaultSecondstate();
+    const parsed=JSON.parse(d);
+    // Defensive: ensure every exercise has a numeric `s` so the UI never shows NaN
+    for(const t of parsed.trainings||[]){
+      for(const e of t.exercises||[]){ if(!Number.isFinite(e.s)) e.s=Number.isFinite(e.durationSeconds)?e.durationSeconds:30; }
+    }
+    return parsed;
+  }catch(e){ return defaultSecondstate(); }
+}
+state = load();
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
 function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000); }
 function getRestAfter(e,t){ return (e.restAfterSeconds!=null)?e.restAfterSeconds:(t.restSeconds!=null?t.restSeconds:8); }
 
 // ─── Navigation ───────────────────────────────────────────────
 function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active'); }
-function goHome(){ location.hash='home'; }
+function goHome(){
+  if(location.hash&&location.hash!=='#'){
+    history.pushState(null,'',location.pathname+location.search);
+    routeHash();
+  }
+}
 function goDetail(){ location.hash='detail:'+currentTrainingId; }
 
 window.addEventListener('hashchange',()=>routeHash());
 function routeHash(){
   const h=location.hash.slice(1);
+  if(h.startsWith('import=')){
+    try{
+      const payload=decodeSharePayload(h.slice(7));
+      history.replaceState(null,'',location.pathname+location.search); showView('view-home'); renderHome();
+      confirmImportTraining(payload);
+    }catch(e){ toast('Invalid share link'); history.replaceState(null,'',location.pathname+location.search); return routeHash(); }
+    return;
+  }
   if(!h||h==='home'){ showView('view-home'); renderHome(); }
   else if(h.startsWith('detail:')){
     currentTrainingId=h.slice(7);
@@ -442,7 +569,7 @@ function renderHome(){
   const c=document.getElementById('home-list');
   if(!state.trainings.length){ c.innerHTML='<div class="empty-state"><div class="icon">🏋️</div><p>No trainings yet.<br>Tap + to create one.</p></div>'; return; }
   c.innerHTML=state.trainings.map(t=>{
-    const dur=t.exercises.reduce((s,e,i)=>s+e.durationSeconds+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
+    const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
     const mins=Math.floor(dur/60), secs=dur%60;
     const ago=t.lastCompleted?timeAgo(t.lastCompleted):'';
     return `<div class="card training-card" onclick="openTraining('${t.id}')">
@@ -468,7 +595,7 @@ function getTraining(){ return state.trainings.find(t=>t.id===currentTrainingId)
 function renderDetail(){
   const t=getTraining(); if(!t)return goHome();
   document.getElementById('detail-title').textContent=t.name;
-  const dur=t.exercises.reduce((s,e,i)=>s+e.durationSeconds+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
+  const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
   const mins=Math.floor(dur/60), secs=dur%60;
   document.getElementById('detail-duration').textContent=`${mins}:${String(secs).padStart(2,'0')}`;
   const descEl=document.getElementById('detail-desc');
@@ -480,7 +607,7 @@ function renderDetail(){
     const thumb=e.imageUrl?`<img src="${esc(e.imageUrl)}" alt="" loading="lazy" class="${isWger?'wger-img':''}">`:(e.emoji||'💪');
     return `<div class="card exercise-card" data-idx="${i}">
       <div class="thumb">${thumb}</div>
-      <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button>${e.durationSeconds}s<button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
+      <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button>${e.s}s<button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
       <div class="ex-actions">
         <button onclick="dupExercise(${i})" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
         <button onclick="editExercise(${i})" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -501,6 +628,10 @@ function editTrainingName(){
       <button class="btn btn-primary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="saveTrainingEdit()">Save</button>
       <button class="btn btn-secondary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="dupTraining()">Duplicate</button>
       <button class="btn btn-danger" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="deleteTraining()">Delete</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-secondary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="shareTraining()">Share Link</button>
+      <button class="btn btn-secondary" style="flex:1;padding:12px;border-radius:var(--radius-sm);font-weight:700" onclick="exportTraining()">Export JSON</button>
     </div>
   `);
 }
@@ -530,7 +661,7 @@ function editExercise(i){
       <div id="ed-wger-status" style="font-size:12px;color:var(--text3);margin-top:4px;min-height:16px"></div>
     </div>
     <div style="display:flex;gap:12px">
-      <div class="field" style="flex:1"><label>Duration</label><div class="dur-input"><input id="ed-edur" type="number" value="${e.durationSeconds}" min="5" max="600"><span>s</span></div></div>
+      <div class="field" style="flex:1"><label>Duration</label><div class="dur-input"><input id="ed-edur" type="number" value="${e.s}" min="5" max="600"><span>s</span></div></div>
       <div class="field" style="flex:1"><label>Rest after</label><div class="dur-input"><input id="ed-erest" type="number" value="${e.restAfterSeconds!=null?e.restAfterSeconds:''}" min="0" max="300" placeholder="${t.restSeconds}"><span>s</span></div></div>
     </div>
     <button class="btn btn-primary" style="width:100%;padding:14px;border-radius:var(--radius-sm);font-weight:700;margin-top:4px" onclick="saveExerciseEdit(${i})">Save</button>
@@ -556,14 +687,14 @@ function saveExerciseEdit(i){
   e.name=document.getElementById('ed-ename').value||e.name;
   e.description=document.getElementById('ed-edesc').value;
   e.imageUrl=document.getElementById('ed-eimg').value;
-  e.durationSeconds=parseInt(document.getElementById('ed-edur').value)||30;
+  e.s=parseInt(document.getElementById('ed-edur').value)||30;
   const rv=document.getElementById('ed-erest').value;
   e.restAfterSeconds=rv!==''?parseInt(rv):null;
   save(); closeModal(); renderDetail();
 }
 
 // Adjust duration inline
-function adjDur(i,delta){ const t=getTraining(),e=t.exercises[i];e.durationSeconds=Math.max(5,e.durationSeconds+delta);save();renderDetail(); }
+function adjDur(i,delta){ const t=getTraining(),e=t.exercises[i];e.s=Math.max(5,e.s+delta);save();renderDetail(); }
 
 // Duplicate exercise
 function dupExercise(i){ const t=getTraining(),e=t.exercises[i];const c=JSON.parse(JSON.stringify(e));c.id=uid();t.exercises.splice(i+1,0,c);save();renderDetail(); }
@@ -824,7 +955,7 @@ function pickWgerResult(idx){
     imageUrl:wgerImg((e.images&&e.images[0])?e.images[0].image:''),
   };
   const t=getTraining(); if(!t)return;
-  t.exercises.push({id:uid(),name:data.name,description:data.description,imageUrl:data.imageUrl,emoji:'🏋️',durationSeconds:30});
+  t.exercises.push({id:uid(),name:data.name,description:data.description,imageUrl:data.imageUrl,emoji:'🏋️',s:30});
   save(); toast('Added: '+data.name); goDetail();
 }
 
@@ -832,7 +963,7 @@ function addManualExercise(){
   const t=getTraining(); if(!t)return;
   const name=document.getElementById('man-name').value.trim();
   if(!name){toast('Name is required');return;}
-  t.exercises.push({id:uid(),name,description:document.getElementById('man-desc').value,imageUrl:document.getElementById('man-img').value,emoji:'💪',durationSeconds:parseInt(document.getElementById('man-dur').value)||30});
+  t.exercises.push({id:uid(),name,description:document.getElementById('man-desc').value,imageUrl:document.getElementById('man-img').value,emoji:'💪',s:parseInt(document.getElementById('man-dur').value)||30});
   save(); toast('Added: '+name);
   document.getElementById('man-name').value=''; document.getElementById('man-desc').value=''; document.getElementById('man-img').value='';
   goDetail();
@@ -859,7 +990,7 @@ function countdown(n,cb){
 
 function beginExercise(){
   const e=pl.training.exercises[pl.exerciseIdx];
-  pl.isRest=false; pl.secondsLeft=e.durationSeconds; pl.running=true;
+  pl.isRest=false; pl.secondsLeft=e.s; pl.running=true;
   pl_shownId=null;
   document.getElementById('pl-upnext').classList.replace('visible','out');
   renderPlayer(); startTick();
@@ -910,7 +1041,7 @@ function renderPlayer(){
   renderPlayerExercise();
   document.getElementById('pl-timer').textContent = pl.secondsLeft;
   document.getElementById('pl-timer').className = 'player-timer' + (pl.isRest ? ' rest-time' : '');
-  const maxDur = pl.isRest ? getRestAfter(e, pl.training) : e.durationSeconds;
+  const maxDur = pl.isRest ? getRestAfter(e, pl.training) : e.s;
   const pct = ((maxDur - pl.secondsLeft) / maxDur) * 100;
   const bar = document.getElementById('pl-bar');
   bar.style.width = pct + '%'; bar.className = 'player-progress-bar' + (pl.isRest ? ' resting' : '');
@@ -923,7 +1054,7 @@ function startTick(){
   pl.timer=setInterval(()=>{
     if(!pl.running)return;
     pl.secondsLeft--;
-    if(!pl.isRest){const e=pl.training.exercises[pl.exerciseIdx];if(pl.secondsLeft===Math.floor(e.durationSeconds/2))beep(80);}
+    if(!pl.isRest){const e=pl.training.exercises[pl.exerciseIdx];if(pl.secondsLeft===Math.floor(e.s/2))beep(80);}
     if(pl.secondsLeft<=3&&pl.secondsLeft>0)beep(200);
     if(pl.secondsLeft<=0){
       beep(600);
@@ -1019,12 +1150,20 @@ function importData(ev){
   const file=ev.target.files[0]; if(!file)return;
   const r=new FileReader();
   r.onload=function(){
-    try{const d=JSON.parse(r.result);if(d.trainings){state=d;save();closeModal();goHome();toast('Imported!');}}
-    catch(e){toast('Invalid file');}
+    try{
+      const d=JSON.parse(r.result);
+      // Legacy full-state backup: { trainings:[...], settings:{...} }
+      if(d&&Array.isArray(d.trainings)){
+        state=d; save(); closeModal(); goHome(); toast('Imported!'); return;
+      }
+      // Otherwise treat as a single-training share/export payload
+      confirmImportTraining(d);
+    }
+    catch(e){ toast(e.message||'Invalid file'); }
   };
   r.readAsText(file);
 }
-function resetAll(){if(!confirm('Delete all data?'))return;state=defaultState();save();closeModal();goHome();toast('Reset!');}
+function resetAll(){if(!confirm('Delete all data?'))return;state=defaultSecondstate();save();closeModal();goHome();renderHome();toast('Reset!');}
 
 function checkForUpdate(){
   if(_swWaiting){
@@ -1097,7 +1236,6 @@ async function enrichFromWger(){
   }catch(e){/* offline or blocked */}
   renderHome();
 }
-if(!location.hash||location.hash==='#')location.hash='home';
 routeHash();
 renderHome();
 enrichFromWger();
