@@ -53,3 +53,7 @@ git config core.hooksPath hooks
 ## Screen wake lock
 
 Uses the [Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API) to keep the screen on while a workout is running. Supported in Chrome/Edge/Safari 16.4+. Falls back silently on unsupported browsers. Requires HTTPS (or localhost).
+
+## Todo
+- Remove the full-state backup -> only export trainings -> better merging.
+- Should we update default trainings? How implement that simple?

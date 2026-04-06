@@ -1,0 +1,13 @@
+{
+  "name": "workout-pulse-tests",
+  "private": true,
+  "scripts": {
+    "test": "bunx playwright test",
+    "test:headed": "bunx playwright test --headed",
+    "test:ui": "bunx playwright test --ui",
+    "install-browsers": "bunx playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
