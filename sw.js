@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pulse-v14';
+const CACHE_NAME = 'pulse-v15';
 const ASSETS = [
   './',
   './index.html',
