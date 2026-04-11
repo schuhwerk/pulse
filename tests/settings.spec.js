@@ -2,18 +2,23 @@
 import { test, expect, seedState, makeState } from './fixtures.js';
 
 test.describe('settings', () => {
-  test('toggle audio persists across reload', async ({ page }) => {
+  test('audio volume persists across reload', async ({ page }) => {
     await seedState(page, makeState());
     await page.goto('/index.html');
     await page.locator('button[title="Settings"]').click();
 
-    await expect(page.locator('.setting-row').first()).toContainText('Enabled');
-    await page.getByRole('button', { name: 'Enabled' }).click();
-    await expect(page.locator('.setting-row').first()).toContainText('Disabled');
+    // Default audioVolume (0.6) → slider at 60.
+    await expect(page.locator('#vol-slider')).toHaveValue('60');
+
+    // Mute: set slider to 0 and fire oninput to trigger save.
+    await page.locator('#vol-slider').evaluate(el => {
+      el.value = '0';
+      el.dispatchEvent(new Event('input'));
+    });
 
     await page.reload();
     await page.locator('button[title="Settings"]').click();
-    await expect(page.locator('.setting-row').first()).toContainText('Disabled');
+    await expect(page.locator('#vol-slider')).toHaveValue('0');
   });
 
   test('reset all restores builtins', async ({ page }) => {

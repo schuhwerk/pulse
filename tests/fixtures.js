@@ -15,7 +15,7 @@ export const test = base.extend({
 
       // Silence audio — the player calls new AudioContext() for beeps.
       // @ts-ignore
-      window.AudioContext = class { createOscillator(){return{connect(){},start(){},stop(){},frequency:{value:0}};} createGain(){return{connect(){},gain:{value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}}};} get destination(){return{};} get currentTime(){return 0;} close(){} };
+      window.AudioContext = class { constructor(){ this.state='suspended'; } createOscillator(){return{connect(){},start(){},stop(){},frequency:{value:0},onended:null};} createGain(){return{connect(){},gain:{value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}}};} get destination(){return{};} get currentTime(){return 0;} close(){return Promise.resolve();} suspend(){return Promise.resolve();} resume(){return Promise.resolve();} };
       // @ts-ignore
       window.webkitAudioContext = window.AudioContext;
 
@@ -66,7 +66,7 @@ export function makeTraining(overrides = {}) {
 }
 
 export function makeState(trainings = [makeTraining()]) {
-  return { trainings, settings: { restDefault: 8, audioEnabled: true }, _wgerEnriched: true };
+  return { trainings, settings: { restDefault: 8, audioEnabled: true } };
 }
 
 export { expect };
