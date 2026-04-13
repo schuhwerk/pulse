@@ -9,10 +9,17 @@ import { test as base, expect } from '@playwright/test';
 export const test = base.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(() => {
-      // Fresh Playwright context already gives an empty localStorage — do not
-      // clear here, because addInitScript runs on every navigation including
-      // page.reload(), which would wipe state the test just wrote.
-
+      window['__DISABLE_SERVICE_WORKER__'] = true;
+      window['__preInit'] = { ls: localStorage.getItem('pulse_data'), ss: sessionStorage.getItem('__pw_init') };
+      // window.name is empty when a new tab opens (even with a persistent Chromium
+      // profile), but survives page.reload() within the same tab.  Use it as a
+      // once-per-tab guard: clear localStorage on the first navigation so stale data
+      // from previous runs never bleeds into a test; skip on reload so in-test
+      // mutations (e.g. volume change) persist across the reload.
+      if (!sessionStorage.getItem('__pw_init')) {
+        sessionStorage.setItem('__pw_init', '1');
+        localStorage.clear();
+      }
       // Silence audio — the player calls new AudioContext() for beeps.
       // @ts-ignore
       window.AudioContext = class { constructor(){ this.state='suspended'; } createOscillator(){return{connect(){},start(){},stop(){},frequency:{value:0},onended:null};} createGain(){return{connect(){},gain:{value:0,setValueAtTime(){},exponentialRampToValueAtTime(){}}};} get destination(){return{};} get currentTime(){return 0;} close(){return Promise.resolve();} suspend(){return Promise.resolve();} resume(){return Promise.resolve();} };

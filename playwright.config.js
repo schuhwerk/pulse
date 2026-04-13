@@ -5,6 +5,7 @@ export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
   retries: 0,
+  timeout: 5000,
   // AI-friendly output: `dot` prints one char per test, full detail only on
   // failures. No HTML report, no traces, no screenshots — a clean run is
   // ~5 lines total, small enough to paste into a chat without truncation.
@@ -17,6 +18,9 @@ export default defineConfig({
     trace: 'off',
     screenshot: 'off',
     video: 'off',
+    // Guarantee empty localStorage/sessionStorage at the start of every test,
+    // even when Playwright reuses a persistent browser profile between runs.
+    storageState: { cookies: [], origins: [] },
   },
   webServer: {
     // `bun` has no single-line built-in static server, and adding a JS server

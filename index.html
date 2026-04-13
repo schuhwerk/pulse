@@ -198,6 +198,12 @@ textarea{resize:vertical;min-height:60px}
 .setting-row:last-child{border:none}
 .setting-label{font-size:15px}
 .setting-label small{display:block;color:var(--text2);font-size:12px;margin-top:2px}
+.toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;border-radius:12px;background:rgba(255,255,255,.18);cursor:pointer;transition:background .2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle input:checked+.toggle-slider{background:var(--accent)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
 
 /* Inline tag */
 .tag{display:inline-block;background:var(--surface3);color:var(--text2);font-size:11px;padding:2px 6px;border-radius:4px;font-family:'Space Mono',monospace;vertical-align:middle;margin-left:4px}
@@ -350,23 +356,20 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.16'; 
+const APP_VERSION = '1.0.17';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && window.__DISABLE_SERVICE_WORKER__ !== true) {
   navigator.serviceWorker.register('./sw.js').then(reg => {
     // Check if there's already a waiting worker
-    if (reg.waiting) _swWaiting = reg.waiting;
+    if (reg.waiting) handleSwWaiting(reg.waiting);
 
     reg.addEventListener('updatefound', () => {
       const newSW = reg.installing;
       newSW.addEventListener('statechange', () => {
         if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-          _swWaiting = newSW;
-          toast('New version available!');
-          // Re-render settings if open
-          if (document.getElementById('modal').classList.contains('open')) openSettings();
+          handleSwWaiting(newSW);
         }
       });
     });
@@ -389,7 +392,7 @@ let searchTimeout = null;
 let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, training:null };
 
 const BUILTIN_TRAININGS=[
-    { name:'7 Minute Workout', restSeconds:7, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
+    { builtinId:'7min', name:'7 Minute Workout', restSeconds:7, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
       ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
       ex('Wall Sit','🧱',30,'','images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
       ex('Push-ups','💪',30,'','images/push-ups.svg','Plank position, lower chest to floor, push up.'),
@@ -403,7 +406,7 @@ const BUILTIN_TRAININGS=[
       ex('Push-ups with Rotation','🔄',30,'','images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
       ex('Side Plank','↗️',30,'','images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
     ]},
-    { name:'7 Minute Workout (Advanced)', restSeconds:5, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
+    { builtinId:'7min-adv', name:'7 Minute Workout (Advanced)', restSeconds:5, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
       ex('Reverse Lunge with Rotation','🔀',30,'','','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
       ex('Lateral Pillar Bridge (Left)','↙️',30,'side plank','','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
       ex('Push-up to Row to Burpee','💥',60,'','','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
@@ -414,7 +417,7 @@ const BUILTIN_TRAININGS=[
       ex('Lateral Lunge to Triceps Extension','💪',60,'','','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
       ex('Bent-Over Row','🚣',60,'bent over row','','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
-    { name:'Vitus 2026', restSeconds:15, description:'Prepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Band on Door + Hip\n- 1kg weights (bottles?)', exercises:[
+    { builtinId:'vitus-2026', name:'Vitus 2026', restSeconds:15, description:'Prepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Band on Door + Hip\n- 1kg weights (bottles?)', exercises:[
       ex('Pistol Squat','🦵',40,'pistol squat','','Single-leg squat: extend one leg forward and lower into a full squat on the other leg, then drive back up. Optional load: dumbbell or kettlebell at chest.'),
       ex('Push-ups','🙇',50,'push-up','','Plank position, lower chest to floor, push up.'),
       ex('Prone YTWL with Chin Tuck','🦅',40,'','','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
@@ -436,7 +439,7 @@ const BUILTIN_TRAININGS=[
     ]},
 ];
 function defaultSecondstate(){
-  return { trainings: BUILTIN_TRAININGS.map(hydrateTraining), settings:{ restDefault:8, audioEnabled:true } };
+  return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ restDefault:8, audioEnabled:true, autoUpdate:true }, version: APP_VERSION };
 }
 function ex(name,emoji,dur,hint,img,desc){ return {name,emoji,s:dur,description:desc,imageUrl:img}; }
 function validateSharePayload(obj){
@@ -511,6 +514,8 @@ function hydrateTraining(t){
     }),
   };
 }
+function builtinFingerprint(t){ return JSON.stringify(t); }
+function hydrateBuiltin(t){ const h=hydrateTraining(t); h.builtinId=t.builtinId; h.builtinHash=builtinFingerprint(t); return h; }
 // Serialize a training to a compact payload (shared by share-link and JSON export).
 // Picks the most common exercise duration as `defaultSeconds`; exercises matching it omit `s`.
 function toSharePayload(t){
@@ -569,12 +574,51 @@ function load(){
       for(const e of t.exercises||[]){ if(!Number.isFinite(e.s)) e.s=Number.isFinite(e.durationSeconds)?e.durationSeconds:30; }
     }
     return parsed;
-  }catch(e){ return defaultSecondstate(); }
+  }catch(e){ console.error('LOAD ERROR', e); return defaultSecondstate(); }
 }
 state = load();
+const _pendingUpdate = onVersionChange();
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
 function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000); }
 function getRestAfter(e,t){ return (e.restAfterSeconds!=null)?e.restAfterSeconds:(t.restSeconds!=null?t.restSeconds:8); }
+function autoUpdateEnabled(){ return state.settings.autoUpdate !== false; }
+function onVersionChange(){
+  if(state.version === APP_VERSION) return null;
+  window.__ovc = [];
+  const changed = BUILTIN_TRAININGS.filter(b => {
+    const stored = state.trainings.find(t => t.builtinId === b.builtinId);
+    const fp = builtinFingerprint(b);
+    window.__ovc.push({ builtinId: b.builtinId, found: !!stored, hash: stored?.builtinHash, fpSlice: fp.slice(0,20), eq: stored?.builtinHash === fp });
+    return stored && stored.builtinHash && stored.builtinHash !== fp;
+  });
+  state.version = APP_VERSION; save();
+  window.__ovcLen = changed.length;
+  return changed.length ? changed : null;
+}
+let _pendingBuiltinUpdates = null;
+function promptBuiltinUpdate(changed){
+  _pendingBuiltinUpdates = changed;
+  const names = changed.map(b=>`<li style="margin:2px 0">${esc(b.name)}</li>`).join('');
+  openModal('Built-in trainings updated',`
+    <div style="color:var(--text2);font-size:13px;margin-bottom:8px">These default trainings changed in v${APP_VERSION}:</div>
+    <ul style="margin:0 0 12px;padding-left:18px;font-size:13px">${names}</ul>
+    <div style="color:var(--text2);font-size:13px;margin-bottom:12px">Replace your copies with the updated versions?</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeBuiltinUpdateModal()">Keep mine</button>
+      <button class="btn btn-primary" onclick="applyBuiltinUpdates()">Update</button>
+    </div>
+  `);
+}
+function closeBuiltinUpdateModal(){ _pendingBuiltinUpdates=null; closeModal(); }
+function applyBuiltinUpdates(){
+  if(!_pendingBuiltinUpdates) return;
+  _pendingBuiltinUpdates.forEach(b=>{
+    const idx=state.trainings.findIndex(t=>t.builtinId===b.builtinId);
+    if(idx>=0) state.trainings[idx]=hydrateBuiltin(b);
+  });
+  _pendingBuiltinUpdates=null;
+  save(); closeModal(); renderHome(); toast('Trainings updated!');
+}
 
 // ─── Navigation ───────────────────────────────────────────────
 function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active'); }
@@ -1213,6 +1257,14 @@ function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&pl.running)requestWakeLock();});
 
 // ─── Settings / Import / Export ───────────────────────────────
+function handleSwWaiting(sw){
+  _swWaiting = sw;
+  if(autoUpdateEnabled()){ applySwUpdate(); return; }
+  toast('New version available!');
+  if(document.getElementById('modal').classList.contains('open')) openSettings();
+}
+function applySwUpdate(){ if(!_swWaiting) return; _swWaiting.postMessage({type:'SKIP_WAITING'}); toast('Updating…'); }
+function setAutoUpdate(v){ state.settings.autoUpdate=v; save(); }
 function setVolume(v,preview){const n=Number(v);state.settings.audioVolume=n/100;save();const el=document.getElementById('vol-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)beep(160,880);}
 function setSpeechVolume(v,preview){const n=Number(v);state.settings.speechVolume=n/100;save();const el=document.getElementById('speech-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)say('Test');}
 function openSettings(){
@@ -1224,6 +1276,7 @@ function openSettings(){
     <div class="setting-row"><div class="setting-label">Export Data<small>Download all trainings as JSON</small></div><button class="btn btn-secondary" onclick="exportData()">Export</button></div>
     <div class="setting-row"><div class="setting-label">Import Data<small>Load trainings from JSON file</small></div><button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
     <div class="setting-row"><div class="setting-label">Reset All<small>Delete everything and start fresh</small></div><button class="btn btn-danger" onclick="resetAll()">Reset</button></div>
+    <div class="setting-row"><div class="setting-label">Auto-update<small>Apply app updates automatically on startup</small></div><label class="toggle"><input type="checkbox" ${autoUpdateEnabled()?'checked':''} onchange="setAutoUpdate(this.checked)"><span class="toggle-slider"></span></label></div>
     <div class="setting-row"><div class="setting-label">Version<small>v${APP_VERSION}</small></div><button class="btn ${_swWaiting?'btn-primary':'btn-secondary'}" onclick="checkForUpdate()">${_swWaiting?'Update now':'Check for update'}</button></div>
     <div style="padding:18px 0 4px;text-align:center;color:var(--text2);font-size:13px;line-height:1.7">
       <strong style="color:var(--text);font-size:15px;letter-spacing:.03em">PULSE</strong><br>
@@ -1262,18 +1315,14 @@ function importData(ev){
 function resetAll(){if(!confirm('Delete all data?'))return;state=defaultSecondstate();save();closeModal();goHome();renderHome();toast('Reset!');}
 
 function checkForUpdate(){
-  if(_swWaiting){
-    _swWaiting.postMessage({type:'SKIP_WAITING'});
-    toast('Updating…');
-    return;
-  }
+  if(_swWaiting){ applySwUpdate(); return; }
   if(!('serviceWorker' in navigator)){toast('Not supported');return;}
   navigator.serviceWorker.getRegistration().then(reg=>{
     if(!reg){toast('No service worker');return;}
     toast('Checking…');
     reg.update().then(()=>{
       // If a waiting worker appeared immediately
-      if(reg.waiting){_swWaiting=reg.waiting;openSettings();return;}
+      if(reg.waiting){handleSwWaiting(reg.waiting);if(!autoUpdateEnabled())openSettings();return;}
       // If a new worker is installing, wait for it
       if(reg.installing){
         waitForInstalled(reg.installing);return;
@@ -1288,7 +1337,10 @@ function checkForUpdate(){
 }
 function waitForInstalled(sw){
   sw.addEventListener('statechange',()=>{
-    if(sw.state==='installed'){_swWaiting=sw;openSettings();toast('Update ready!');}
+    if(sw.state==='installed'){
+      handleSwWaiting(sw);
+      if(!autoUpdateEnabled()){openSettings();toast('Update ready!');}
+    }
   });
 }
 
@@ -1305,6 +1357,8 @@ function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger
 // ─── Init ─────────────────────────────────────────────────────
 routeHash();
 renderHome();
+if (_pendingUpdate) promptBuiltinUpdate(_pendingUpdate);
+window._pulse = { getState: () => state };
 </script>
 </body>
 </html>

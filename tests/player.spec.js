@@ -13,6 +13,7 @@ test.describe('player', () => {
   });
 
   test('runs full cycle: exercise → rest → exercise → done', async ({ page }) => {
+    test.slow();
     await page.locator('.play-fab').click();
     await expect(page.locator('#view-player.active')).toBeVisible();
     await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
