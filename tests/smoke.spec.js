@@ -35,10 +35,10 @@ test.describe('smoke: create → play → finish', () => {
     // Back on detail — exercise visible.
     await expect(page.locator('.exercise-card', { hasText: 'Jumping Jacks' })).toBeVisible();
 
-    // Start player. On localhost the intro countdown is skipped (see
-    // startPlayer in index.html), so we only assert the player view shows up.
+    // Start player — opens in a 5s GET READY prepause, showing the upcoming exercise.
     await page.locator('.play-fab').click();
     await expect(page.locator('#view-player.active')).toBeVisible();
+    await expect(page.locator('#pl-phase')).toHaveText('GET READY');
   });
 
   test('localStorage persists across reload', async ({ page }) => {

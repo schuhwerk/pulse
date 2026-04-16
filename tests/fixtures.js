@@ -1,5 +1,17 @@
 // @ts-check
 import { test as base, expect } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
+
+/**
+ * Read the live APP_VERSION string out of index.html so tests that care about
+ * version behavior stay in sync with the pre-commit auto-bumped value instead
+ * of a hardcoded literal that breaks on every version bump.
+ */
+const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const m = indexHtml.match(/APP_VERSION\s*=\s*'([^']+)'/);
+if (!m) throw new Error('Could not find APP_VERSION in index.html');
+export const APP_VERSION = m[1];
 
 /**
  * Shared fixture: opens index.html with a clean localStorage, stubs out

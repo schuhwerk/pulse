@@ -1,0 +1,18 @@
+{
+  "words": [
+    "wger", "upnext", "ename", "edesc", "eimg", "edur", "erest", "schuhwerk", "kettlebell",
+    "HIIT", "Burpee", "Burpees", "Deadlift", "YTWL", "tname", "trest", "Feeel",
+    "Prepause", "PREPAUSE", "mult", "svol", "tdesc", "Secondstate", "backgrounded",
+    "beforeinstallprompt", "appinstalled", "autolink", "wgerImg", "wgerTr", "wgerDesc",
+    "wgerLang", "autoEnrich", "autoUpdate", "lastCompleted", "restAfterSeconds",
+    "restDefault", "restSeconds", "exerciseIdx", "playerToggle", "playerNext", "playerPrev",
+    "finishWorkout", "exitPlayer", "openSettings", "openModal", "closeModal", "renderPlayer",
+    "renderPlayerExercise", "renderDetail", "renderHome", "renderLangToggle",
+    "beginExercise", "beginRest", "beginPrepause", "adjDur", "dupExercise", "dupTraining",
+    "editExercise", "removeExercise", "pickEnhanceResult", "enhanceExerciseFromWger",
+    "confirmImportTraining", "confirmFullImport", "exportTraining", "shareTraining",
+    "encodeShareUrl", "decodeSharePayload", "goDetail", "goHome", "getTraining",
+    "hydrateBuiltin", "defaultSecondstate", "routeHash", "showView", "currentTrainingId",
+    "BUILTIN_TRAININGS", "APP_VERSION"
+  ]
+}

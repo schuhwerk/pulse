@@ -208,12 +208,6 @@ textarea{resize:vertical;min-height:60px}
 /* Inline tag */
 .tag{display:inline-block;background:var(--surface3);color:var(--text2);font-size:11px;padding:2px 6px;border-radius:4px;font-family:'Space Mono',monospace;vertical-align:middle;margin-left:4px}
 
-/* Countdown overlay */
-.countdown-overlay{position:fixed;inset:0;background:var(--bg);z-index:150;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.countdown-overlay .number{font-family:'Space Mono',monospace;font-size:120px;font-weight:700;color:var(--accent);animation:pulse .6s ease-in-out infinite alternate}
-.countdown-overlay .label{font-size:14px;color:var(--text2);margin-top:10px;letter-spacing:2px;text-transform:uppercase}
-@keyframes pulse{from{transform:scale(1);opacity:1}to{transform:scale(1.15);opacity:.7}}
-
 /* Tabs */
 .tabs{display:flex;gap:6px;margin-bottom:16px}
 .tab{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;color:var(--text2);background:var(--surface);transition:all .15s;cursor:pointer}
@@ -304,8 +298,11 @@ textarea{resize:vertical;min-height:60px}
 <div id="view-player" class="view">
   <div class="player" id="player-area">
     <div class="player-top">
-      <button class="btn-icon" onclick="exitPlayer()" style="background:var(--surface2)">
+      <button class="btn-icon" onclick="exitPlayer()" style="background:var(--surface2)" aria-label="Exit workout">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <button class="btn-icon" onclick="openSettings()" style="background:var(--surface2)" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33h0a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51h0a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v0a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       </button>
     </div>
     <div class="player-top-zone">
@@ -339,12 +336,6 @@ textarea{resize:vertical;min-height:60px}
   </div>
 </div>
 
-<!-- COUNTDOWN OVERLAY -->
-<div class="countdown-overlay" id="countdown" style="display:none">
-  <div class="number" id="cd-num">3</div>
-  <div class="label">Get Ready</div>
-</div>
-
 <!-- MODAL: Edit Exercise Duration / Settings -->
 <div class="modal-overlay" id="modal" onclick="event.target===this&&closeModal()">
   <div class="modal">
@@ -359,7 +350,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.18';
+const APP_VERSION = '1.0.19';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -392,8 +383,10 @@ let currentTrainingId = null;
 let searchTimeout = null;
 
 // Player state
-let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, training:null };
+let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, isPrepause:false, training:null };
+const PREPAUSE_SECONDS = 5;
 
+// ─── BUILTIN_TRAININGS (data, skip to `// ─── State / end-builtins`) ───
 const BUILTIN_TRAININGS=[
     { builtinId:'7min', name:'7 Minute Workout', restSeconds:7, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
       ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
@@ -441,6 +434,7 @@ const BUILTIN_TRAININGS=[
       ex('Prone YTWL with Chin Tuck + Weight','🦅',50,'','','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades.'),
     ]},
 ];
+// ─── State / end-builtins ─────────────────────────────────────
 function defaultSecondstate(){
   return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ restDefault:8, audioEnabled:true, autoUpdate:true }, version: APP_VERSION };
 }
@@ -692,7 +686,7 @@ function renderDetail(){
   if(t.description){descEl.innerHTML=autolink(t.description);descEl.style.display='';}else{descEl.style.display='none';}
   const c=document.getElementById('detail-exercises');
   if(!t.exercises.length){ c.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No exercises yet.<br>Tap + to add some.</p></div>'; return; }
-  c.innerHTML=`<div class="reorder-hint">long-press to reorder</div>`+t.exercises.map((e,i)=>{
+  c.innerHTML=`<div class="reorder-hint">tap to edit · long-press to reorder</div>`+t.exercises.map((e,i)=>{
     const isWger=e.imageUrl&&e.imageUrl.includes('wger.de');
     const thumb=e.imageUrl?`<img src="${esc(e.imageUrl)}" alt="" loading="lazy" class="${isWger?'wger-img':''}">`:(e.emoji||'💪');
     return `<div class="card exercise-card" data-idx="${i}">
@@ -827,7 +821,7 @@ function timeAgo(ts){
 }
 
 // ─── Reorder (touch + mouse) ──────────────────────────────────
-let drag={active:false,timer:null,idx:null,ghost:null,startY:0,startX:0,cards:[],overIdx:null,card:null,decided:false};
+let drag={active:false,timer:null,idx:null,ghost:null,startY:0,startX:0,cards:[],overIdx:null,card:null,decided:false,blockClick:false};
 const CONTAINER_ID='detail-exercises';
 function initTouchReorder(){
   const c=document.getElementById(CONTAINER_ID);
@@ -836,11 +830,20 @@ function initTouchReorder(){
   c.removeEventListener('touchend',drEndT);
   c.removeEventListener('touchcancel',drEndT);
   c.removeEventListener('mousedown',drStartM);
+  c.removeEventListener('click',drCardClick);
   c.addEventListener('touchstart',drStart,{passive:false});
   c.addEventListener('touchmove',drMoveT,{passive:false});
   c.addEventListener('touchend',drEndT,{passive:false});
   c.addEventListener('touchcancel',drEndT,{passive:false});
   c.addEventListener('mousedown',drStartM);
+  c.addEventListener('click',drCardClick);
+}
+function drCardClick(ev){
+  if(drag.blockClick)return;
+  if(ev.target.closest('button,.quick-btn'))return;
+  const card=ev.target.closest('.exercise-card');if(!card)return;
+  const idx=parseInt(card.dataset.idx);
+  if(!isNaN(idx))editExercise(idx);
 }
 function drPos(ev){return ev.touches?{x:ev.touches[0].clientX,y:ev.touches[0].clientY}:{x:ev.clientX,y:ev.clientY};}
 function drCancelOnSelect(){if(!drag.active){clearTimeout(drag.timer);drag.timer=null;}document.removeEventListener('selectstart',drCancelOnSelect);}
@@ -930,6 +933,7 @@ function drMoveM(ev){
   drMoveAt(ev.clientX,ev.clientY);
 }
 function drFinish(){
+  const wasActive=drag.active;
   clearTimeout(drag.timer);drag.timer=null;
   if(drag.ghost){drag.ghost.remove();drag.ghost=null;}
   if(drag.cards.length)drag.cards.forEach(c=>{c.classList.remove('dragging','drag-over-top','drag-over-bot');});
@@ -938,6 +942,7 @@ function drFinish(){
     t.exercises.splice(drag.overIdx,0,item);save();renderDetail();
   }
   drag.active=false;drag.idx=null;drag.overIdx=null;drag.card=null;drag.decided=false;drag.cards=[];
+  if(wasActive){drag.blockClick=true;setTimeout(()=>{drag.blockClick=false;},350);}
 }
 function drEndT(){drFinish();}
 function drEndM(){document.removeEventListener('mousemove',drMoveM);document.removeEventListener('mouseup',drEndM);drFinish();}
@@ -1102,24 +1107,25 @@ function addManualExercise(){
 function startPlayer(){
   const t=getTraining(); if(!t||!t.exercises.length){toast('Add exercises first');return;}
   pl.training={...t,exercises:[...t.exercises]};
-  pl.exerciseIdx=0; pl.isRest=false;
+  pl.exerciseIdx=0; pl.isRest=false; pl.isPrepause=false;
   location.hash='player:'+currentTrainingId;
   showView('view-player');
   document.querySelector('.player-controls').style.display='';
   requestWakeLock();
-  countdown(location.hostname==='localhost'?0:3,()=>{ beginExercise(); }); // skip countdown on localhost for dev
+  beginPrepause();
 }
 
-function countdown(n,cb){
-  const el=document.getElementById('countdown'), num=document.getElementById('cd-num');
-  el.style.display='flex'; num.textContent=n;
-  if(n<=0){el.style.display='none';cb();return;}
-  setTimeout(()=>countdown(n-1,cb),1000);
+function beginPrepause(){
+  pl.exerciseIdx=0; pl.isRest=false; pl.isPrepause=true;
+  pl.secondsLeft=PREPAUSE_SECONDS; pl.running=true;
+  pl_shownId=null;
+  document.getElementById('pl-upnext').classList.replace('visible','out');
+  renderPlayer(); startTick();
 }
 
 function beginExercise(){
   const e=pl.training.exercises[pl.exerciseIdx];
-  pl.isRest=false; pl.secondsLeft=e.s; pl.running=true;
+  pl.isRest=false; pl.isPrepause=false; pl.secondsLeft=e.s; pl.running=true;
   pl_shownId=null;
   document.getElementById('pl-upnext').classList.replace('visible','out');
   if(pl.exerciseIdx===0)say(e.name);
@@ -1128,7 +1134,7 @@ function beginExercise(){
 
 function beginRest(){
   const e=pl.training.exercises[pl.exerciseIdx];
-  pl.isRest=true; pl.secondsLeft=getRestAfter(e,pl.training); pl.running=true;
+  pl.isRest=true; pl.isPrepause=false; pl.secondsLeft=getRestAfter(e,pl.training); pl.running=true;
   pl_shownId=null;
   const u=document.getElementById('pl-upnext');
   u.innerHTML='😮‍💨 UP NEXT'; u.classList.remove('out'); u.classList.add('visible');
@@ -1148,7 +1154,7 @@ function renderPlayerExercise(){
 
   if(pl_shownId!==shownKey){
     pl_shownId=shownKey;
-    document.getElementById('pl-phase').textContent = pl.isRest ? 'REST' : 'EXERCISE';
+    document.getElementById('pl-phase').textContent = pl.isPrepause ? 'GET READY' : (pl.isRest ? 'REST' : 'EXERCISE');
     document.getElementById('pl-name').textContent = shown.name;
     const descWrap=document.getElementById('pl-desc-wrap');
     const descEl=document.getElementById('pl-desc');
@@ -1171,32 +1177,51 @@ function renderPlayer(){
   const e=pl.training.exercises[pl.exerciseIdx];
   renderPlayerExercise();
   document.getElementById('pl-timer').textContent = pl.secondsLeft;
-  const _tm=document.getElementById('pl-timer');_tm.className = 'player-timer' + (pl.isRest ? ' rest-time' : '');_tm.onclick=null;_tm.removeAttribute('role');_tm.removeAttribute('tabindex');
-  const maxDur = pl.isRest ? getRestAfter(e, pl.training) : e.s;
+  const restLike = pl.isRest || pl.isPrepause;
+  const _tm=document.getElementById('pl-timer');_tm.className = 'player-timer' + (restLike ? ' rest-time' : '');_tm.onclick=null;_tm.removeAttribute('role');_tm.removeAttribute('tabindex');
+  const maxDur = pl.isPrepause ? PREPAUSE_SECONDS : (pl.isRest ? getRestAfter(e, pl.training) : e.s);
   const pct = ((maxDur - pl.secondsLeft) / maxDur) * 100;
   const bar = document.getElementById('pl-bar');
-  bar.style.width = pct + '%'; bar.className = 'player-progress-bar' + (pl.isRest ? ' resting' : '');
+  bar.style.width = pct + '%'; bar.className = 'player-progress-bar' + (restLike ? ' resting' : '');
   document.getElementById('pp-pause').style.display = pl.running ? '' : 'none';
   document.getElementById('pp-play').style.display = pl.running ? 'none' : '';
 }
 
 function startTick(){
   clearInterval(pl.timer);
-  pl.timer=setInterval(()=>{
-    if(!pl.running)return;
-    pl.secondsLeft--;
-    if(!pl.isRest){const e=pl.training.exercises[pl.exerciseIdx];if(pl.secondsLeft===Math.floor(e.s/2))beep(140,660,1.5);}
-    if(pl.secondsLeft<=3&&pl.secondsLeft>0)beep(180,880);
-    if(pl.secondsLeft<=0){
-      beep(220,784);setTimeout(()=>beep(420,1047),200);
-      clearInterval(pl.timer);
-      if(pl.isRest){pl.exerciseIdx++;beginExercise();}
-      else if(pl.exerciseIdx+1<pl.training.exercises.length){beginRest();}
-      else{finishWorkout();}
-      return;
+  // Anchor to wall-clock so the timer stays accurate even when the browser
+  // throttles setInterval while the app is backgrounded (music-switch etc.).
+  pl.tickAnchor={startMs:Date.now(),startLeft:pl.secondsLeft,lastLeft:pl.secondsLeft};
+  pl.timer=setInterval(tickStep,1000);
+}
+function tickStep(){
+  if(!pl.running||!pl.tickAnchor)return;
+  const a=pl.tickAnchor;
+  const elapsed=Math.floor((Date.now()-a.startMs)/1000);
+  const newLeft=a.startLeft-elapsed;
+  // Fire beeps for seconds we just crossed. If the tab was backgrounded
+  // and many seconds passed, skip the catch-up beeps (no audio flood).
+  if(a.lastLeft-newLeft<=2){
+    for(let s=a.lastLeft-1;s>=newLeft&&s>0;s--){
+      if(!pl.isRest&&!pl.isPrepause){
+        const e=pl.training.exercises[pl.exerciseIdx];
+        if(s===Math.floor(e.s/2))beep(180,660,2);
+      }
+      if(s<=3)beep(180,880);
     }
-    renderPlayer();
-  },1000);
+  }
+  pl.secondsLeft=Math.max(0,newLeft);
+  if(newLeft<=0){
+    beep(220,784);setTimeout(()=>beep(420,1047),200);
+    clearInterval(pl.timer);
+    if(pl.isPrepause){beginExercise();}
+    else if(pl.isRest){pl.exerciseIdx++;beginExercise();}
+    else if(pl.exerciseIdx+1<pl.training.exercises.length){beginRest();}
+    else{finishWorkout();}
+    return;
+  }
+  a.lastLeft=newLeft;
+  renderPlayer();
 }
 
 function playerToggle(){ pl.running=!pl.running; if(pl.running)startTick(); else clearInterval(pl.timer); renderPlayer(); }
@@ -1207,17 +1232,19 @@ function toggleDesc(){
 }
 function playerNext(){
   clearInterval(pl.timer);
-  if(pl.isRest){pl.exerciseIdx++;beginExercise();}
+  if(pl.isPrepause){beginExercise();}
+  else if(pl.isRest){pl.exerciseIdx++;beginExercise();}
   else if(pl.exerciseIdx+1<pl.training.exercises.length){beginRest();}
   else finishWorkout();
 }
 function playerPrev(){
   clearInterval(pl.timer);
-  if(pl.isRest){beginExercise();}
+  if(pl.isPrepause){beginPrepause();}
+  else if(pl.isRest){beginExercise();}
   else if(pl.exerciseIdx>0){pl.exerciseIdx--;beginExercise();}
-  else{beginExercise();}
+  else{beginPrepause();}
 }
-function exitPlayer(){ clearInterval(pl.timer); pl.running=false; pl_shownId=null; releaseWakeLock(); goDetail(); }
+function exitPlayer(){ clearInterval(pl.timer); pl.running=false; pl.tickAnchor=null; pl_shownId=null; releaseWakeLock(); goDetail(); }
 function finishWorkout(){
   clearInterval(pl.timer); pl.running=false; releaseWakeLock();
   // Record completion
@@ -1250,14 +1277,20 @@ let _beepActive=0;
 function speechVolume(){return state.settings.speechVolume==null?0:state.settings.speechVolume;}
 function say(text){const v=speechVolume();if(v<=0||!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=1.05;u.lang='en-US';u.volume=Math.min(1,v);speechSynthesis.speak(u);}
 function audioVolume(){return state.settings.audioVolume==null?0.6:state.settings.audioVolume;}
-function beep(dur,freq,mult){const v=audioVolume()*(mult||1);if(v<=0)return;try{if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=freq||660;o.connect(g);g.connect(audioCtx.destination);const t=audioCtx.currentTime,d=dur/1000,peak=Math.min(1,v*1.5);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+0.025);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d+0.02);_beepActive++;o.onended=()=>{_beepActive--;if(_beepActive===0&&audioCtx.state==='running')audioCtx.suspend().catch(()=>{});};}catch(e){}}
+function beep(dur,freq,mult){const v=audioVolume()*(mult||1);if(v<=0)return;try{if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=freq||660;o.connect(g);g.connect(audioCtx.destination);const t=audioCtx.currentTime,d=dur/1000,peak=Math.min(2.2,v*2.2);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+0.025);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d+0.02);_beepActive++;o.onended=()=>{_beepActive--;if(_beepActive===0&&audioCtx.state==='running')audioCtx.suspend().catch(()=>{});};}catch(e){}}
 
 // ─── Wake Lock ────────────────────────────────────────────────
 let wakeLock=null;
 async function requestWakeLock(){
   if('wakeLock' in navigator){try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}catch(e){}}}
 function releaseWakeLock(){if(wakeLock){wakeLock.release();wakeLock=null;}}
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&pl.running)requestWakeLock();});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&pl.running){
+    requestWakeLock();
+    // Sync immediately — setInterval may have been throttled while hidden.
+    tickStep();
+  }
+});
 
 // ─── Settings / Import / Export ───────────────────────────────
 function handleSwWaiting(sw){

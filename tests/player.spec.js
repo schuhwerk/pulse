@@ -1,8 +1,10 @@
 // @ts-check
 import { test, expect, seedState, makeState, makeTraining } from './fixtures.js';
 
-// Player tests use localhost so the intro countdown is skipped (see index.html startPlayer).
 // Exercises are 2s / rest 1s — full workout completes in ~6 real seconds.
+// The player opens in a 5s GET READY prepause; tests skip through it with the
+// Next button to keep runtime tight.
+const skipPrepause = (page) => page.locator('.player-controls button').nth(2).click();
 
 test.describe('player', () => {
   test.beforeEach(async ({ page }) => {
@@ -16,6 +18,11 @@ test.describe('player', () => {
     test.slow();
     await page.locator('.play-fab').click();
     await expect(page.locator('#view-player.active')).toBeVisible();
+    // Prepause first — shows upcoming Alpha with a GET READY label.
+    await expect(page.locator('#pl-phase')).toHaveText('GET READY');
+    await expect(page.locator('#pl-name')).toHaveText('Alpha');
+    await skipPrepause(page);
+
     await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
     await expect(page.locator('#pl-name')).toHaveText('Alpha');
     await expect(page.locator('#pl-counter')).toHaveText('1 / 2');
@@ -41,6 +48,8 @@ test.describe('player', () => {
 
   test('pause halts the timer', async ({ page }) => {
     await page.locator('.play-fab').click();
+    await expect(page.locator('#pl-phase')).toHaveText('GET READY');
+    await skipPrepause(page);
     await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
 
     // Pause immediately.
@@ -56,6 +65,8 @@ test.describe('player', () => {
 
   test('skip advances to next exercise', async ({ page }) => {
     await page.locator('.play-fab').click();
+    await skipPrepause(page);
+    await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
     await expect(page.locator('#pl-name')).toHaveText('Alpha');
 
     // Click next (third button in controls).
@@ -69,7 +80,8 @@ test.describe('player', () => {
   test('exit returns to detail view', async ({ page }) => {
     await page.locator('.play-fab').click();
     await expect(page.locator('#view-player.active')).toBeVisible();
-    await page.locator('.player-top .btn-icon').click();
+    // First btn-icon in player-top is the exit button (second is settings).
+    await page.locator('.player-top .btn-icon').first().click();
     await expect(page.locator('#view-detail.active')).toBeVisible();
   });
 

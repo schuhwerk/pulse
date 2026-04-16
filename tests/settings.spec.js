@@ -1,5 +1,5 @@
 // @ts-check
-import { test, expect, seedState, makeState } from './fixtures.js';
+import { test, expect, seedState, makeState, APP_VERSION } from './fixtures.js';
 
 /** A stored training that pretends to be the 7min builtin but with a stale hash. */
 function staleBuiltin(nameOverride = '7 Minute Workout') {
@@ -87,7 +87,9 @@ test.describe('settings', () => {
 
   test('no builtin-update modal when version already current', async ({ page }) => {
     // Same stale hash but version already matches APP_VERSION — no prompt expected.
-    await seedState(page, { ...makeState([staleBuiltin()]), version: '1.0.17' });
+    // APP_VERSION is read from index.html at test time (see fixtures.js) so the
+    // pre-commit auto-bump doesn't break this assertion.
+    await seedState(page, { ...makeState([staleBuiltin()]), version: APP_VERSION });
     await page.goto('/index.html');
     await expect(page.locator('#modal.open')).not.toBeVisible();
   });
