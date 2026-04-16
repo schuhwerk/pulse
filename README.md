@@ -70,6 +70,22 @@ bunx playwright test
 bunx playwright test --reporter=list
 ```
 
+## Triggering the built-in update modal (for testing)
+
+When a new version ships with changed built-in trainings, a modal offers to replace your local copies. To simulate this in the browser console:
+
+```js
+const s=JSON.parse(localStorage.getItem('pulse_data'));
+s.version='0.0.0';
+delete s.settings._pendingBuiltinIds;
+const v=s.trainings.find(t=>t.builtinId==='vitus-2026');
+if(v) v.builtinHash='stale';
+localStorage.setItem('pulse_data',JSON.stringify(s));
+location.reload();
+```
+
+The modal fires when `stored.builtinHash` differs from the current builtin fingerprint **and** `state.version` doesn't match `APP_VERSION`. Changing the version alone isn't enough — you also need to fake a stale hash on the training.
+
 ## Todo
 - Remove the full-state backup -> only export trainings -> better merging.
 - Should we update default trainings? How implement that simple?
