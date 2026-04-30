@@ -1,6 +1,7 @@
 // @ts-check
-import { test, expect, seedState, makeState, makeTraining } from './fixtures.js';
+import { test, expect, seedState, makeState } from './fixtures.js';
 
+// ─── training CRUD ──────────────────────────────────────────────────────────
 test.describe('training CRUD', () => {
   test('inline +10 / −10 adjusts exercise duration', async ({ page }) => {
     await seedState(page, makeState());
@@ -17,7 +18,7 @@ test.describe('training CRUD', () => {
     await expect(alphaCard.locator('.ex-dur')).toContainText('5s'); // min clamp = 5
 
     // Persisted.
-    const s = await page.evaluate(() => JSON.parse(localStorage.getItem('pulse_data')));
+    const s = await page.evaluate(() => JSON.parse(localStorage.getItem('pulse_data') ?? '{}'));
     expect(s.trainings[0].exercises[0].s).toBe(5);
   });
 

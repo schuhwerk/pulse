@@ -1,6 +1,7 @@
 // @ts-check
 import { test, expect } from './fixtures.js';
 
+// ─── smoke: create → play → finish ─────────────────────────────────────────
 test.describe('smoke: create → play → finish', () => {
   test('home renders with builtin trainings', async ({ page }) => {
     await page.goto('/index.html');

@@ -9,6 +9,7 @@ function staleBuiltin(nameOverride = '7 Minute Workout') {
   };
 }
 
+// ─── settings ───────────────────────────────────────────────────────────────
 test.describe('settings', () => {
   test('audio volume persists across reload', async ({ page }) => {
     await seedState(page, makeState());

@@ -1,6 +1,7 @@
 // @ts-check
 import { test, expect, seedState, makeState, makeTraining } from './fixtures.js';
 
+// ─── share links & import ───────────────────────────────────────────────────
 test.describe('share links & import', () => {
   test('importing a share link shows confirm modal then adds training', async ({ page }) => {
     // Start with one training so we can build a share link via the app itself.
