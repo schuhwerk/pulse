@@ -16,8 +16,8 @@ test.describe('settings', () => {
     await page.goto('/index.html');
     await page.locator('button[title="Settings"]').click();
 
-    // Default audioVolume (0.6) → slider at 60.
-    await expect(page.locator('#vol-slider')).toHaveValue('60');
+    // Default audioVolume (1.0) → slider at 100.
+    await expect(page.locator('#vol-slider')).toHaveValue('100');
 
     // Mute: set slider to 0 and fire oninput to trigger save.
     await page.locator('#vol-slider').evaluate(el => {
