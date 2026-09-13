@@ -351,7 +351,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.30';
+const APP_VERSION = '1.0.31';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -1322,7 +1322,57 @@ function finishWorkout(){
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
 audioCtx.suspend().catch(()=>{});
 function speechVolume(){return state.settings.speechVolume==null?0:state.settings.speechVolume;}
-function say(text){const v=speechVolume();if(v<=0||!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=1.05;u.lang='en-US';u.volume=Math.min(1,v*1.5);speechSynthesis.speak(u);}
+// Voice list is populated asynchronously — Android Chrome reports an empty list
+// on first call and fires `voiceschanged` once the TTS engine has answered.
+let _voices=[];
+function loadVoices(){try{_voices=speechSynthesis.getVoices()||[];}catch(e){_voices=[];}}
+if('speechSynthesis' in window){
+  loadVoices();
+  speechSynthesis.addEventListener('voiceschanged',loadVoices);
+  // Chrome's synthesis engine is browser-wide: an utterance wedged by an earlier
+  // page stays wedged across reloads and silences everything. Clear it on start.
+  try{speechSynthesis.cancel();}catch(e){}
+}
+// Prefer a local voice — Chrome's remote "Google …" voices can accept an
+// utterance and never start it. Never force lang='en-US' with no voice attached;
+// a device with no English voice data plays nothing at all.
+function pickVoice(localOnly){
+  if(!_voices.length)loadVoices();
+  const en=_voices.filter(v=>/^en/i.test(v.lang||''));
+  if(localOnly)return en.find(v=>v.localService)||_voices.find(v=>v.localService)||null;
+  return en.find(v=>v.localService)||en[0]||null;
+}
+function say(text,notify){
+  const v=speechVolume();if(v<=0||!('speechSynthesis' in window))return;
+  const vol=Math.min(1,v*1.5);
+  let started=false,watchdog=null;
+  const fail=msg=>{if(notify)toast(msg);};
+  const speak=retry=>{
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=1.05;u.volume=vol;
+    const voice=pickVoice(retry);
+    if(voice){u.voice=voice;u.lang=voice.lang;}
+    u.onstart=()=>{started=true;clearTimeout(watchdog);};
+    u.onerror=e=>{
+      clearTimeout(watchdog);
+      if(e.error!=='interrupted'&&e.error!=='canceled')fail('Speech failed: '+e.error);
+    };
+    speechSynthesis.speak(u);
+    try{speechSynthesis.resume();}catch(e){} // no-op unless the engine is paused
+    // Accepted but never started: wedged engine, or a remote voice that never
+    // answers. Reset and retry once with a local voice / the device default.
+    watchdog=setTimeout(()=>{
+      if(started)return;
+      try{speechSynthesis.cancel();}catch(e){}
+      if(retry)fail('No speech output — check the device text-to-speech engine');
+      else setTimeout(()=>speak(true),120);
+    },2000);
+  };
+  // cancel() followed by speak() in the same task drops the utterance on
+  // Android Chrome — only cancel when something is actually queued, then yield.
+  if(speechSynthesis.speaking||speechSynthesis.pending){speechSynthesis.cancel();setTimeout(()=>speak(false),60);}
+  else speak(false);
+}
 function audioVolume(){return state.settings.audioVolume==null?1.0:state.settings.audioVolume;}
 // PIZZ — koto variant: drier, shorter, more percussive
 // Signature matches the sounds-file convention: (ac, t, pitch, accent)
@@ -1385,7 +1435,7 @@ function handleSwWaiting(sw){
 function applySwUpdate(){ if(!_swWaiting) return; _swWaiting.postMessage({type:'SKIP_WAITING'}); toast('Updating…'); }
 function setAutoUpdate(v){ state.settings.autoUpdate=v; save(); }
 function setVolume(v,preview){const n=Number(v);state.settings.audioVolume=n/100;save();const el=document.getElementById('vol-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)soundHalf();}
-function setSpeechVolume(v,preview){const n=Number(v);state.settings.speechVolume=n/100;save();const el=document.getElementById('speech-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)say('Test');}
+function setSpeechVolume(v,preview){const n=Number(v);state.settings.speechVolume=n/100;save();const el=document.getElementById('speech-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)say('Test',1);}
 function openSettings(){
   const vol=Math.round(audioVolume()*100);
   const svol=Math.round(speechVolume()*100);
