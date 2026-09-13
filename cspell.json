@@ -11,7 +11,7 @@
     "beginExercise", "beginRest", "beginPrepause", "adjDur", "dupExercise", "dupTraining",
     "editExercise", "removeExercise", "pickEnhanceResult", "enhanceExerciseFromWger",
     "confirmImportTraining", "confirmFullImport", "exportTraining", "shareTraining",
-    "encodeShareUrl", "decodeSharePayload", "goDetail", "goHome", "getTraining",
+    "encodeShareUrl", "decodeSharePayload", "bytesToB64url", "b64urlToBytes", "streamBytes", "deflate", "goDetail", "goHome", "getTraining",
     "hydrateBuiltin", "defaultSecondstate", "routeHash", "showView", "currentTrainingId",
     "BUILTIN_TRAININGS", "APP_VERSION"
   ]

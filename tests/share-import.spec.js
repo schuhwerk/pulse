@@ -8,11 +8,11 @@ test.describe('share links & import', () => {
     await seedState(page, makeState());
     await page.goto('/index.html');
 
-    const url = await page.evaluate(() => {
+    const url = await page.evaluate(async () => {
       // @ts-ignore
       currentTrainingId = state.trainings[0].id;
       // @ts-ignore
-      return encodeShareUrl(state.trainings[0]);
+      return await encodeShareUrl(state.trainings[0]);
     });
     const hash = new URL(url).hash; // "#import=..."
 
@@ -76,18 +76,82 @@ test.describe('share links & import', () => {
   test('share payload round-trip preserves exercises', async ({ page }) => {
     await seedState(page, makeState());
     await page.goto('/index.html');
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       // @ts-ignore
       const t = state.trainings[0];
       // @ts-ignore
-      const url = encodeShareUrl(t);
+      const url = await encodeShareUrl(t);
       const b64 = url.split('#import=')[1];
       // @ts-ignore
-      const decoded = decodeSharePayload(b64);
+      const decoded = await decodeSharePayload(b64);
       return { decoded, original: { name: t.name, exCount: t.exercises.length, firstName: t.exercises[0].name } };
     });
     expect(result.decoded.name).toBe(result.original.name);
     expect(result.decoded.exercises.length).toBe(result.original.exCount);
     expect(result.decoded.exercises[0].name).toBe(result.original.firstName);
+  });
+
+  test('share link is compressed (smaller than raw base64) and round-trips', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    const r = await page.evaluate(async () => {
+      // wger descriptions are verbose, repetitive HTML — exactly what compresses well.
+      const desc = '<p>Keep your core tight and breathe steadily throughout the movement.</p>'.repeat(8);
+      // @ts-ignore
+      const t = { name: 'Heavy', restSeconds: 8, exercises: Array.from({ length: 12 }, (_, i) => ({
+        name: 'Exercise ' + i, emoji: '💪', s: 30, description: desc,
+        imageUrl: 'https://wger.de/media/exercise-images/' + i + '/Some-Exercise-1.png',
+      })) };
+      // @ts-ignore
+      const url = await encodeShareUrl(t);
+      const b64 = url.split('#import=')[1];
+      const json = JSON.stringify(t);
+      const rawLen = btoa(unescape(encodeURIComponent(json))).length;
+      // @ts-ignore
+      const decoded = await decodeSharePayload(b64);
+      return { compressedLen: b64.length, rawLen, name: decoded.name, exCount: decoded.exercises.length, firstImg: decoded.exercises[0].imageUrl };
+    });
+    expect(r.compressedLen).toBeLessThan(r.rawLen);
+    expect(r.name).toBe('Heavy');
+    expect(r.exCount).toBe(12);
+    // wger host stripped from the payload to save space.
+    expect(r.firstImg).toBe('/media/exercise-images/0/Some-Exercise-1.png');
+  });
+
+  test('imported wger image url is re-expanded to absolute', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    const url = await page.evaluate(async () => {
+      // @ts-ignore
+      const t = { name: 'Pic', restSeconds: 8, exercises: [
+        { name: 'Squat', emoji: '🦵', s: 30, imageUrl: 'https://wger.de/media/x.png' },
+      ] };
+      // @ts-ignore
+      return await encodeShareUrl(t);
+    });
+    await page.evaluate(() => localStorage.removeItem('pulse_data'));
+    await page.goto('/index.html' + new URL(url).hash);
+    await page.getByRole('button', { name: 'Import' }).click();
+    const img = await page.evaluate(() => {
+      // @ts-ignore
+      return state.trainings[state.trainings.length - 1].exercises[0].imageUrl;
+    });
+    expect(img).toBe('https://wger.de/media/x.png');
+  });
+
+  test('oversized workout warns instead of sharing a broken link', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    await page.evaluate(() => {
+      // @ts-ignore
+      currentTrainingId = state.trainings[0].id;
+      // Incompressible random content large enough to exceed SHARE_URL_MAX even after deflate.
+      const rnd = (n) => Array.from({ length: n }, () => Math.random().toString(36)[2]).join('');
+      // @ts-ignore
+      const t = getTraining();
+      t.exercises = Array.from({ length: 60 }, (_, i) => ({ id: 'big' + i, name: rnd(400), emoji: '💪', s: 30, description: rnd(400) }));
+    });
+    await page.evaluate(() => shareTraining());
+    await expect(page.locator('#toast')).toContainText('too large for a link');
   });
 });

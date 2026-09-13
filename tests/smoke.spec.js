@@ -55,13 +55,13 @@ test.describe('smoke: create → play → finish', () => {
   test('share link round-trip via internal helpers', async ({ page }) => {
     await page.goto('/index.html');
 
-    const result = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       const t = { id: 'tst', name: 'RT', restSeconds: 5, exercises: [{ id:'e1', name:'A', emoji:'💪', s:20 }] };
       // @ts-ignore
-      const url = encodeShareUrl(t);
+      const url = await encodeShareUrl(t);
       const payload = url.split('#import=')[1];
       // @ts-ignore
-      const decoded = decodeSharePayload(payload);
+      const decoded = await decodeSharePayload(payload);
       return { url, decoded };
     });
 
