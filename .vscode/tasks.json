@@ -4,16 +4,16 @@
     {
       "label": "dev: serve",
       "type": "shell",
-      "command": "fuser -k 8080/tcp 2>/dev/null; php -S 127.0.0.1:8080",
+      "command": "fuser -k 8080/tcp 2>/dev/null; bun run dev",
       "isBackground": true,
       "runOptions": { "runOn": "folderOpen" },
-      "presentation": { "panel": "dedicated", "reveal": "silent" },
+      "presentation": { "panel": "dedicated", "reveal": "always" },
       "problemMatcher": {
         "pattern": [{ "regexp": ".", "file": 1, "location": 2, "message": 3 }],
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "Development Server",
-          "endsPattern": "Development Server"
+          "beginsPattern": "Local:",
+          "endsPattern": "Local:"
         }
       }
     },

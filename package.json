@@ -2,12 +2,14 @@
   "name": "workout-pulse-tests",
   "private": true,
   "scripts": {
+    "dev": "bun scripts/dev.js",
     "test": "bunx playwright test",
     "test:headed": "bunx playwright test --headed",
     "test:ui": "bunx playwright test --ui",
     "install-browsers": "bunx playwright install chromium"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.48.0",
+    "qrcode-terminal": "^0.12.0"
   }
 }

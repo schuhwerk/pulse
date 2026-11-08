@@ -26,6 +26,7 @@ python3 -m http.server   # or: npx serve .
 
 ## Development
 
+- Dev server: `bun run dev` serves on port 8080 on all interfaces and prints a QR code for each LAN URL, so you can open it on a phone. Over plain HTTP on a LAN IP the browser treats the page as insecure: no service worker and no wake lock. Everything else works.
 - Tests (Playwright): `bun run test`. See [docs/TESTS.md](docs/TESTS.md).
 - Versioning: a pre-commit hook bumps `APP_VERSION` in `index.html` and `CACHE_NAME` in `sw.js` on every commit that touches `index.html`. If you already bumped it yourself, the hook leaves it alone. To enable it after cloning, run `git config core.hooksPath hooks`.
 
