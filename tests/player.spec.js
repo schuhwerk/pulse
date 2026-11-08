@@ -1,14 +1,18 @@
 // @ts-check
 import { test, expect, seedState, makeState, makeTraining } from './fixtures.js';
 
-// Exercises are 2s / rest 1s — full workout completes in ~6 real seconds.
+// The player ticks via setInterval anchored to Date.now(). Tests that depend on
+// elapsed time install Playwright's fake clock before navigation and advance it
+// explicitly with `page.clock.runFor(ms)`, so they don't depend on real-time
+// scheduling under parallel load.
 // The player opens in a 5s GET READY prepause; tests skip through it with the
-// Next button to keep runtime tight.
+// Next button.
 const skipPrepause = (page) => page.locator('.player-controls button').nth(2).click();
 
 // ─── player: cycle, pause, skip, exit ───────────────────────────────────────
 test.describe('player', () => {
   test.beforeEach(async ({ page }) => {
+    await page.clock.install();
     await seedState(page, makeState());
     await page.goto('/index.html');
     await page.locator('.training-card', { hasText: 'Test Workout' }).click();
@@ -16,7 +20,6 @@ test.describe('player', () => {
   });
 
   test('runs full cycle: exercise → rest → exercise → done', async ({ page }) => {
-    test.slow();
     await page.locator('.play-fab').click();
     await expect(page.locator('#view-player.active')).toBeVisible();
     // Prepause first — shows upcoming Alpha with a GET READY label.
@@ -28,15 +31,19 @@ test.describe('player', () => {
     await expect(page.locator('#pl-name')).toHaveText('Alpha');
     await expect(page.locator('#pl-counter')).toHaveText('1 / 2');
 
-    // Rest phase after Alpha.
-    await expect(page.locator('#pl-phase')).toHaveText('REST', { timeout: 6000 });
+    // Rest phase after Alpha (2s).
+    await page.clock.runFor(2000);
+    await expect(page.locator('#pl-phase')).toHaveText('REST');
 
-    // Back to exercise for Bravo.
-    await expect(page.locator('#pl-name')).toHaveText('Bravo', { timeout: 4000 });
+    // Back to exercise for Bravo after 1s rest.
+    await page.clock.runFor(1000);
+    await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
+    await expect(page.locator('#pl-name')).toHaveText('Bravo');
     await expect(page.locator('#pl-counter')).toHaveText('2 / 2');
 
-    // Finish screen.
-    await expect(page.locator('#pl-phase')).toHaveText('DONE', { timeout: 6000 });
+    // Finish screen after Bravo (2s).
+    await page.clock.runFor(2000);
+    await expect(page.locator('#pl-phase')).toHaveText('DONE');
     await expect(page.locator('#pl-timer')).toHaveText('✓');
 
     // lastCompleted is persisted.
@@ -56,7 +63,8 @@ test.describe('player', () => {
     // Pause immediately.
     await page.locator('#pl-playpause').click();
     const t1 = await page.locator('#pl-timer').textContent();
-    await page.waitForTimeout(1500);
+    await page.clock.runFor(3000);
+    await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
     const t2 = await page.locator('#pl-timer').textContent();
     expect(t1).toBe(t2);
 
@@ -96,6 +104,7 @@ test.describe('playerPrev', () => {
   const nextBtn = (page) => page.locator('.player-controls button').nth(2);
 
   test.beforeEach(async ({ page }) => {
+    await page.clock.install();
     await seedState(page, makeState([makeTraining({
       exercises: [
         { id: 'e1', name: 'Alpha', emoji: '💪', s: 10, description: '' },
@@ -119,15 +128,13 @@ test.describe('playerPrev', () => {
   });
 
   test('mid-exercise: back restarts current exercise', async ({ page }) => {
-    // Wait until timer drops to ≤7 (≥3 ticks), below the atStart threshold of maxDur-1=9.
-    await page.waitForFunction(() => parseInt(document.getElementById('pl-timer')?.textContent ?? '0', 10) <= 7);
+    // Advance 3 ticks so the timer is below the atStart threshold of maxDur-1=9.
+    await page.clock.runFor(3000);
+    await expect(page.locator('#pl-timer')).toHaveText('7');
     await prevBtn(page).click();
     await expect(page.locator('#pl-phase')).toHaveText('EXERCISE');
     await expect(page.locator('#pl-name')).toHaveText('Alpha');
-    // Pause and confirm timer reset to near 10.
-    await page.locator('#pl-playpause').click();
-    const t = parseInt((await page.locator('#pl-timer').textContent()) ?? '0', 10);
-    expect(t).toBeGreaterThanOrEqual(9);
+    await expect(page.locator('#pl-timer')).toHaveText('10');
   });
 
   test('at start of exercise N: back goes to preceding rest', async ({ page }) => {

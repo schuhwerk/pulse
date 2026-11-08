@@ -50,6 +50,14 @@ export const test = base.extend({
       body: JSON.stringify({ results: [] }),
     }));
 
+    // Stub Google Fonts: the CSS @import blocks the `load` event, so a slow or
+    // rate-limited fetch would stall page.goto/reload past the test timeout.
+    await page.route(/fonts\.(googleapis|gstatic)\.com/, route => route.fulfill({
+      status: 200,
+      contentType: 'text/css',
+      body: '',
+    }));
+
     // Don't register the service worker during tests (avoids cache flakiness).
     await page.route('**/sw.js', route => route.fulfill({ status: 404, body: '' }));
 

@@ -16,13 +16,13 @@ bun run test tests/player.spec.js   # single file
 
 | Export | Purpose |
 |---|---|
-| `test` | Extended Playwright `test`; stubs `AudioContext`, `navigator.wakeLock`, blocks wger network, disables SW |
+| `test` | Extended Playwright `test`; stubs `AudioContext`, `navigator.wakeLock`, blocks wger + Google Fonts network, disables SW |
 | `seedState(page, state)` | Writes `pulse_data` to `localStorage` before `page.goto` — only seeds if empty so in-test mutations survive reloads |
 | `makeTraining(overrides?)` | Returns a training with two exercises: **Alpha** (2 s) and **Bravo** (2 s), rest 1 s. Pass `overrides` to change exercises, durations, etc. |
 | `makeState(trainings?)` | Wraps one or more trainings into the full app state shape |
 | `APP_VERSION` | Extracted live from `index.html` — use this in tests that care about version strings |
 
-Exercise defaults: `s: 2`, `restSeconds: 1`. The full 2-exercise workout finishes in ~6 real seconds.
+Exercise defaults: `s: 2`, `restSeconds: 1`.
 
 ## Spec files and anchors
 
@@ -44,7 +44,7 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 - **Button indices** in `.player-controls`: `nth(0)` = Prev, `nth(1)` = Play/Pause, `nth(2)` = Next.
 - **Phase assertions**: check `#pl-phase` for `GET READY` / `EXERCISE` / `REST` / `DONE`.
 - **Phase flow changes** (prepause/exercise/rest transitions, `playerPrev`/`playerNext` logic) require updating `player.spec.js`. Structural changes (e.g. adding a phase) usually also touch `smoke.spec.js`.
-- **Timing**: `tickStep` fires every 1 000 ms from a wall-clock anchor. The `atStart` threshold in `playerPrev` is `secondsLeft >= maxDur - 1` — with 2 s default exercises this is always true; use `s: 10` exercises (as in the `playerPrev` describe) to test mid-segment state.
+- **Timing**: never wait on real time. Player tests call `page.clock.install()` before `page.goto` and advance with `page.clock.runFor(ms)`; `tickStep` fires every 1 000 ms from a `Date.now()` anchor, both of which the fake clock controls. Real-time waits fail under parallel load against the 5 s test timeout. The `atStart` threshold in `playerPrev` is `secondsLeft >= maxDur - 1` — with 2 s default exercises this is always true; use `s: 10` exercises (as in the `playerPrev` describe) to test mid-segment state.
 
 ## What is NOT tested
 

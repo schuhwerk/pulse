@@ -1,78 +1,35 @@
-# PULSE — Workout Timer
+# PULSE
 
-Minimalist body-weight workout timer. Runs entirely in the browser — no server, no account.
-Inspired by [Feeel](https://gitlab.com/enjoyingfoss/feeel), built with the help of Claude.
+A small bodyweight workout timer that runs in the browser. No server, no account.
+Inspired by [Feeel](https://gitlab.com/enjoyingfoss/feeel).
 
-## Features
+Demo: [vs.digital/pulse](https://vs.digital/pulse/)
 
-- **Trainings** — create multiple named workout plans
-- **Exercises** — add from the [wger.de](https://wger.de) database or manually; drag to reorder
-- **Player** — countdown timer with audio beeps, rest phases, "up next" preview
-- **PWA** — installable, works offline, prevents screen from going dark during a session
-- **Data** — stored in `localStorage`; export/import as JSON
+<p>
+  <img src="docs/screenshots/home.png" alt="Home: list of trainings" width="200">
+  <img src="docs/screenshots/detail.png" alt="Training detail: exercise list" width="200">
+  <img src="docs/screenshots/exercise.png" alt="Player: exercise countdown" width="200">
+  <img src="docs/screenshots/rest.png" alt="Player: rest with up-next preview" width="200">
+</p>
 
-## Usage
+You can create several trainings. Exercises come from [wger.de](https://wger.de) or can be added by hand, and you drag them to reorder. The player counts down each exercise and rest with beeps and voice cues, and shows what's coming next. Everything is stored in `localStorage` and can be exported or imported as JSON. You can install it as a PWA and use it offline, and it keeps the screen on during a workout.
 
-Open `index.html` in a browser, or install it as an app via the browser's "Add to Home Screen" prompt.
+## Running it
 
-For full functionality (wger search, service worker, wake lock) serve the files over HTTP/HTTPS — e.g.:
+The whole app is one file, `index.html`. You can download it and open it directly. The illustrations for the built-in exercises are in `images/`, so put that folder next to the file if you want them.
 
-```bash
-npx serve .
-# or
-python3 -m http.server
-```
-
-## Files
-
-| File | Purpose |
-|------|---------|
-| `index.html` | Entire app (HTML + CSS + JS) |
-| `manifest.json` | PWA manifest |
-| `icon.svg` | App icon (dumbbell) |
-| `images/` | Exercise illustrations (SVG) |
-| `sw.js` | Service worker (caching + update flow) |
-| `hooks/pre-commit` | Git hook: auto-bumps version on commit |
-
-## License
-
-Code and exercise illustrations © Vitus Schuhwerk, released under the [MIT License](LICENSE).
-
-If you use or adapt this project or its images, please keep the license notice. A link back is appreciated but not required.
-
-## Versioning
-
-`APP_VERSION` in `index.html` and `CACHE_NAME` in `sw.js` are auto-bumped (patch) on every commit that touches `index.html`, via a pre-commit hook. If you bump the version manually before committing, the hook detects the change and skips.
-
-After cloning, enable the hook:
+The wger search, offline mode and the screen wake lock need HTTP(S):
 
 ```bash
-git config core.hooksPath hooks
+python3 -m http.server   # or: npx serve .
 ```
 
-## Screen wake lock
+## Development
 
-Uses the [Screen Wake Lock API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API) to keep the screen on while a workout is running. Supported in Chrome/Edge/Safari 16.4+. Falls back silently on unsupported browsers. Requires HTTPS (or localhost).
+- Tests (Playwright): `bun run test`. See [docs/TESTS.md](docs/TESTS.md).
+- Versioning: a pre-commit hook bumps `APP_VERSION` in `index.html` and `CACHE_NAME` in `sw.js` on every commit that touches `index.html`. If you already bumped it yourself, the hook leaves it alone. To enable it after cloning, run `git config core.hooksPath hooks`.
 
-## Testing
-
-Tests are written using Playwright. Run them with:
-
-```bash
-bun test
-# or
-bunx playwright test
-```
-
-**Note on seeing `console.log` output:** To keep the AI context window clean, `playwright.config.js` uses the `dot` reporter by default. This reporter hides successful test logs. If you need to see `console.log` output while debugging a passing test, override the reporter:
-
-```bash
-bunx playwright test --reporter=list
-```
-
-## Triggering the built-in update modal (for testing)
-
-When a new version ships with changed built-in trainings, a modal offers to replace your local copies. To simulate this in the browser console:
+To trigger the "built-in trainings updated" modal by hand, paste this into the browser console:
 
 ```js
 const s=JSON.parse(localStorage.getItem('pulse_data'));
@@ -84,8 +41,13 @@ localStorage.setItem('pulse_data',JSON.stringify(s));
 location.reload();
 ```
 
-The modal fires when `stored.builtinHash` differs from the current builtin fingerprint **and** `state.version` doesn't match `APP_VERSION`. Changing the version alone isn't enough — you also need to fake a stale hash on the training.
+The modal needs both a stale `builtinHash` and a version that differs from `APP_VERSION`.
 
 ## Todo
-- Remove the full-state backup -> only export trainings -> better merging.
-- Should we update default trainings? How implement that simple?
+
+- Export only trainings instead of the full state, so merging works better.
+- Decide whether and how to update the default trainings.
+
+## License
+
+MIT. Code and exercise illustrations © Vitus Schuhwerk. Please keep the license notice if you reuse them.
