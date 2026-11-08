@@ -16,7 +16,7 @@ bun run test tests/player.spec.js   # single file
 
 | Export | Purpose |
 |---|---|
-| `test` | Extended Playwright `test`; stubs `AudioContext`, `navigator.wakeLock`, blocks wger + Google Fonts network, disables SW |
+| `test` | Extended Playwright `test`; stubs `AudioContext`, `navigator.wakeLock`, blocks wger + Google Fonts network, disables SW; fails the test on any uncaught page error |
 | `seedState(page, state)` | Writes `pulse_data` to `localStorage` before `page.goto` — only seeds if empty so in-test mutations survive reloads |
 | `makeTraining(overrides?)` | Returns a training with two exercises: **Alpha** (2 s) and **Bravo** (2 s), rest 1 s. Pass `overrides` to change exercises, durations, etc. |
 | `makeState(trainings?)` | Wraps one or more trainings into the full app state shape |
@@ -31,12 +31,13 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | Anchor (grep this) | File | What it covers |
 |---|---|---|
 | `// ─── smoke: create → play → finish` | `smoke.spec.js` | Home renders, create training via FAB, add exercise, reach player, localStorage persistence, share-link helpers |
-| `// ─── training CRUD` | `crud.spec.js` | Duration +10/−10, duplicate/remove exercise, delete/duplicate training, rename |
+| `// ─── training CRUD` | `crud.spec.js` | Duration +10/−10, duplicate/remove exercise, delete/duplicate training, rename, exercise form (image/emoji fallback, manual add) |
 | `// ─── player: cycle, pause, skip, exit` | `player.spec.js` | Full exercise→rest→done cycle, pause halts timer, next-skip, exit to detail |
 | `// ─── player: playerPrev navigation` | `player.spec.js` | Audio-player-style back: mid-segment restart vs. prev-segment navigation; uses 10 s exercises |
 | `// ─── player: edge cases` | `player.spec.js` | Refuses to start with no exercises |
+| `// ─── unsaved-changes guard` | `crud.spec.js` | Discard-confirm on modal close (Esc) and leaving the Manual add form; save never asks |
 | `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |
-| `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, JSON backup overwrite, round-trip payload |
+| `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, trainings file import (add/skip duplicates, replace all), export format, round-trip payload |
 
 ## Player test conventions
 
@@ -44,7 +45,7 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 - **Button indices** in `.player-controls`: `nth(0)` = Prev, `nth(1)` = Play/Pause, `nth(2)` = Next.
 - **Phase assertions**: check `#pl-phase` for `GET READY` / `EXERCISE` / `REST` / `DONE`.
 - **Phase flow changes** (prepause/exercise/rest transitions, `playerPrev`/`playerNext` logic) require updating `player.spec.js`. Structural changes (e.g. adding a phase) usually also touch `smoke.spec.js`.
-- **Timing**: never wait on real time. Player tests call `page.clock.install()` before `page.goto` and advance with `page.clock.runFor(ms)`; `tickStep` fires every 1 000 ms from a `Date.now()` anchor, both of which the fake clock controls. Real-time waits fail under parallel load against the 5 s test timeout. The `atStart` threshold in `playerPrev` is `secondsLeft >= maxDur - 1` — with 2 s default exercises this is always true; use `s: 10` exercises (as in the `playerPrev` describe) to test mid-segment state.
+- **Timing**: never wait on real time. Player tests call `page.clock.install()` before `page.goto` and advance with `page.clock.runFor(ms)`; `tickStep` fires every 1 000 ms from a `Date.now()` anchor, both of which the fake clock controls. Real-time waits fail under parallel load against the 5 s test timeout. The `atStart` threshold in `playerPrev` is `secondsLeft >= segmentDuration() - 1` — with 2 s default exercises this is always true; use `s: 10` exercises (as in the `playerPrev` describe) to test mid-segment state.
 
 ## What is NOT tested
 
@@ -52,4 +53,4 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 - Wake lock (stubbed)
 - Service worker / cache (SW blocked with 404)
 - wger exercise search (network blocked, returns `{ results: [] }`)
-- Drag-reorder (no Playwright touch/drag coverage yet)
+- Drag-reorder with touch (only the mouse path is covered, in `crud.spec.js`)

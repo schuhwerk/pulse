@@ -62,9 +62,9 @@ textarea{resize:vertical;min-height:60px}
 
 /* Exercise Card */
 .exercise-card{display:flex;gap:8px;align-items:center;padding:12px}
-.exercise-card .thumb{width:56px;height:56px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px}
-.exercise-card .thumb img{width:100%;height:100%;object-fit:contain;border-radius:4px;padding:4px;box-sizing:border-box}
-.wger-img{background:#ede8e1}
+.exercise-card .thumb{position:relative;width:56px;height:56px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:24px}
+.exercise-card .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:4px;padding:4px;box-sizing:border-box;background:var(--surface2)}
+.wger-img,.exercise-card .thumb img.wger-img{background:#ede8e1}
 .exercise-card .info{flex:1;min-width:0}
 .exercise-card .ex-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exercise-card .ex-dur{font-size:12px;color:var(--accent);font-family:'Space Mono',monospace;margin-top:1px;display:flex;align-items:center;gap:6px}
@@ -74,10 +74,11 @@ textarea{resize:vertical;min-height:60px}
 .exercise-card .ex-actions svg{width:14px;height:14px}
 .quick-btn{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--text2);background:var(--surface2);border-radius:4px;padding:2px 5px;cursor:pointer;border:none;line-height:1}
 .quick-btn:hover{background:var(--surface3);color:var(--text)}
-/* Touch reorder */
-.exercise-card.dragging{opacity:.4;user-select:none}
-.exercise-card.drag-over-top{box-shadow:0 -2px 0 var(--accent)}
-.exercise-card.drag-over-bot{box-shadow:0 2px 0 var(--accent)}
+/* Drag reorder */
+.reordering{user-select:none;-webkit-user-select:none}
+.dragging{opacity:.4;user-select:none}
+.drag-over-top{box-shadow:0 -2px 0 var(--accent)}
+.drag-over-bot{box-shadow:0 2px 0 var(--accent)}
 .drag-ghost{position:fixed;z-index:200;pointer-events:none;opacity:.9;transform:scale(1.03);box-shadow:0 8px 30px rgba(0,0,0,.5);border-radius:var(--radius);background:var(--surface);max-width:calc(100vw - 40px)}
 .reorder-hint{text-align:center;padding:6px;font-size:11px;color:var(--text3);font-family:'Space Mono',monospace}
 .last-done{font-size:11px;color:var(--text3);margin-top:1px}
@@ -100,6 +101,15 @@ textarea{resize:vertical;min-height:60px}
 .btn-sm,.setting-row .btn{padding:8px 16px;font-size:13px;font-weight:600}
 .modal-actions{display:flex;gap:8px}
 .modal-actions .btn{flex:1}
+.modal-heading{font-weight:700;font-size:16px;margin-bottom:4px}
+.modal-text{color:var(--text2);font-size:13px;margin-bottom:8px}
+.modal-warn{color:var(--warn);font-weight:700;font-size:14px;margin-bottom:8px}
+.modal-list{margin:0 0 12px;padding-left:18px;font-size:13px;max-height:220px;overflow:auto}
+.modal-list li{margin:2px 0}
+.dim{color:var(--text3)}
+.grow{flex:1}
+a{color:var(--accent)}
+.pre{white-space:pre-wrap}
 .btn-primary{background:var(--accent);color:#000}
 .btn-primary:hover{background:var(--accent2)}
 .btn-secondary{background:var(--surface2);color:var(--text)}
@@ -119,6 +129,9 @@ textarea{resize:vertical;min-height:60px}
 .search-result .sr-info{flex:1;min-width:0}
 .search-result .sr-name{font-weight:600;font-size:15px}
 .search-result .sr-cat{font-size:12px;color:var(--text2);margin-top:2px}
+.search-result .sr-snip{font-size:11px;color:var(--text3);margin-top:3px;line-height:1.3}
+#ed-wger-status{font-size:12px;color:var(--text3);min-height:16px;max-height:260px;overflow-y:auto}
+#ed-wger-status .search-result{margin:4px 0}
 .lang-toggle{display:inline-flex;border-radius:6px;overflow:hidden;background:var(--surface);font-size:12px;font-weight:600}
 .lang-toggle button{padding:4px 10px;background:none;color:var(--text2);border:none;cursor:pointer;transition:all .15s}
 .lang-toggle button.active{background:var(--accent);color:#000}
@@ -131,7 +144,16 @@ textarea{resize:vertical;min-height:60px}
 .modal-header{padding:20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--surface2)}
 .modal-header h2{font-size:17px;font-weight:700;flex:1}
 .modal-body{padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
-.modal-body label{font-size:13px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px}
+.exform{display:flex;flex-direction:column;gap:14px}
+.exhead{display:flex;gap:12px;align-items:flex-end}
+.illu{position:relative;width:64px;height:64px;flex-shrink:0;border-radius:12px;background:var(--surface2);border:1px solid var(--surface3);overflow:hidden}
+.illu:focus-within{border-color:var(--accent)}
+.illu img{width:100%;height:100%;object-fit:contain;padding:5px;box-sizing:border-box;display:block}
+.illu .illu-emoji{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:0;background:none;padding:0;text-align:center;font-size:32px;cursor:pointer;outline:none}
+.illu.has-img .illu-emoji{inset:auto 3px 3px auto;width:24px;height:24px;font-size:13px;border-radius:6px;background:var(--surface3)}
+.illu-hint{font-size:12px;color:var(--text3)}
+.illu-hint:empty{display:none}
+.modal-body label,.exform label{font-size:13px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px}
 .field{display:flex;flex-direction:column;gap:4px}
 .dur-input{display:flex;align-items:center;gap:10px}
 .dur-input input{width:80px;text-align:center;font-family:'Space Mono',monospace;font-size:18px}
@@ -148,9 +170,10 @@ textarea{resize:vertical;min-height:60px}
 .player-desc-wrap .more-btn{display:none;margin-top:4px;font-size:12px;color:var(--accent);font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit;padding:2px 0}
 .player-desc-wrap.has-overflow .more-btn{display:inline-block}
 .player-image-wrap{position:relative;flex-shrink:0;margin-bottom:24px}
-.player-image{width:140px;height:140px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px;border:3px solid var(--surface3)}
-.player-image.has-img{border-radius:16px;width:200px;height:200px;padding:12px}
-.player-image img{width:100%;height:100%;object-fit:contain}
+.player-image{position:relative;width:140px;height:140px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:56px;border:3px solid var(--surface3)}
+.player-image:has(img){border-radius:16px;width:200px;height:200px}
+.player-image:has(img.wger-img){background:#ede8e1}
+.player-image img{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);object-fit:contain;background:inherit}
 #pl-upnext{position:absolute;bottom:-18px;left:50%;background:rgba(0,0,0,.85);color:var(--warn);font-size:18px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:2px;padding:6px 18px;border-radius:24px;white-space:nowrap;z-index:3;backdrop-filter:blur(4px);pointer-events:none;transform:translateX(-50%);opacity:0}
 #pl-upnext.visible{animation:badge-in .3s cubic-bezier(.34,1.4,.64,1) forwards}
 #pl-upnext.out{animation:badge-out .25s ease-in forwards}
@@ -282,19 +305,7 @@ textarea{resize:vertical;min-height:60px}
       <a href="https://wger.de/en/exercise/overview/" target="_blank" rel="noopener" style="display:block;font-size:12px;color:var(--text3);margin:0 0 12px;text-decoration:none">Browse all exercises on wger.de →</a>
       <div id="wger-results"></div>
     </div>
-    <div id="tab-manual" style="display:none">
-      <div style="display:flex;gap:8px">
-        <div class="field" style="width:64px"><label>Emoji</label><input id="man-emoji" placeholder="💪" autocomplete="off" style="text-align:center"></div>
-        <div class="field" style="flex:1"><label>Name</label><input id="man-name" placeholder="e.g. Burpees"></div>
-      </div>
-      <div class="field"><label>Description</label><textarea id="man-desc" placeholder="How to perform…"></textarea></div>
-      <div class="field"><label>Image URL (optional)</label><input id="man-img" placeholder="https://..."></div>
-      <div class="field">
-        <label>Duration</label>
-        <div class="dur-input"><input id="man-dur" type="number" value="30" min="5" max="300"><span>seconds</span></div>
-      </div>
-      <button class="btn btn-primary btn-block" style="padding:14px;margin-top:8px" onclick="addManualExercise()">Add Exercise</button>
-    </div>
+    <div id="tab-manual" class="exform" style="display:none"></div>
   </div>
 </div>
 
@@ -341,9 +352,9 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <!-- MODAL: Edit Exercise Duration / Settings -->
-<div class="modal-overlay" id="modal" onclick="event.target===this&&closeModal()">
+<div class="modal-overlay" id="modal" onclick="event.target===this&&requestCloseModal()">
   <div class="modal">
-    <div class="modal-header"><h2 id="modal-title">Edit</h2><button class="btn-icon" onclick="closeModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-header"><h2 id="modal-title">Edit</h2><button class="btn-icon" onclick="requestCloseModal()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <div class="modal-body" id="modal-body"></div>
   </div>
 </div>
@@ -354,7 +365,7 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <script>
-const APP_VERSION = '1.0.34';
+const APP_VERSION = '1.0.35';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -386,128 +397,115 @@ let currentTrainingId = null;
 let searchTimeout = null;
 
 // Player state
-let pl = { running:false, timer:null, exerciseIdx:0, secondsLeft:0, isRest:false, isPrepause:false, training:null };
+// phase: 'prepause' | 'exercise' | 'rest'
+let pl = { running:false, timer:null, tickAnchor:null, exerciseIdx:0, secondsLeft:0, phase:'prepause', training:null };
 const PREPAUSE_SECONDS = 5;
 
 // ─── BUILTIN_TRAININGS (data, skip to `// ─── State / end-builtins`) ───
 const BUILTIN_TRAININGS=[
     { builtinId:'7min', name:'7 Minute Workout', restSeconds:7, description:'12 bodyweight exercises, 30 s each with 10 s rest. Science-backed HIIT circuit — all you need is a chair and a wall.', exercises:[
-      ex('Jumping Jacks','⭐',30,'','images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
-      ex('Wall Sit','🧱',30,'','images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
-      ex('Push-ups','💪',30,'','images/push-ups.svg','Plank position, lower chest to floor, push up.'),
-      ex('Abdominal Crunches','🔥',30,'','images/crunches.svg','Lie on back, feet flat, curl shoulders toward pelvis.'),
-      ex('Step-ups','🪜',30,'','images/step-ups.svg','Step onto a chair alternating legs at a steady pace.'),
-      ex('Squats','🦵',30,'','images/squats.svg','Feet shoulder-width apart, lower hips until thighs are parallel, push back up.'),
-      ex('Triceps Dips','🪑',30,'','images/triceps-dips.svg','Hands on chair edge behind you, lower body by bending arms, push back up.'),
-      ex('Plank','🪵',30,'','images/plank.svg','Hold body straight on forearms and toes, core tight.'),
-      ex('High Knees','🏃',30,'','images/high-knees.svg','Run in place, driving knees up to hip height alternately.'),
-      ex('Lunges','🚶',30,'','images/lunges.svg','Step one foot forward, lower back knee toward floor, alternate legs.'),
-      ex('Push-ups with Rotation','🔄',30,'','images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
-      ex('Side Plank','↗️',30,'','images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
+      ex('Jumping Jacks','⭐',30,'images/jumping-jacks.svg','Stand, jump feet out while raising arms overhead, then return.'),
+      ex('Wall Sit','🧱',30,'images/wall-sit.svg','Back flat against wall, thighs parallel to ground, hold.'),
+      ex('Push-ups','💪',30,'images/push-ups.svg','Plank position, lower chest to floor, push up.'),
+      ex('Abdominal Crunches','🔥',30,'images/crunches.svg','Lie on back, feet flat, curl shoulders toward pelvis.'),
+      ex('Step-ups','🪜',30,'images/step-ups.svg','Step onto a chair alternating legs at a steady pace.'),
+      ex('Squats','🦵',30,'images/squats.svg','Feet shoulder-width apart, lower hips until thighs are parallel, push back up.'),
+      ex('Triceps Dips','🪑',30,'images/triceps-dips.svg','Hands on chair edge behind you, lower body by bending arms, push back up.'),
+      ex('Plank','🪵',30,'images/plank.svg','Hold body straight on forearms and toes, core tight.'),
+      ex('High Knees','🏃',30,'images/high-knees.svg','Run in place, driving knees up to hip height alternately.'),
+      ex('Lunges','🚶',30,'images/lunges.svg','Step one foot forward, lower back knee toward floor, alternate legs.'),
+      ex('Push-ups with Rotation','🔄',30,'images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
+      ex('Side Plank','↗️',30,'images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
     ]},
     { builtinId:'7min-adv', name:'7 Minute Workout (Advanced)', restSeconds:5, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
-      ex('Reverse Lunge with Rotation','🔀',30,'','','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
-      ex('Lateral Pillar Bridge (Left)','↙️',30,'side plank','','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
-      ex('Push-up to Row to Burpee','💥',60,'','','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
-      ex('Lateral Pillar Bridge (Right)','↗️',30,'side plank','','Lie on right side, raise hips off floor supported on right forearm and feet. Hold straight.'),
-      ex('Single-Leg Deadlift to Curl to Press (Left)','🏋️',60,'','','Balance on left foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
-      ex('Single-Leg Deadlift to Curl to Press (Right)','🏋️',60,'','','Balance on right foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
-      ex('Plank with Arm Lift','🧘',30,'plank','','Hold forearm plank, alternately lift one arm forward and hold briefly.'),
-      ex('Lateral Lunge to Triceps Extension','💪',60,'','','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
-      ex('Bent-Over Row','🚣',60,'bent over row','','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
+      ex('Reverse Lunge with Rotation','🔀',30,'','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
+      ex('Lateral Pillar Bridge (Left)','↙️',30,'','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
+      ex('Push-up to Row to Burpee','💥',60,'','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
+      ex('Lateral Pillar Bridge (Right)','↗️',30,'','Lie on right side, raise hips off floor supported on right forearm and feet. Hold straight.'),
+      ex('Single-Leg Deadlift to Curl to Press (Left)','🏋️',60,'','Balance on left foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
+      ex('Single-Leg Deadlift to Curl to Press (Right)','🏋️',60,'','Balance on right foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
+      ex('Plank with Arm Lift','🧘',30,'','Hold forearm plank, alternately lift one arm forward and hold briefly.'),
+      ex('Lateral Lunge to Triceps Extension','💪',60,'','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
+      ex('Bent-Over Row','🚣',60,'','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
     { builtinId:'vitus-2026', name:'Vitus 2026', restSeconds:15, description:'Prepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Band on Door + Hip\n- 1kg weights (bottles?)\n- Finger Training thingies', exercises:[
-      ex('Cable Tri Extension - Internal Rotation','💪',50,'triceps extension','','Single-arm: hold cable at opposite shoulder with elbow bent, rotate toward the cable and straighten the elbow across the body.'),
-      ex('Crunches','🔥',60,'crunches','','Lie on back, curl shoulders toward pelvis, engaging the core.'),
-      ex('Pistol Squat','🦵',40,'pistol squat','','Single-leg squat: extend one leg forward and lower into a full squat on the other leg, then drive back up. Optional load: dumbbell or kettlebell at chest.'),
-      ex('Reverse Wood Chops','🪓',70,'wood chop','','Band anchored low: grip with both hands at hip, rotate hips and pull the band up and over the opposite shoulder like a baseball swing.'),
-      ex('Push-ups','🙇',60,'push-up','','Plank position, lower chest to floor, push up.'),
-      ex('Prone YTWL with Chin Tuck','🦅',50,'','','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
-      ex('Wall Sit','🧱',40,'wall sit','','Back flat against wall, thighs parallel to ground.'),
-      ex('Chair Dips','🪑',40,'dips','','Hands on chair edge, lower body by bending arms, push back up.'),
-      ex('Hip Raise, Lying, with Band','🍑',60,'hip raise','','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.'),
-      ex('Handstand Pushup','🤸',30,'handstand push-up','','Handstand position against a wall, lower head toward floor, press back up.'),
-      ex('Pull-ups','🧗',40,'pull-up','','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar.'),
-      ex('Side Plank Left','↙️',50,'side plank','','Hold side plank on left forearm.'),
-      ex('Internal Rotator Right','🔁',40,'internal rotation','','Shoulder internal rotation with resistance band.'),
-      ex('Internal Rotator Left','🔁',40,'internal rotation','','Shoulder internal rotation with resistance band.'),
-      ex('Push-up Rotations','🔄',40,'push-up rotation','','Push-up, then rotate to side plank, alternate sides.'),
-      ex('Side Plank Right','↗️',50,'side plank','','Hold side plank on right forearm.'),
-      ex('Forearm Plank','🪵',60,'plank','','Hold body straight on forearms and toes, core tight.'),
-      ex('Finger Training','🤏',60,'','','Hang/grip holds for finger strength.'),
-      ex('Prone YTWL with Chin Tuck + Weight','🦅',40,'','','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades (imagine you have a coin between them).'),
+      ex('Cable Tri Extension - Internal Rotation','💪',50,'','Single-arm: hold cable at opposite shoulder with elbow bent, rotate toward the cable and straighten the elbow across the body.'),
+      ex('Crunches','🔥',60,'','Lie on back, curl shoulders toward pelvis, engaging the core.'),
+      ex('Pistol Squat','🦵',40,'','Single-leg squat: extend one leg forward and lower into a full squat on the other leg, then drive back up. Optional load: dumbbell or kettlebell at chest.'),
+      ex('Reverse Wood Chops','🪓',70,'','Band anchored low: grip with both hands at hip, rotate hips and pull the band up and over the opposite shoulder like a baseball swing.'),
+      ex('Push-ups','🙇',60,'','Plank position, lower chest to floor, push up.'),
+      ex('Prone YTWL with Chin Tuck','🦅',50,'','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
+      ex('Wall Sit','🧱',40,'','Back flat against wall, thighs parallel to ground.'),
+      ex('Chair Dips','🪑',40,'','Hands on chair edge, lower body by bending arms, push back up.'),
+      ex('Hip Raise, Lying, with Band','🍑',60,'','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.'),
+      ex('Handstand Pushup','🤸',30,'','Handstand position against a wall, lower head toward floor, press back up.'),
+      ex('Pull-ups','🧗',40,'','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar.'),
+      ex('Side Plank Left','↙️',50,'','Hold side plank on left forearm.'),
+      ex('Internal Rotator Right','🔁',40,'','Shoulder internal rotation with resistance band.'),
+      ex('Internal Rotator Left','🔁',40,'','Shoulder internal rotation with resistance band.'),
+      ex('Push-up Rotations','🔄',40,'','Push-up, then rotate to side plank, alternate sides.'),
+      ex('Side Plank Right','↗️',50,'','Hold side plank on right forearm.'),
+      ex('Forearm Plank','🪵',60,'','Hold body straight on forearms and toes, core tight.'),
+      ex('Finger Training','🤏',60,'','Hang/grip holds for finger strength.'),
+      ex('Prone YTWL with Chin Tuck + Weight','🦅',40,'','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades (imagine you have a coin between them).'),
     ]},
 ];
 // ─── State / end-builtins ─────────────────────────────────────
-function defaultSecondstate(){
-  return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ restDefault:8, audioEnabled:true, autoUpdate:true }, version: APP_VERSION };
+const DEFAULT_REST=8, DEFAULT_DUR=30;
+const $=id=>document.getElementById(id);
+function defaultState(){
+  return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ autoUpdate:true }, version: APP_VERSION };
 }
-function ex(name,emoji,dur,hint,img,desc){ return {name,emoji,s:dur,description:desc,imageUrl:img}; }
+function ex(name,emoji,dur,img,desc){ return {name,emoji,s:dur,description:desc,imageUrl:img}; }
 function validateSharePayload(obj){
   if(!obj || typeof obj!=='object' || !Array.isArray(obj.exercises)) throw new Error('Invalid training payload');
   return obj;
 }
-let _pendingImport=null;
 // Show a confirmation modal with a quick overview before importing.
 function confirmImportTraining(payload){
   try{ validateSharePayload(payload); }
   catch(e){ toast(e.message||'Invalid training'); return; }
   const t=hydrateTraining(payload);
-  const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
-  const mins=Math.floor(dur/60), secs=dur%60;
-  const list=t.exercises.map(e=>`<li style="margin:2px 0">${e.emoji} ${esc(e.name)} <span style="color:var(--text3)">· ${e.s}s</span></li>`).join('');
-  _pendingImport=t;
-  openModal('Import Training',`
-    <div style="font-weight:700;font-size:16px;margin-bottom:4px">${esc(t.name)}</div>
-    ${t.description?`<div style="color:var(--text3);font-size:13px;margin-bottom:8px;white-space:pre-wrap">${autolink(t.description)}</div>`:''}
-    <div style="color:var(--text2);font-size:13px;margin-bottom:8px">${t.exercises.length} exercises · ${mins}:${String(secs).padStart(2,'0')} total</div>
-    <ul style="margin:0 0 12px;padding-left:18px;font-size:13px;max-height:220px;overflow:auto">${list}</ul>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="cancelPendingImport()">Cancel</button>
-      <button class="btn btn-primary" onclick="commitPendingImport()">Import</button>
-    </div>
-  `);
+  confirmModal('Import Training',`
+    <div class="modal-heading">${esc(t.name)}</div>
+    ${t.description?`<div class="modal-text dim pre">${autolink(t.description)}</div>`:''}
+    <div class="modal-text">${t.exercises.length} exercises · ${fmtDur(totalSeconds(t))} total</div>
+    ${modalList(t.exercises.map(e=>`${esc(e.emoji)} ${esc(e.name)} <span class="dim">· ${e.s}s</span>`))}`,
+  'Import',()=>{
+    state.trainings.push(t); save();
+    currentTrainingId=t.id;
+    toast('Imported: '+t.name);
+    location.hash='detail:'+t.id;
+  });
 }
-function cancelPendingImport(){ _pendingImport=null; closeModal(); if(location.hash.startsWith('#import=')) history.replaceState(null,'',location.pathname+location.search); }
-let _pendingFullImport=null;
-function confirmFullImport(d){
-  _pendingFullImport=d;
-  const nNew=(d.trainings||[]).length;
-  const nCur=(state.trainings||[]).length;
-  const names=(d.trainings||[]).map(t=>`<li style="margin:2px 0">${esc(t.name||'Untitled')} <span style="color:var(--text3)">· ${(t.exercises||[]).length} ex</span></li>`).join('');
-  openModal('Import Backup',`
-    <div style="color:var(--warn);font-weight:700;font-size:14px;margin-bottom:8px">⚠ This will overwrite all your data</div>
-    <div style="color:var(--text2);font-size:13px;margin-bottom:8px">Replacing <b>${nCur}</b> training${nCur===1?'':'s'} with <b>${nNew}</b> from the backup file. Settings will also be replaced. This cannot be undone.</div>
-    <ul style="margin:0 0 12px;padding-left:18px;font-size:13px;max-height:200px;overflow:auto">${names}</ul>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" onclick="cancelFullImport()">Cancel</button>
-      <button type="button" class="btn btn-primary" onclick="commitFullImport()">Overwrite</button>
-    </div>
-  `);
-}
-function cancelFullImport(){ _pendingFullImport=null; closeModal(); }
-function commitFullImport(){
-  const d=_pendingFullImport; if(!d) return;
-  _pendingFullImport=null;
-  state=d; save(); closeModal(); goHome(); toast('Imported!');
-}
-function commitPendingImport(){
-  const t=_pendingImport; if(!t) return;
-  _pendingImport=null;
-  closeModal();
-  state.trainings.push(t); save();
-  currentTrainingId=t.id;
-  toast('Imported: '+t.name);
-  location.hash='detail:'+t.id;
+// Import a trainings file (export or older full-state backup). Settings in the file are ignored.
+// "Add" appends trainings that aren't already present (same content via toSharePayload);
+// "Replace all" swaps the training list.
+function confirmTrainingsImport(d){
+  const incoming=d.trainings.filter(t=>t&&typeof t==='object').map(hydrateTraining);
+  const key=t=>JSON.stringify(toSharePayload(t));
+  const have=new Set(state.trainings.map(key));
+  const fresh=incoming.filter(t=>!have.has(key(t)));
+  const s=n=>n===1?'':'s';
+  confirmModal('Import Trainings',`
+    <div class="modal-text"><b>${incoming.length}</b> training${s(incoming.length)} in the file, <b>${fresh.length}</b> new. Your settings are not changed.</div>
+    ${modalList(incoming.map(t=>`${esc(t.name)} <span class="dim">· ${t.exercises.length} ex${fresh.includes(t)?'':' · already there'}</span>`))}`,
+  fresh.length?`Add ${fresh.length}`:'Nothing to add',()=>{
+    if(!fresh.length)return;
+    state.trainings.push(...fresh); save(); goHome(); toast(`Added ${fresh.length} training${s(fresh.length)}`);
+  },{extraLabel:'Replace all',onExtra:()=>{
+    if(!confirm(`Replace all ${state.trainings.length} trainings with the ${incoming.length} from the file?`))return;
+    state.trainings=incoming; save(); goHome(); toast('Trainings replaced');
+  }});
 }
 // Normalize a plain training (builtin, imported, or exported) → stored training with fresh ids.
 function hydrateTraining(t){
-  const defaultSeconds = Number.isFinite(t.defaultSeconds) ? t.defaultSeconds : 30;
+  const defaultSeconds = Number.isFinite(t.defaultSeconds) ? t.defaultSeconds : DEFAULT_DUR;
   return {
     id: uid(),
     name: String(t.name||'Untitled'),
     description: t.description||'',
-    restSeconds: Number.isFinite(t.restSeconds)?t.restSeconds:8,
+    restSeconds: Number.isFinite(t.restSeconds)?t.restSeconds:DEFAULT_REST,
     exercises: (t.exercises||[]).map(e=>{
       const o={ id:uid(), name:String(e.name||''), description:e.description||'', imageUrl:wgerImg(e.imageUrl||''), emoji:e.emoji||'💪', s:Number.isFinite(e.s)?e.s:defaultSeconds };
       if(e.restAfterSeconds!=null) o.restAfterSeconds=Number(e.restAfterSeconds);
@@ -586,32 +584,30 @@ async function shareTraining(){
 }
 function exportTraining(){
   const t=getTraining(); if(!t) return;
-  const blob=new Blob([JSON.stringify(toSharePayload(t),null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(t.name||'training').replace(/[^a-z0-9-_ ]/gi,'_')+'.json';
-  a.click();
-  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  downloadJson((t.name||'training').replace(/[^a-z0-9-_ ]/gi,'_')+'.json',toSharePayload(t));
 }
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function load(){
   try{
     const d=localStorage.getItem(LS_KEY);
-    if(!d) return defaultSecondstate();
+    if(!d) return defaultState();
     const parsed=JSON.parse(d);
     // Defensive: ensure every exercise has a numeric `s` so the UI never shows NaN
     for(const t of parsed.trainings||[]){
-      for(const e of t.exercises||[]){ if(!Number.isFinite(e.s)) e.s=Number.isFinite(e.durationSeconds)?e.durationSeconds:30; }
+      for(const e of t.exercises||[]){ if(!Number.isFinite(e.s)) e.s=Number.isFinite(e.durationSeconds)?e.durationSeconds:DEFAULT_DUR; }
     }
     return parsed;
-  }catch(e){ console.error('LOAD ERROR', e); return defaultSecondstate(); }
+  }catch(e){ console.error('LOAD ERROR', e); return defaultState(); }
 }
 state = load();
 onVersionChange();
 function save(){ localStorage.setItem(LS_KEY,JSON.stringify(state)); }
 let _toastTimer;
-function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
-function getRestAfter(e,t){ return (e.restAfterSeconds!=null)?e.restAfterSeconds:(t.restSeconds!=null?t.restSeconds:8); }
+function toast(msg){ const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>t.classList.remove('show'),2000); }
+function getRestAfter(e,t){ return e.restAfterSeconds ?? t.restSeconds ?? DEFAULT_REST; }
+// Workout length: every exercise plus the rests between them (none after the last).
+function totalSeconds(t){ return t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0); }
+function fmtDur(s){ return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
 function autoUpdateEnabled(){ return state.settings.autoUpdate !== false; }
 function onVersionChange(){
   if(state.version === APP_VERSION) return;
@@ -628,43 +624,37 @@ function getPendingBuiltinUpdates(){
   if(!ids || !ids.length) return null;
   return BUILTIN_TRAININGS.filter(b => ids.includes(b.builtinId));
 }
-let _pendingBuiltinUpdates = null;
 function promptBuiltinUpdate(changed){
-  _pendingBuiltinUpdates = changed;
-  const names = changed.map(b=>`<li style="margin:2px 0">${esc(b.name)}</li>`).join('');
-  openModal('Built-in trainings updated',`
-    <div style="color:var(--text2);font-size:13px;margin-bottom:8px">These default trainings changed in v${APP_VERSION}:</div>
-    <ul style="margin:0 0 12px;padding-left:18px;font-size:13px">${names}</ul>
-    <div style="color:var(--text2);font-size:13px;margin-bottom:12px">Replace your copies with the updated versions?</div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeBuiltinUpdateModal()">Keep mine</button>
-      <button class="btn btn-primary" onclick="applyBuiltinUpdates()">Update</button>
-    </div>
-  `);
-}
-function closeBuiltinUpdateModal(){ _pendingBuiltinUpdates=null; state.settings._pendingBuiltinIds=null; save(); closeModal(); }
-function applyBuiltinUpdates(){
-  if(!_pendingBuiltinUpdates) return;
-  _pendingBuiltinUpdates.forEach(b=>{
-    const idx=state.trainings.findIndex(t=>t.builtinId===b.builtinId);
-    if(idx>=0) state.trainings[idx]=hydrateBuiltin(b);
-  });
-  _pendingBuiltinUpdates=null;
-  state.settings._pendingBuiltinIds=null;
-  save(); closeModal(); renderHome(); toast('Trainings updated!');
+  const done=()=>{ state.settings._pendingBuiltinIds=null; save(); };
+  confirmModal('Built-in trainings updated',`
+    <div class="modal-text">These default trainings changed in v${APP_VERSION}:</div>
+    ${modalList(changed.map(b=>esc(b.name)))}
+    <div class="modal-text">Replace your copies with the updated versions?</div>`,
+  'Update',()=>{
+    changed.forEach(b=>{
+      const idx=state.trainings.findIndex(t=>t.builtinId===b.builtinId);
+      if(idx>=0) state.trainings[idx]=hydrateBuiltin(b);
+    });
+    done(); renderHome(); toast('Trainings updated!');
+  },{cancelLabel:'Keep mine',onCancel:done});
 }
 
 // ─── Navigation ───────────────────────────────────────────────
-function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active'); }
+function showView(id){ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));$(id).classList.add('active'); }
 function goHome(){
-  if(location.hash&&location.hash!=='#'){
-    history.pushState(null,'',location.pathname+location.search);
-    routeHash();
-  }
+  if(location.hash&&location.hash!=='#') history.pushState(null,'',location.pathname+location.search);
+  routeHash();
 }
 function goDetail(){ location.hash='detail:'+currentTrainingId; }
 
-window.addEventListener('hashchange',()=>routeHash());
+window.addEventListener('hashchange',e=>{
+  const leavingAdd=$('view-add').classList.contains('active')&&!location.hash.startsWith('#add:');
+  if(leavingAdd&&!confirmDiscard($('tab-manual'))){
+    history.replaceState(null,'',new URL(e.oldURL).hash);
+    return;
+  }
+  routeHash();
+});
 function routeHash(){
   const h=location.hash.slice(1);
   if(h.startsWith('import=')){
@@ -674,28 +664,27 @@ function routeHash(){
       .catch(()=>toast('Invalid share link'));
     return;
   }
-  if(!h||h==='home'){ showView('view-home'); renderHome(); }
-  else if(h.startsWith('detail:')){
-    currentTrainingId=h.slice(7);
-    const t=getTraining(); if(!t){goHome();return;}
-    showView('view-detail'); renderDetail();
+  const [view,id]=h.split(':');
+  if(id!=null){
+    currentTrainingId=id;
+    if(!getTraining()) return goHome();
   }
-  else if(h.startsWith('add:')){ currentTrainingId=h.slice(4); const t=getTraining(); if(!t){goHome();return;} showView('view-add'); }
-  else if(h.startsWith('player:')){ currentTrainingId=h.slice(7); if(pl.training){showView('view-player');}else{goDetail();} } // fall back to detail on reload (no player state)
+  if(view==='detail'){ showView('view-detail'); renderDetail(); }
+  else if(view==='add') openAddExercise();
+  else if(view==='player'){ if(pl.training) showView('view-player'); else goDetail(); } // reload loses player state → detail
+  else{ showView('view-home'); renderHome(); }
 }
 
 // ─── Home View ────────────────────────────────────────────────
 function renderHome(){
-  const c=document.getElementById('home-list');
+  const c=$('home-list');
   if(!state.trainings.length){ c.innerHTML='<div class="empty-state"><div class="icon">🏋️</div><p>No trainings yet.<br>Tap + to create one.</p></div>'; return; }
-  c.innerHTML=state.trainings.map(t=>{
-    const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
-    const mins=Math.floor(dur/60), secs=dur%60;
+  c.innerHTML=state.trainings.map((t,i)=>{
     const ago=t.lastCompleted?timeAgo(t.lastCompleted):'';
-    return `<div class="card training-card" onclick="openTraining('${t.id}')">
+    return `<div class="card training-card" data-idx="${i}">
       <span class="training-count">${t.exercises.length}</span>
-      <div class="info"><div class="name">${esc(t.name)}</div><div class="meta">${mins}:${String(secs).padStart(2,'0')} total</div>${ago?`<div class="last-done">✓ ${ago}</div>`:''}</div>
-      <button class="play-btn" title="Start workout" onclick="event.stopPropagation();currentTrainingId='${t.id}';startPlayer()"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button>
+      <div class="info"><div class="name">${esc(t.name)}</div><div class="meta">${fmtDur(totalSeconds(t))} total</div>${ago?`<div class="last-done">✓ ${ago}</div>`:''}</div>
+      <button class="play-btn" title="Start workout" onclick="currentTrainingId='${t.id}';startPlayer()"><svg width="18" height="18" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg></button>
     </div>`;
   }).join('');
 }
@@ -703,7 +692,7 @@ function renderHome(){
 function promptNewTraining(){
   const name=prompt('Training name:','New Training');
   if(!name)return;
-  state.trainings.push({id:uid(),name,restSeconds:8,exercises:[]});
+  state.trainings.push({id:uid(),name,restSeconds:DEFAULT_REST,exercises:[]});
   save(); renderHome();
 }
 
@@ -714,17 +703,14 @@ function getTraining(){ return state.trainings.find(t=>t.id===currentTrainingId)
 
 function renderDetail(){
   const t=getTraining(); if(!t)return goHome();
-  document.getElementById('detail-title').textContent=t.name;
-  const dur=t.exercises.reduce((s,e,i)=>s+e.s+(i<t.exercises.length-1?getRestAfter(e,t):0),0);
-  const mins=Math.floor(dur/60), secs=dur%60;
-  document.getElementById('detail-duration').textContent=`${mins}:${String(secs).padStart(2,'0')}`;
-  const descEl=document.getElementById('detail-desc');
+  $('detail-title').textContent=t.name;
+  $('detail-duration').textContent=fmtDur(totalSeconds(t));
+  const descEl=$('detail-desc');
   if(t.description){descEl.innerHTML=autolink(t.description);descEl.style.display='';}else{descEl.style.display='none';}
-  const c=document.getElementById('detail-exercises');
+  const c=$('detail-exercises');
   if(!t.exercises.length){ c.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No exercises yet.<br>Tap + to add some.</p></div>'; return; }
   c.innerHTML=`<div class="reorder-hint">tap to edit · long-press to reorder</div>`+t.exercises.map((e,i)=>{
-    const isWger=e.imageUrl&&e.imageUrl.includes('wger.de');
-    const thumb=e.imageUrl?`<img src="${esc(e.imageUrl)}" alt="" loading="lazy" class="${isWger?'wger-img':''}">`:(e.emoji||'💪');
+    const thumb=esc(e.emoji||'💪')+imgTag(e.imageUrl,'loading="lazy"');
     return `<div class="card exercise-card" data-idx="${i}">
       <div class="thumb">${thumb}</div>
       <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button>${e.s}s<button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
@@ -735,7 +721,6 @@ function renderDetail(){
       </div>
     </div>`;
   }).join('');
-  initTouchReorder();
 }
 
 function editTrainingName(){
@@ -744,21 +729,21 @@ function editTrainingName(){
     <div class="field"><label>Name</label><input id="ed-tname" value="${esc(t.name)}"></div>
     <div class="field"><label>Description</label><textarea id="ed-tdesc" rows="2">${esc(t.description||'')}</textarea></div>
     <div class="field"><label>Default rest between exercises</label><div class="dur-input"><input id="ed-trest" type="number" value="${t.restSeconds}" min="0" max="120"><span>seconds</span></div></div>
-    <div class="modal-actions" style="margin-top:8px">
+    <div class="modal-actions">
       <button class="btn btn-primary" onclick="saveTrainingEdit()">Save</button>
       <button class="btn btn-secondary" onclick="dupTraining()">Duplicate</button>
       <button class="btn btn-danger" onclick="deleteTraining()">Delete</button>
     </div>
-    <div class="modal-actions" style="margin-top:8px">
+    <div class="modal-actions">
       <button class="btn btn-secondary" onclick="shareTraining()">Share Link</button>
       <button class="btn btn-secondary" onclick="exportTraining()">Export JSON</button>
     </div>
-  `);
+  `,{guard:true});
 }
 function saveTrainingEdit(){
-  const t=getTraining(); t.name=document.getElementById('ed-tname').value||t.name;
-  t.description=document.getElementById('ed-tdesc').value;
-  t.restSeconds=parseInt(document.getElementById('ed-trest').value)||0;
+  const t=getTraining(); t.name=$('ed-tname').value||t.name;
+  t.description=$('ed-tdesc').value;
+  t.restSeconds=parseInt($('ed-trest').value)||0;
   save(); closeModal(); renderDetail();
 }
 function deleteTraining(){
@@ -770,85 +755,51 @@ function removeExercise(i){ const t=getTraining();t.exercises.splice(i,1);save()
 
 function editExercise(i){
   const t=getTraining(),e=t.exercises[i];
-  openModal('Edit Exercise',`
-    <div style="display:flex;gap:8px">
-      <div class="field" style="width:64px"><label>Emoji</label><input id="ed-eemoji" value="${esc(e.emoji||'')}" placeholder="💪" autocomplete="off" style="text-align:center"></div>
-      <div class="field" style="flex:1"><label>Name</label><input id="ed-ename" value="${esc(e.name)}"></div>
-    </div>
-    <div class="field"><label>Description</label><textarea id="ed-edesc">${esc(e.description||'')}</textarea></div>
-    <div class="field"><label>Image URL</label><input id="ed-eimg" value="${esc(e.imageUrl||'')}"></div>
+  openModal('Edit Exercise',`<div class="exform">${exFormHtml('ed',e,t,{submit:'Save',onSubmit:`saveExerciseEdit(${i})`,extra:`
     <div class="field"><label>Enhance from wger</label>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-        <input id="ed-wger-q" value="${esc(e.name)}" style="flex:1" placeholder="Search wger…">
+        <input id="ed-wger-q" data-noguard value="${esc(e.name)}" class="grow" placeholder="Search wger…">
         <div class="lang-toggle" id="ed-lang-toggle"></div>
-        <button class="btn" style="white-space:nowrap;padding:8px 12px;font-size:13px" onclick="enhanceExerciseFromWger(${i})">Search</button>
+        <button class="btn" style="white-space:nowrap;padding:8px 12px;font-size:13px" onclick="enhanceExerciseFromWger()">Search</button>
       </div>
-      <div id="ed-wger-status" style="font-size:12px;color:var(--text3);min-height:16px;max-height:260px;overflow-y:auto"></div>
-    </div>
-    <div style="display:flex;gap:12px">
-      <div class="field" style="flex:1"><label>Duration</label><div class="dur-input"><input id="ed-edur" type="number" value="${e.s}" min="5" max="600"><span>s</span></div></div>
-      <div class="field" style="flex:1"><label>Rest after</label><div class="dur-input"><input id="ed-erest" type="number" value="${e.restAfterSeconds!=null?e.restAfterSeconds:''}" min="0" max="300" placeholder="${t.restSeconds}"><span>s</span></div></div>
-    </div>
-    <button class="btn btn-primary btn-block" style="padding:14px;margin-top:4px" onclick="saveExerciseEdit(${i})">Save</button>
-  `);
+      <div id="ed-wger-status"></div>
+    </div>`})}</div>`,{guard:true});
+  renderIllu('ed');
   renderLangToggle('ed-lang-toggle');
 }
 let _enhanceResults=[];
-async function enhanceExerciseFromWger(i){
-  const status=document.getElementById('ed-wger-status');
-  const q=document.getElementById('ed-wger-q').value.trim();
+async function enhanceExerciseFromWger(){
+  const status=$('ed-wger-status');
+  const q=$('ed-wger-q').value.trim();
   if(!q)return;
   status.innerHTML='Searching wger…';
   try{
-    const langCodes=wgerLang==='de'?'de,en':'en';
-    const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(q)}&language__code=${langCodes}&limit=15`;
-    const data=await (await fetch(url)).json();
-    const results=(data.results||[]).slice(0,10);
-    _enhanceResults=results;
-    if(!results.length){status.innerHTML='No matches found on wger.';return;}
-    status.innerHTML='<div style="font-weight:600;margin-bottom:6px">Pick a match:</div>'+results.map((e,idx)=>{
-      const tr=wgerTr(e);
-      const cat=e.category?e.category.name:'';
-      const muscles=(e.muscles||[]).map(m=>m.name_en||m.name).join(', ');
-      const img=(e.images&&e.images[0])?wgerImg(e.images[0].image):'';
-      return `<div class="card search-result" onclick="pickEnhanceResult(${idx})" style="margin:4px 0">
-        ${img?`<div class="sr-thumb"><img src="${esc(img)}" alt="" loading="lazy"></div>`:''}
-        <div class="sr-info"><div class="sr-name">${esc(tr.name||'?')}</div>
-        <div class="sr-cat">${esc(cat)}${muscles?' · '+esc(muscles):''}</div></div>
-      </div>`;
-    }).join('');
+    _enhanceResults=(await wgerSearch(q,15)).slice(0,10);
+    if(!_enhanceResults.length){status.innerHTML='No matches found on wger.';return;}
+    status.innerHTML='<div style="font-weight:600;margin-bottom:6px">Pick a match:</div>'
+      +_enhanceResults.map((e,idx)=>wgerCard(e,`pickEnhanceResult(${idx})`)).join('');
   }catch(e){status.innerHTML='Could not reach wger.de.';}
 }
 function pickEnhanceResult(idx){
   const e=_enhanceResults[idx]; if(!e)return;
-  const tr=wgerTr(e);
-  const desc=wgerDesc(e);
-  if(desc)document.getElementById('ed-edesc').value=desc;
-  if(e.images&&e.images.length)document.getElementById('ed-eimg').value=wgerImg(e.images[0].image);
-  document.getElementById('ed-wger-status').innerHTML=
-    `Applied "${esc(tr.name||'exercise')}"${e.images&&e.images.length?' — image applied':' — no image available'}.`;
+  const desc=wgerDesc(e), img=wgerFirstImg(e);
+  if(desc)$('ed-desc').value=desc;
+  if(img){$('ed-img').value=img;renderIllu('ed');}
+  $('ed-wger-status').innerHTML=`Applied "${esc(wgerTr(e).name||'exercise')}" — ${img?'image applied':'no image available'}.`;
   _enhanceResults=[];
 }
 function saveExerciseEdit(i){
-  const t=getTraining(),e=t.exercises[i];
-  e.name=document.getElementById('ed-ename').value||e.name;
-  e.emoji=firstGrapheme(document.getElementById('ed-eemoji').value)||'💪';
-  e.description=document.getElementById('ed-edesc').value;
-  e.imageUrl=document.getElementById('ed-eimg').value;
-  e.s=parseInt(document.getElementById('ed-edur').value)||30;
-  const rv=document.getElementById('ed-erest').value;
-  e.restAfterSeconds=rv!==''?parseInt(rv):null;
+  const e=getTraining().exercises[i];
+  const f=readExForm('ed');
+  Object.assign(e,f,{name:f.name||e.name});
   save(); closeModal(); renderDetail();
 }
 
-// Adjust duration inline
-function adjDur(i,delta){ const t=getTraining(),e=t.exercises[i];e.s=Math.max(5,e.s+delta);save();renderDetail(); }
+function adjDur(i,delta){ const e=getTraining().exercises[i];e.s=Math.max(5,e.s+delta);save();renderDetail(); }
 
-// Duplicate exercise
-function dupExercise(i){ const t=getTraining(),e=t.exercises[i];const c=JSON.parse(JSON.stringify(e));c.id=uid();t.exercises.splice(i+1,0,c);save();renderDetail(); }
+function dupExercise(i){ const t=getTraining(),c=structuredClone(t.exercises[i]);c.id=uid();t.exercises.splice(i+1,0,c);save();renderDetail(); }
 
-// Duplicate training
-function dupTraining(){ const t=getTraining();const c=JSON.parse(JSON.stringify(t));c.id=uid();c.lastCompleted=null;c.exercises.forEach(e=>e.id=uid());state.trainings.push(c);save();closeModal();goHome();toast('Duplicated!'); }
+function dupTraining(){ const c=structuredClone(getTraining());c.id=uid();c.lastCompleted=null;c.exercises.forEach(e=>e.id=uid());state.trainings.push(c);save();closeModal();goHome();toast('Duplicated!'); }
 
 // Time ago helper
 function timeAgo(ts){
@@ -864,132 +815,92 @@ function timeAgo(ts){
   return 'just now';
 }
 
-// ─── Reorder (touch + mouse) ──────────────────────────────────
-let drag={active:false,timer:null,idx:null,ghost:null,startY:0,startX:0,cards:[],overIdx:null,card:null,decided:false,blockClick:false};
-const CONTAINER_ID='detail-exercises';
-function initTouchReorder(){
-  const c=document.getElementById(CONTAINER_ID);
-  c.removeEventListener('touchstart',drStart);
-  c.removeEventListener('touchmove',drMoveT);
-  c.removeEventListener('touchend',drEndT);
-  c.removeEventListener('touchcancel',drEndT);
-  c.removeEventListener('mousedown',drStartM);
-  c.removeEventListener('click',drCardClick);
-  c.addEventListener('touchstart',drStart,{passive:false});
-  c.addEventListener('touchmove',drMoveT,{passive:false});
-  c.addEventListener('touchend',drEndT,{passive:false});
-  c.addEventListener('touchcancel',drEndT,{passive:false});
-  c.addEventListener('mousedown',drStartM);
-  c.addEventListener('click',drCardClick);
+// ─── Reorder (long-press drag, Pointer Events) ────────────────
+// Long-press (400 ms) on a card starts a drag; moving >5 px before that cancels,
+// so normal touch scrolling still works. Tap (no drag) calls onTap.
+// Cards need data-idx; buttons inside a card keep their own click behaviour.
+const REORDER_LISTS=[
+  {container:'detail-exercises',card:'.exercise-card',list:()=>getTraining().exercises,render:()=>renderDetail(),onTap:i=>editExercise(i)},
+  {container:'home-list',card:'.training-card',list:()=>state.trainings,render:()=>renderHome(),onTap:i=>openTraining(state.trainings[i].id)},
+];
+let drag={timer:null,active:false,cfg:null,idx:null,overIdx:null,ghost:null,cards:[],startX:0,startY:0,blockClick:false};
+const onControl=ev=>!!ev.target.closest('button');
+// Listeners sit on the containers, which survive re-renders, so bind once.
+function initReorder(){
+  for(const cfg of REORDER_LISTS){
+    const c=$(cfg.container);
+    c.addEventListener('pointerdown',ev=>drStart(ev,cfg));
+    c.addEventListener('click',ev=>drCardClick(ev,cfg));
+    // Pointer events can't stop touch scrolling; a non-passive touchmove can.
+    c.addEventListener('touchmove',ev=>{if(drag.active)ev.preventDefault();},{passive:false});
+    c.addEventListener('contextmenu',ev=>{if(drag.active)ev.preventDefault();});
+  }
 }
-function drCardClick(ev){
-  if(drag.blockClick)return;
-  if(ev.target.closest('button,.quick-btn'))return;
-  const card=ev.target.closest('.exercise-card');if(!card)return;
-  const idx=parseInt(card.dataset.idx);
-  if(!isNaN(idx))editExercise(idx);
+function drCardClick(ev,cfg){
+  if(drag.blockClick||onControl(ev))return;
+  const card=ev.target.closest(cfg.card);
+  if(card)cfg.onTap(+card.dataset.idx);
 }
-function drPos(ev){return ev.touches?{x:ev.touches[0].clientX,y:ev.touches[0].clientY}:{x:ev.clientX,y:ev.clientY};}
-function drCancelOnSelect(){if(!drag.active){clearTimeout(drag.timer);drag.timer=null;}document.removeEventListener('selectstart',drCancelOnSelect);}
-function drStart(ev){
-  if(ev.target.closest('button,.quick-btn'))return;
-  const card=ev.target.closest('.exercise-card');if(!card)return;
-  const p=drPos(ev);
-  drag.startY=p.y;drag.startX=p.x;drag.card=card;drag.decided=false;drag.overIdx=null;
-  document.addEventListener('selectstart',drCancelOnSelect);
-  drag.timer=setTimeout(()=>drActivate(card,parseInt(card.dataset.idx)),400);
+function drStart(ev,cfg){
+  if(ev.button>0||onControl(ev))return;
+  const card=ev.target.closest(cfg.card);if(!card)return;
+  drag.cfg=cfg;drag.startX=ev.clientX;drag.startY=ev.clientY;drag.overIdx=null;
+  drag.timer=setTimeout(()=>drActivate(card),400);
+  document.addEventListener('pointermove',drMove);
+  document.addEventListener('pointerup',drFinish);
+  document.addEventListener('pointercancel',drFinish);
 }
-function drStartM(ev){
-  if(ev.target.closest('button,.quick-btn'))return;
-  if(ev.detail>1)return; // double-click = text selection, don't start reorder
-  const card=ev.target.closest('.exercise-card');if(!card)return;
-  drag.startY=ev.clientY;drag.startX=ev.clientX;drag.card=card;drag.decided=false;drag.overIdx=null;
-  document.addEventListener('selectstart',drCancelOnSelect);
-  drag.timer=setTimeout(()=>{
-    drActivate(card,parseInt(card.dataset.idx));
-    document.addEventListener('mousemove',drMoveM);
-    document.addEventListener('mouseup',drEndM);
-  },400);
-  // cancel if mouse leaves, moves, or releases before timer
-  const cancel=()=>{
-    if(!drag.active){clearTimeout(drag.timer);drag.timer=null;}
-    card.removeEventListener('mouseleave',cancel);
-    document.removeEventListener('mouseup',cancel);
-    document.removeEventListener('mousemove',moveCancel);
-  };
-  const moveCancel=(e)=>{
-    if(drag.active)return;
-    if(Math.abs(e.clientX-drag.startX)>5||Math.abs(e.clientY-drag.startY)>5)cancel();
-  };
-  card.addEventListener('mouseleave',cancel);
-  document.addEventListener('mouseup',cancel);
-  document.addEventListener('mousemove',moveCancel);
-}
-function drActivate(card,idx){
-  drag.active=true;drag.idx=idx;drag.decided=true;
-  navigator.vibrate&&navigator.vibrate(30);
-  const r=card.getBoundingClientRect();
-  const g=card.cloneNode(true);
-  g.classList.add('drag-ghost');g.style.width=r.width+'px';g.style.left=r.left+'px';g.style.top=r.top+'px';
+function drActivate(card){
+  drag.active=true;drag.idx=+card.dataset.idx;
+  navigator.vibrate?.(30);
+  getSelection()?.removeAllRanges();
+  document.body.classList.add('reordering');
+  const r=card.getBoundingClientRect(),g=card.cloneNode(true);
+  g.classList.add('drag-ghost');
+  Object.assign(g.style,{width:r.width+'px',left:r.left+'px',top:r.top+'px'});
   document.body.appendChild(g);drag.ghost=g;
   card.classList.add('dragging');
-  // Only cards inside the container, NOT the ghost in body
-  drag.cards=[...document.getElementById(CONTAINER_ID).querySelectorAll('.exercise-card')];
+  drag.cards=[...$(drag.cfg.container).querySelectorAll(drag.cfg.card)];
 }
-function drMoveAt(x,y){
-  if(drag.active){
-    if(drag.ghost)drag.ghost.style.top=(y-30)+'px';
-    // Auto-scroll when near edges of the scroll container
-    const container=document.getElementById(CONTAINER_ID);
-    const cr=container.getBoundingClientRect();
-    const edge=50;
-    if(y<cr.top+edge)container.scrollTop-=8;
-    else if(y>cr.bottom-edge)container.scrollTop+=8;
-    drag.cards.forEach(c=>{c.classList.remove('drag-over-top','drag-over-bot');});
-    let over=null;
-    drag.cards.forEach(c=>{
-      const r=c.getBoundingClientRect();
-      if(y>r.top&&y<r.bottom)over=c;
-    });
-    if(over&&parseInt(over.dataset.idx)!==drag.idx){
-      const r=over.getBoundingClientRect(),mid=r.top+r.height/2;
-      over.classList.add(y<mid?'drag-over-top':'drag-over-bot');
-      drag.overIdx=parseInt(over.dataset.idx)+(y<mid?0:1);
-      if(drag.overIdx>drag.idx)drag.overIdx--;
-    }
-    return true;
+function drMove(ev){
+  if(!drag.active){
+    if(Math.abs(ev.clientX-drag.startX)>5||Math.abs(ev.clientY-drag.startY)>5)drFinish();
+    return;
   }
-  return false;
-}
-function drMoveT(ev){
-  if(!drag.timer&&!drag.active)return;
-  const p=drPos(ev);
-  if(drMoveAt(p.x,p.y)){ev.preventDefault();return;}
-  if(!drag.decided){
-    if(Math.abs(p.x-drag.startX)>5||Math.abs(p.y-drag.startY)>5){
-      clearTimeout(drag.timer);drag.timer=null;drag.decided=true;
-    }
-  }
-}
-function drMoveM(ev){
-  if(!drag.active)return;
   ev.preventDefault();
-  drMoveAt(ev.clientX,ev.clientY);
+  const y=ev.clientY;
+  drag.ghost.style.top=(y-30)+'px';
+  // Auto-scroll near the container edges
+  const container=$(drag.cfg.container),cr=container.getBoundingClientRect();
+  if(y<cr.top+50)container.scrollTop-=8;
+  else if(y>cr.bottom-50)container.scrollTop+=8;
+  drag.cards.forEach(c=>c.classList.remove('drag-over-top','drag-over-bot'));
+  const over=drag.cards.find(c=>{const r=c.getBoundingClientRect();return y>r.top&&y<r.bottom;});
+  if(over&&+over.dataset.idx!==drag.idx){
+    const r=over.getBoundingClientRect(),above=y<r.top+r.height/2;
+    over.classList.add(above?'drag-over-top':'drag-over-bot');
+    drag.overIdx=+over.dataset.idx+(above?0:1);
+    if(drag.overIdx>drag.idx)drag.overIdx--;
+  }
 }
 function drFinish(){
-  const wasActive=drag.active;
   clearTimeout(drag.timer);drag.timer=null;
-  if(drag.ghost){drag.ghost.remove();drag.ghost=null;}
-  if(drag.cards.length)drag.cards.forEach(c=>{c.classList.remove('dragging','drag-over-top','drag-over-bot');});
-  if(drag.active&&drag.overIdx!==null&&drag.overIdx!==drag.idx){
-    const t=getTraining(),item=t.exercises.splice(drag.idx,1)[0];
-    t.exercises.splice(drag.overIdx,0,item);save();renderDetail();
+  document.removeEventListener('pointermove',drMove);
+  document.removeEventListener('pointerup',drFinish);
+  document.removeEventListener('pointercancel',drFinish);
+  if(!drag.active)return;
+  document.body.classList.remove('reordering');
+  drag.ghost.remove();
+  drag.cards.forEach(c=>c.classList.remove('dragging','drag-over-top','drag-over-bot'));
+  const {idx,overIdx,cfg}=drag;
+  Object.assign(drag,{active:false,ghost:null,cards:[],blockClick:true});
+  setTimeout(()=>{drag.blockClick=false;},350); // swallow the click that ends the drag
+  if(overIdx!==null&&overIdx!==idx){
+    const list=cfg.list();
+    list.splice(overIdx,0,list.splice(idx,1)[0]);
+    save();cfg.render();
   }
-  drag.active=false;drag.idx=null;drag.overIdx=null;drag.card=null;drag.decided=false;drag.cards=[];
-  if(wasActive){drag.blockClick=true;setTimeout(()=>{drag.blockClick=false;},350);}
 }
-function drEndT(){drFinish();}
-function drEndM(){document.removeEventListener('mousemove',drMoveM);document.removeEventListener('mouseup',drEndM);drFinish();}
 
 // ─── Add Exercise ─────────────────────────────────────────────
 // Equipment definitions for wger filters
@@ -1012,32 +923,33 @@ let wgerLang='en'; // 'en' or 'de'
 function openAddExercise(){
   location.hash='add:'+currentTrainingId;
   showView('view-add');
-  document.getElementById('wger-search').value='';
-  document.getElementById('wger-results').innerHTML='<div class="search-loader">Type to search exercises</div>';
+  $('wger-search').value='';
+  $('wger-results').innerHTML='<div class="search-loader">Type to search exercises</div>';
   renderEquipFilters();
   renderLangToggle();
+  const man=$('tab-manual');
+  man.innerHTML=exFormHtml('man',null,getTraining(),{submit:'Add Exercise',onSubmit:'addManualExercise()'});
+  renderIllu('man');
+  guardForm(man);
 }
 
 function renderLangToggle(id='lang-toggle'){
-  const el=document.getElementById(id); if(!el)return;
+  const el=$(id); if(!el)return;
   el.innerHTML=['en','de'].map(l=>`<button class="${wgerLang===l?'active':''}" onclick="setWgerLang('${l}')">${l.toUpperCase()}</button>`).join('');
 }
 
 function setWgerLang(l){ wgerLang=l; renderLangToggle(); renderLangToggle('ed-lang-toggle'); debounceSearch(); }
 
 function renderEquipFilters(){
-  const c=document.getElementById('equip-filters');
-  c.innerHTML=WGER_EQUIPMENT.map(eq=>{
+  $('equip-filters').innerHTML=WGER_EQUIPMENT.map(eq=>{
     const active=eq.id===0?selectedEquipment.size===0:selectedEquipment.has(eq.id);
     return `<button class="tab${active?' active':''}" style="font-size:11px;padding:5px 10px;border-radius:12px" onclick="toggleEquip(${eq.id})">${esc(eq.name)}</button>`;
   }).join('');
 }
 
 function toggleEquip(id){
-  if(id===0){selectedEquipment.clear();}
-  else{
-    if(selectedEquipment.has(id))selectedEquipment.delete(id); else selectedEquipment.add(id);
-  }
+  if(id===0) selectedEquipment.clear();
+  else if(!selectedEquipment.delete(id)) selectedEquipment.add(id);
   renderEquipFilters();
   debounceSearch();
 }
@@ -1045,56 +957,59 @@ function toggleEquip(id){
 function switchTab(el,tab){
   el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tab-search').style.display=tab==='search'?'':'none';
-  document.getElementById('tab-manual').style.display=tab==='manual'?'':'none';
+  $('tab-search').style.display=tab==='search'?'':'none';
+  $('tab-manual').style.display=tab==='manual'?'':'none';
 }
 
 function debounceSearch(){ clearTimeout(searchTimeout); searchTimeout=setTimeout(searchWger,400); }
 
 const LANG_IDS={en:2,de:1};
 
+// When searching in German, include English results too.
+async function wgerSearch(q,limit,equipment=[]){
+  const lang=wgerLang==='de'?'de,en':'en';
+  const equip=equipment.map(id=>'&equipment='+id).join('');
+  const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(q)}&language__code=${lang}${equip}&limit=${limit}`;
+  return (await (await fetch(url)).json()).results||[];
+}
+function wgerFirstImg(e){ return wgerImg(e.images?.[0]?.image); }
+// Result card shared by the Add search and the Edit "Enhance from wger" picker.
+// `full` adds equipment and a description snippet.
+function wgerCard(e,onclick,full){
+  const img=wgerFirstImg(e);
+  const meta=[e.category?.name,(e.muscles||[]).map(m=>m.name_en||m.name).join(', ')];
+  let snip='';
+  if(full){
+    meta.push((e.equipment||[]).map(eq=>eq.name).join(', '));
+    const d=wgerDesc(e).replace(/\n+/g,' ');
+    snip=d.length>80?d.slice(0,80)+'…':d;
+  }
+  return `<div class="card search-result" onclick="${onclick}">
+    ${img?`<div class="sr-thumb"><img src="${esc(img)}" alt="" loading="lazy"></div>`:''}
+    <div class="sr-info"><div class="sr-name">${esc(wgerTr(e).name||'?')}</div>
+    <div class="sr-cat">${esc(meta.filter(Boolean).join(' · '))}</div>
+    ${snip?`<div class="sr-snip">${esc(snip)}</div>`:''}</div>
+  </div>`;
+}
+
 async function searchWger(){
-  const q=document.getElementById('wger-search').value.trim();
-  const c=document.getElementById('wger-results');
+  const q=$('wger-search').value.trim();
+  const c=$('wger-results');
   if(!q){c.innerHTML='<div class="search-loader">Type to search…</div>';return;}
   c.innerHTML='<div class="search-loader">Searching…</div>';
   try{
-    const equipParams=[...selectedEquipment].map(id=>'&equipment='+id).join('');
-    // When searching in German, include English results too
-    const langCodes=wgerLang==='de'?'de,en':'en';
-    const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(q)}&language__code=${langCodes}${equipParams}&limit=50&offset=0`;
-    const r=await fetch(url);
-    const data=await r.json();
-    const exercises=(data.results||[]).slice(0,25);
-    wgerSearchResults=exercises;
-    if(!exercises.length){c.innerHTML='<div class="search-loader">No exercises found for "'+esc(q)+'"</div>';return;}
-    c.innerHTML=exercises.map((e,i)=>{
-      const tr=wgerTr(e);
-      const desc=wgerDesc(e);
-      const cat=e.category?e.category.name:'';
-      const muscles=(e.muscles||[]).map(m=>m.name_en||m.name).join(', ');
-      const equip=(e.equipment||[]).map(eq=>eq.name).join(', ');
-      const img=(e.images&&e.images[0])?wgerImg(e.images[0].image):'';
-      const descFlat=desc.replace(/\n+/g,' ');
-      const descSnip=descFlat.length>80?descFlat.slice(0,80)+'…':descFlat;
-      return `<div class="card search-result" onclick="pickWgerResult(${i})">
-        ${img?`<div class="sr-thumb"><img src="${esc(img)}" alt="" loading="lazy"></div>`:''}
-        <div class="sr-info"><div class="sr-name">${esc(tr.name||'?')}</div>
-        <div class="sr-cat">${esc(cat)}${muscles?' · '+esc(muscles):''}${equip?' · '+esc(equip):''}</div>
-        ${descSnip?`<div style="font-size:11px;color:var(--text3);margin-top:3px;line-height:1.3">${esc(descSnip)}</div>`:''}</div>
-      </div>`;
-    }).join('');
-  }catch(err){c.innerHTML='<div class="search-loader">⚠️ Cannot reach wger.de<br><small style="color:var(--text3);margin-top:6px;display:block">This is blocked in the Claude preview. Download the file and open it locally, or use the Manual tab.</small></div>';}
+    wgerSearchResults=(await wgerSearch(q,50,[...selectedEquipment])).slice(0,25);
+    if(!wgerSearchResults.length){c.innerHTML='<div class="search-loader">No exercises found for "'+esc(q)+'"</div>';return;}
+    c.innerHTML=wgerSearchResults.map((e,i)=>wgerCard(e,`pickWgerResult(${i})`,true)).join('');
+  }catch(err){c.innerHTML='<div class="search-loader">⚠️ Cannot reach wger.de<br><small style="color:var(--text3);margin-top:6px;display:block">Check your connection, or use the Manual tab.</small></div>';}
 }
 
 // Pick best translation for current language, fallback to English
 function wgerTr(e){
-  const lid=LANG_IDS[wgerLang];
-  return (e.translations||[]).find(t=>t.language===lid)
-    ||(e.translations||[]).find(t=>t.language===2)
-    ||(e.translations||[])[0]||{};
+  const trs=e.translations||[];
+  return trs.find(t=>t.language===LANG_IDS[wgerLang])||trs.find(t=>t.language===LANG_IDS.en)||trs[0]||{};
 }
-// Get best description: prefer selected lang, fall back to English, then any
+// wger descriptions are HTML; flatten to plain text with line breaks and bullets.
 function cleanDesc(s){
   if(!s)return '';
   return s
@@ -1109,16 +1024,11 @@ function cleanDesc(s){
     .replace(/\n{3,}/g,'\n\n')
     .trim();
 }
+// First non-empty description: selected language, then English, then any.
 function wgerDesc(e){
-  const lid=LANG_IDS[wgerLang];
-  const tryLangs=[lid,2];
-  for(const l of tryLangs){
-    const tr=(e.translations||[]).find(t=>t.language===l);
-    const d=cleanDesc(tr&&tr.description);
-    if(d)return d;
-  }
-  for(const tr of(e.translations||[])){
-    const d=cleanDesc(tr.description);
+  const trs=e.translations||[];
+  for(const tr of [trs.find(t=>t.language===LANG_IDS[wgerLang]),trs.find(t=>t.language===LANG_IDS.en),...trs]){
+    const d=cleanDesc(tr?.description);
     if(d)return d;
   }
   return '';
@@ -1126,110 +1036,138 @@ function wgerDesc(e){
 
 function pickWgerResult(idx){
   const e=wgerSearchResults[idx]; if(!e)return;
-  const tr=wgerTr(e);
-  const data={
-    name:tr.name||'Exercise',
-    description:wgerDesc(e),
-    imageUrl:wgerImg((e.images&&e.images[0])?e.images[0].image:''),
-  };
   const t=getTraining(); if(!t)return;
-  t.exercises.push({id:uid(),name:data.name,description:data.description,imageUrl:data.imageUrl,emoji:'🏋️',s:30});
-  save(); toast('Added: '+data.name); goDetail();
+  const name=wgerTr(e).name||'Exercise';
+  t.exercises.push({id:uid(),name,description:wgerDesc(e),imageUrl:wgerFirstImg(e),emoji:'🏋️',s:DEFAULT_DUR});
+  save(); toast('Added: '+name); goDetail();
 }
 
 function addManualExercise(){
   const t=getTraining(); if(!t)return;
-  const name=document.getElementById('man-name').value.trim();
-  if(!name){toast('Name is required');return;}
-  t.exercises.push({id:uid(),name,description:document.getElementById('man-desc').value,imageUrl:document.getElementById('man-img').value,emoji:firstGrapheme(document.getElementById('man-emoji').value)||'💪',s:parseInt(document.getElementById('man-dur').value)||30});
-  save(); toast('Added: '+name);
-  document.getElementById('man-name').value=''; document.getElementById('man-emoji').value=''; document.getElementById('man-desc').value=''; document.getElementById('man-img').value='';
+  const f=readExForm('man');
+  if(!f.name){toast('Name is required');return;}
+  t.exercises.push({id:uid(),...f});
+  save(); toast('Added: '+f.name);
+  guardForm($('tab-manual'));
   goDetail();
+}
+
+// ─── Exercise Form (shared by Manual add + Edit) ──────────────
+// The tile next to the name is both preview and emoji input. With an image URL
+// the image fills the tile and the emoji shrinks to a corner badge: it stays
+// the fallback (and the icon in list views).
+function exFormHtml(p,e,t,o){
+  e=e||{};
+  return `
+    <div class="exhead">
+      <div class="illu" id="${p}-illu">
+        <img id="${p}-illu-img" alt="" hidden>
+        <input id="${p}-emoji" class="illu-emoji" value="${esc(e.emoji||'')}" placeholder="💪" autocomplete="off" aria-label="Emoji" title="Emoji (fallback when there is no image)" oninput="renderIllu('${p}')">
+      </div>
+      <div class="field grow"><label>Name</label><input id="${p}-name" value="${esc(e.name||'')}" placeholder="e.g. Burpees"></div>
+    </div>
+    <div class="field"><label>Image URL</label>
+      <input id="${p}-img" value="${esc(e.imageUrl||'')}" placeholder="Optional — replaces the emoji" autocomplete="off" oninput="renderIllu('${p}')">
+      <div class="illu-hint" id="${p}-illu-hint"></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="${p}-desc" placeholder="How to perform…">${esc(e.description||'')}</textarea></div>
+    ${o.extra||''}
+    <div style="display:flex;gap:12px">
+      <div class="field grow"><label>Duration</label><div class="dur-input"><input id="${p}-dur" type="number" value="${e.s||30}" min="5" max="600"><span>s</span></div></div>
+      <div class="field grow"><label>Rest after</label><div class="dur-input"><input id="${p}-rest" type="number" value="${e.restAfterSeconds!=null?e.restAfterSeconds:''}" min="0" max="300" placeholder="${t?t.restSeconds:''}"><span>s</span></div></div>
+    </div>
+    <button class="btn btn-primary btn-block" style="padding:14px;margin-top:4px" onclick="${o.onSubmit}">${o.submit}</button>`;
+}
+function renderIllu(p){
+  const box=$(p+'-illu'); if(!box)return;
+  const img=$(p+'-illu-img');
+  const hint=$(p+'-illu-hint');
+  const url=$(p+'-img').value.trim();
+  const show=on=>{box.classList.toggle('has-img',on);img.hidden=!on;};
+  box.classList.toggle('wger-img',isWgerUrl(url));
+  if(!url){show(false);img.removeAttribute('src');hint.textContent='';return;}
+  img.onload=()=>{show(true);hint.textContent='The emoji badge is the fallback if the image can\'t load.';};
+  img.onerror=()=>{show(false);box.classList.remove('wger-img');hint.textContent='Image failed to load — the emoji is shown instead.';};
+  if(img.getAttribute('src')!==url)img.src=url;
+}
+function readExForm(p){
+  const v=id=>$(p+'-'+id).value;
+  const rv=v('rest');
+  return {
+    name:v('name').trim(),
+    emoji:firstGrapheme(v('emoji'))||'💪',
+    imageUrl:v('img').trim(),
+    description:v('desc'),
+    s:parseInt(v('dur'))||30,
+    restAfterSeconds:rv!==''?parseInt(rv):null,
+  };
 }
 
 // ─── Player ───────────────────────────────────────────────────
 function startPlayer(){
   const t=getTraining(); if(!t||!t.exercises.length){toast('Add exercises first');return;}
   pl.training={...t,exercises:[...t.exercises]};
-  pl.exerciseIdx=0; pl.isRest=false; pl.isPrepause=false;
   location.hash='player:'+currentTrainingId;
   showView('view-player');
   document.querySelector('.player-controls').style.display='';
+  const tm=$('pl-timer'); tm.onclick=null; tm.removeAttribute('role'); tm.removeAttribute('tabindex');
   audioCtx.resume().catch(()=>{}); // unlock AudioContext while still in user-gesture
   requestWakeLock();
   beginPrepause();
 }
 
-function beginPrepause(){
-  pl.exerciseIdx=0; pl.isRest=false; pl.isPrepause=true;
-  pl.secondsLeft=PREPAUSE_SECONDS; pl.running=true;
-  pl_shownId=null;
-  document.getElementById('pl-upnext').classList.replace('visible','out');
-  renderPlayer(); startTick();
+const curEx=()=>pl.training.exercises[pl.exerciseIdx];
+function segmentDuration(){
+  return pl.phase==='prepause' ? PREPAUSE_SECONDS
+    : pl.phase==='rest' ? getRestAfter(curEx(),pl.training)
+    : curEx().s;
 }
-
-function beginExercise(){
-  const e=pl.training.exercises[pl.exerciseIdx];
-  pl.isRest=false; pl.isPrepause=false; pl.secondsLeft=e.s; pl.running=true;
-  pl_shownId=null;
-  document.getElementById('pl-upnext').classList.replace('visible','out');
-  if(pl.exerciseIdx===0)say(e.name);
-  renderPlayer(); startTick();
+function beginSegment(phase){
+  pl.phase=phase; pl.running=true;
+  pl.secondsLeft=segmentDuration();
+  const u=$('pl-upnext');
+  if(phase==='rest'){ u.innerHTML='😮‍💨 UP NEXT'; u.classList.remove('out'); u.classList.add('visible'); }
+  else u.classList.replace('visible','out');
+  renderSegment(); renderPlayer(); startTick();
 }
-
+function beginPrepause(){ pl.exerciseIdx=0; beginSegment('prepause'); }
+// Exercises after the first are announced during the preceding rest.
+function beginExercise(){ beginSegment('exercise'); if(pl.exerciseIdx===0) say(curEx().name); }
 function beginRest(){
-  const e=pl.training.exercises[pl.exerciseIdx];
-  pl.isRest=true; pl.isPrepause=false; pl.secondsLeft=getRestAfter(e,pl.training); pl.running=true;
-  pl_shownId=null;
-  const u=document.getElementById('pl-upnext');
-  u.innerHTML='😮‍💨 UP NEXT'; u.classList.remove('out'); u.classList.add('visible');
-  const nx=pl.training.exercises[pl.exerciseIdx+1]; if(nx)say('Next: '+nx.name);
-  renderPlayer(); startTick();
+  beginSegment('rest');
+  const nx=pl.training.exercises[pl.exerciseIdx+1]; if(nx) say('Next: '+nx.name);
 }
 
-let pl_shownId=null; // track which exercise is displayed to avoid re-rendering description on tick
-
-function renderPlayerExercise(){
-  const e=pl.training.exercises[pl.exerciseIdx];
-  const total=pl.training.exercises.length;
-  const next=pl.exerciseIdx+1<total?pl.training.exercises[pl.exerciseIdx+1]:null;
-  const imgEl=document.getElementById('pl-image');
-  const shown = pl.isRest ? (next || e) : e;
-  const shownKey=shown.id+(pl.isRest?'_rest':'');
-
-  if(pl_shownId!==shownKey){
-    pl_shownId=shownKey;
-    document.getElementById('pl-phase').textContent = pl.isPrepause ? 'GET READY' : (pl.isRest ? 'REST' : 'EXERCISE');
-    document.getElementById('pl-name').textContent = shown.name;
-    const descWrap=document.getElementById('pl-desc-wrap');
-    const descEl=document.getElementById('pl-desc');
-    descWrap.classList.remove('expanded','has-overflow');
-    descEl.innerHTML = autolink(shown.description || '');
-    document.getElementById('pl-more').textContent='more ▾';
-    requestAnimationFrame(()=>{
-      if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
-    });
-    const hasImg = !!shown.imageUrl;
-    const isWger=hasImg&&shown.imageUrl.includes('wger.de');
-    imgEl.className = 'player-image' + (hasImg ? ' has-img' : '') + (isWger ? ' wger-img' : '');
-    imgEl.innerHTML = hasImg ? `<img src="${esc(shown.imageUrl)}" alt="">` : (shown.emoji || '💪');
-    document.getElementById('pl-next').innerHTML = !pl.isRest && next ? `Next: <span>${esc(next.name)}</span>` : !pl.isRest ? 'Last exercise!' : next ? `<span>${esc(next.name)}</span>` : '';
-    document.getElementById('pl-counter').textContent = `${pl.exerciseIdx+1} / ${total}`;
-  }
+// Static content of a segment. During rest the upcoming exercise is shown.
+function renderSegment(){
+  const exs=pl.training.exercises, e=curEx(), next=exs[pl.exerciseIdx+1];
+  const rest=pl.phase==='rest', shown=rest?(next||e):e;
+  $('pl-phase').textContent={prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
+  $('pl-name').textContent=shown.name;
+  const descWrap=$('pl-desc-wrap'), descEl=$('pl-desc');
+  descWrap.classList.remove('expanded','has-overflow');
+  descEl.innerHTML=autolink(shown.description||'');
+  $('pl-more').textContent='more ▾';
+  requestAnimationFrame(()=>{
+    if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
+  });
+  const imgEl=$('pl-image');
+  imgEl.innerHTML=esc(shown.emoji||'💪')+imgTag(shown.imageUrl);
+  $('pl-next').innerHTML=rest ? (next?`<span>${esc(next.name)}</span>`:'')
+    : next ? `Next: <span>${esc(next.name)}</span>` : 'Last exercise!';
+  $('pl-counter').textContent=`${pl.exerciseIdx+1} / ${exs.length}`;
+  const restLike=pl.phase!=='exercise';
+  $('pl-timer').className='player-timer'+(restLike?' rest-time':'');
+  $('pl-bar').className='player-progress-bar'+(restLike?' resting':'');
 }
 
+// Per-tick updates.
 function renderPlayer(){
-  const e=pl.training.exercises[pl.exerciseIdx];
-  renderPlayerExercise();
-  document.getElementById('pl-timer').textContent = pl.secondsLeft;
-  const restLike = pl.isRest || pl.isPrepause;
-  const _tm=document.getElementById('pl-timer');_tm.className = 'player-timer' + (restLike ? ' rest-time' : '');_tm.onclick=null;_tm.removeAttribute('role');_tm.removeAttribute('tabindex');
-  const maxDur = pl.isPrepause ? PREPAUSE_SECONDS : (pl.isRest ? getRestAfter(e, pl.training) : e.s);
-  const pct = ((maxDur - pl.secondsLeft) / maxDur) * 100;
-  const bar = document.getElementById('pl-bar');
-  bar.style.width = pct + '%'; bar.className = 'player-progress-bar' + (restLike ? ' resting' : '');
-  document.getElementById('pp-pause').style.display = pl.running ? '' : 'none';
-  document.getElementById('pp-play').style.display = pl.running ? 'none' : '';
+  $('pl-timer').textContent=pl.secondsLeft;
+  const max=segmentDuration();
+  $('pl-bar').style.width=(max?(max-pl.secondsLeft)/max*100:100)+'%';
+  $('pp-pause').style.display=pl.running?'':'none';
+  $('pp-play').style.display=pl.running?'none':'';
 }
 
 function startTick(){
@@ -1242,86 +1180,68 @@ function startTick(){
 function tickStep(){
   if(!pl.running||!pl.tickAnchor)return;
   const a=pl.tickAnchor;
-  const elapsed=Math.floor((Date.now()-a.startMs)/1000);
-  const newLeft=a.startLeft-elapsed;
+  const newLeft=a.startLeft-Math.floor((Date.now()-a.startMs)/1000);
   // Fire beeps for seconds we just crossed. If the tab was backgrounded
   // and many seconds passed, skip the catch-up beeps (no audio flood).
   if(a.lastLeft-newLeft<=2){
+    const half=pl.phase==='exercise'?Math.floor(curEx().s/2):null;
     for(let s=a.lastLeft-1;s>=newLeft&&s>0;s--){
-      if(!pl.isRest&&!pl.isPrepause){
-        const e=pl.training.exercises[pl.exerciseIdx];
-        if(s===Math.floor(e.s/2))soundHalf();
-      }
+      if(s===half)soundHalf();
       if(s<=3)soundCount(s===1);
     }
   }
   pl.secondsLeft=Math.max(0,newLeft);
-  if(newLeft<=0){
-    clearInterval(pl.timer);
-    if(pl.isPrepause){beginExercise();}
-    else if(pl.isRest){pl.exerciseIdx++;beginExercise();}
-    else if(pl.exerciseIdx+1<pl.training.exercises.length){beginRest();}
-    else{soundDone();finishWorkout();}
-    return;
-  }
+  if(newLeft<=0) return playerNext();
   a.lastLeft=newLeft;
   renderPlayer();
 }
 
 function playerToggle(){ pl.running=!pl.running; if(pl.running)startTick(); else clearInterval(pl.timer); renderPlayer(); }
 function toggleDesc(){
-  const w=document.getElementById('pl-desc-wrap'),b=document.getElementById('pl-more');
-  const exp=w.classList.toggle('expanded');
-  b.textContent=exp?'less ▴':'more ▾';
+  const exp=$('pl-desc-wrap').classList.toggle('expanded');
+  $('pl-more').textContent=exp?'less ▴':'more ▾';
 }
+// Natural flow: prepause → exercise 0 → rest 0 → exercise 1 → … → finish.
 function playerNext(){
   clearInterval(pl.timer);
-  if(pl.isPrepause){beginExercise();}
-  else if(pl.isRest){pl.exerciseIdx++;beginExercise();}
-  else if(pl.exerciseIdx+1<pl.training.exercises.length){beginRest();}
+  if(pl.phase==='prepause') beginExercise();
+  else if(pl.phase==='rest'){ pl.exerciseIdx++; beginExercise(); }
+  else if(pl.exerciseIdx+1<pl.training.exercises.length) beginRest();
   else finishWorkout();
 }
+// Like an audio player's back button: restart the segment, or go to the
+// previous one when already within its first second.
 function playerPrev(){
   clearInterval(pl.timer);
-  const maxDur = pl.isPrepause ? PREPAUSE_SECONDS
-    : pl.isRest ? getRestAfter(pl.training.exercises[pl.exerciseIdx], pl.training)
-    : pl.training.exercises[pl.exerciseIdx].s;
-  const atStart = pl.secondsLeft >= maxDur - 1;
-  if(!atStart){
-    if(pl.isPrepause) beginPrepause();
-    else if(pl.isRest) beginRest();
-    else beginExercise();
-    return;
-  }
-  if(pl.isPrepause){beginPrepause();}
-  else if(pl.isRest){beginExercise();}
-  else if(pl.exerciseIdx>0){pl.exerciseIdx--;beginRest();}
-  else{beginPrepause();}
+  const atStart=pl.secondsLeft>=segmentDuration()-1;
+  if(!atStart||pl.phase==='prepause') ({prepause:beginPrepause,exercise:beginExercise,rest:beginRest})[pl.phase]();
+  else if(pl.phase==='rest') beginExercise();
+  else if(pl.exerciseIdx>0){ pl.exerciseIdx--; beginRest(); }
+  else beginPrepause();
 }
-function exitPlayer(){ clearInterval(pl.timer); pl.running=false; pl.tickAnchor=null; pl_shownId=null; releaseWakeLock(); goDetail(); }
+function stopPlayer(){ clearInterval(pl.timer); pl.running=false; pl.tickAnchor=null; releaseWakeLock(); }
+function exitPlayer(){ stopPlayer(); goDetail(); }
 function finishWorkout(){
-  clearInterval(pl.timer); pl.running=false; releaseWakeLock();
-  // Record completion
+  stopPlayer(); soundDone();
   const t=getTraining();
   if(t){t.lastCompleted=new Date().toISOString();save();}
-  pl_shownId=null;
-  document.getElementById('pl-phase').textContent='DONE';
-  document.getElementById('pl-name').textContent='Well done! 🎉';
+  $('pl-phase').textContent='DONE';
+  $('pl-name').textContent='Well done! 🎉';
   say('Well done!');
-  document.getElementById('pl-desc').textContent='Workout complete.';
-  document.getElementById('pl-desc-wrap').classList.remove('expanded','has-overflow');
-  document.getElementById('pl-image').className='player-image';
-  document.getElementById('pl-image').innerHTML='🏆';
-  const tm=document.getElementById('pl-timer');
+  $('pl-desc').textContent='Workout complete.';
+  $('pl-desc-wrap').classList.remove('expanded','has-overflow');
+  $('pl-image').className='player-image';
+  $('pl-image').innerHTML='🏆';
+  const tm=$('pl-timer');
   tm.textContent='✓';
   tm.className='player-timer finish-check';
   tm.setAttribute('role','button');
   tm.setAttribute('tabindex','0');
   tm.onclick=goHome;
-  document.getElementById('pl-bar').style.width='100%';
-  document.getElementById('pl-next').innerHTML='';
-  document.getElementById('pl-counter').textContent='Done';
-  document.getElementById('pl-upnext').classList.remove('visible');
+  $('pl-bar').style.width='100%';
+  $('pl-next').innerHTML='';
+  $('pl-counter').textContent='Done';
+  $('pl-upnext').classList.remove('visible');
   document.querySelector('.player-controls').style.display='none';
 }
 
@@ -1447,38 +1367,43 @@ function handleSwWaiting(sw){
   _swWaiting = sw;
   if(autoUpdateEnabled()){ applySwUpdate(); return; }
   toast('New version available!');
-  if(document.getElementById('modal').classList.contains('open')) openSettings();
+  if(isModalOpen()) openSettings();
 }
 function applySwUpdate(){ if(!_swWaiting) return; _swWaiting.postMessage({type:'SKIP_WAITING'}); toast('Updating…'); }
 function setAutoUpdate(v){ state.settings.autoUpdate=v; save(); }
-function setVolume(v,preview){const n=Number(v);state.settings.audioVolume=n/100;save();const el=document.getElementById('vol-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)soundHalf();}
-function setSpeechVolume(v,preview){const n=Number(v);state.settings.speechVolume=n/100;save();const el=document.getElementById('speech-slider');if(el)el.classList.toggle('muted',n<=0);if(preview&&n>0)say('Test',1);}
+// Slider handler: oninput stores, onchange (preview=1) also plays a sample.
+function setVol(key,el,preview){
+  const n=Number(el.value);
+  state.settings[key]=n/100; save();
+  el.classList.toggle('muted',n<=0);
+  if(preview&&n>0){ if(key==='speechVolume') say('Test',1); else soundHalf(); }
+}
+function volSlider(id,key,vol){
+  return `<input id="${id}" type="range" min="0" max="150" value="${vol}" oninput="setVol('${key}',this)" onchange="setVol('${key}',this,1)" class="${vol<=0?'muted':''}" style="width:140px">`;
+}
 function openSettings(){
   const vol=Math.round(audioVolume()*100);
   const svol=Math.round(speechVolume()*100);
   openModal('Settings',`
-    <div class="setting-row"><div class="setting-label">Audio Volume<small>Beep sounds during workout — 0 mutes</small></div><input id="vol-slider" type="range" min="0" max="150" value="${vol}" oninput="setVolume(this.value)" onchange="setVolume(this.value,1)" class="${vol<=0?'muted':''}" style="width:140px"></div>
-    <div class="setting-row"><div class="setting-label">Speech Volume<small>Speak next exercise (experimental) — 0 mutes</small></div><input id="speech-slider" type="range" min="0" max="150" value="${svol}" oninput="setSpeechVolume(this.value)" onchange="setSpeechVolume(this.value,1)" class="${svol<=0?'muted':''}" style="width:140px"></div>
-    <div class="setting-row"><div class="setting-label">Export Data<small>Download all trainings as JSON</small></div><button class="btn btn-secondary" onclick="exportData()">Export</button></div>
-    <div class="setting-row"><div class="setting-label">Import Data<small>Load trainings from JSON file</small></div><button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
+    <div class="setting-row"><div class="setting-label">Audio Volume<small>Beep sounds during workout — 0 mutes</small></div>${volSlider('vol-slider','audioVolume',vol)}</div>
+    <div class="setting-row"><div class="setting-label">Speech Volume<small>Speak next exercise (experimental) — 0 mutes</small></div>${volSlider('speech-slider','speechVolume',svol)}</div>
+    <div class="setting-row"><div class="setting-label">Export Trainings<small>Download all trainings as JSON (no settings)</small></div><button class="btn btn-secondary" onclick="exportData()">Export</button></div>
+    <div class="setting-row"><div class="setting-label">Import Trainings<small>Add trainings from a JSON file</small></div><button class="btn btn-secondary" onclick="$('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
     <div class="setting-row"><div class="setting-label">Reset All<small>Delete everything and start fresh</small></div><button class="btn btn-danger" onclick="resetAll()">Reset</button></div>
     <div class="setting-row"><div class="setting-label">Auto-update<small>Apply app updates automatically on startup</small></div><label class="toggle"><input type="checkbox" ${autoUpdateEnabled()?'checked':''} onchange="setAutoUpdate(this.checked)"><span class="toggle-slider"></span></label></div>
     <div class="setting-row"><div class="setting-label">Version<small>v${APP_VERSION}</small></div><button class="btn ${_swWaiting?'btn-primary':'btn-secondary'}" onclick="checkForUpdate()">${_swWaiting?'Update now':'Check for update'}</button></div>
     <div style="padding:18px 0 4px;text-align:center;color:var(--text2);font-size:13px;line-height:1.7">
       <strong style="color:var(--text);font-size:15px;letter-spacing:.03em">PULSE</strong><br>
       Open-source interval workout timer. Your data stays on your device — nothing is sent to any server.<br>
-      Exercise data from <a href="https://wger.de" target="_blank" rel="noopener" style="color:var(--accent)">wger.de</a>.<br>
-      <a href="https://github.com/schuhwerk/pulse/" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">github.com/schuhwerk/pulse</a>
+      Exercise data from <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a>.<br>
+      <a href="https://github.com/schuhwerk/pulse/" target="_blank" rel="noopener" style="font-weight:600">github.com/schuhwerk/pulse</a>
     </div>
   `);
 }
 function exportData(){
-  const d=new Date();
-  const yy=String(d.getFullYear()).slice(-2),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
-  const stamp=yy+mm+dd;
-  const payload={...state,exportedAt:d.toISOString()};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pulse-backup-'+stamp+'.json';a.click();
+  const d=new Date(), p2=n=>String(n).padStart(2,'0');
+  const stamp=String(d.getFullYear()).slice(-2)+p2(d.getMonth()+1)+p2(d.getDate());
+  downloadJson('pulse-trainings-'+stamp+'.json',{trainings:state.trainings.map(toSharePayload),exportedAt:d.toISOString()});
   toast('Exported!');
 }
 function importData(ev){
@@ -1487,9 +1412,9 @@ function importData(ev){
   r.onload=function(){
     try{
       const d=JSON.parse(r.result);
-      // Legacy full-state backup: { trainings:[...], settings:{...} }
+      // Trainings export, or an older full-state backup: { trainings:[...], ... }
       if(d&&Array.isArray(d.trainings)){
-        confirmFullImport(d); return;
+        confirmTrainingsImport(d); return;
       }
       // Otherwise treat as a single-training share/export payload
       confirmImportTraining(d);
@@ -1498,7 +1423,7 @@ function importData(ev){
   };
   r.readAsText(file);
 }
-function resetAll(){if(!confirm('Delete all data?'))return;state=defaultSecondstate();save();closeModal();goHome();renderHome();toast('Reset!');}
+function resetAll(){if(!confirm('Delete all data?'))return;state=defaultState();save();closeModal();goHome();toast('Reset!');}
 
 function checkForUpdate(){
   if(_swWaiting){ applySwUpdate(); return; }
@@ -1531,11 +1456,60 @@ function waitForInstalled(sw){
 }
 
 // ─── Modal ────────────────────────────────────────────────────
-function openModal(title,html){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').classList.add('open');}
-function closeModal(){document.getElementById('modal').classList.remove('open');}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('modal').classList.contains('open'))closeModal();});
+// opts.guard: warn before discarding edits when the user dismisses the modal.
+// closeModal() is the programmatic close (after save) and never asks.
+function openModal(title,html,opts={}){
+  const body=$('modal-body');
+  $('modal-title').textContent=title;
+  body.innerHTML=html;
+  if(opts.guard)guardForm(body);else delete body.dataset.snap;
+  $('modal').classList.add('open');
+}
+function closeModal(){$('modal').classList.remove('open');}
+function isModalOpen(){ return $('modal').classList.contains('open'); }
+function requestCloseModal(){ if(confirmDiscard($('modal-body')))closeModal(); }
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isModalOpen())requestCloseModal();});
+// Confirm dialog with Cancel/OK and an optional extra button. Dismissing via Esc/backdrop runs neither callback.
+let _modalAnswers={};
+function confirmModal(title,html,okLabel,onOk,{cancelLabel='Cancel',onCancel=null,extraLabel=null,onExtra=null}={}){
+  _modalAnswers={ok:onOk,cancel:onCancel,extra:onExtra};
+  openModal(title,`${html}
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="answerModal('cancel')">${cancelLabel}</button>
+      ${extraLabel?`<button class="btn btn-secondary" onclick="answerModal('extra')">${extraLabel}</button>`:''}
+      <button class="btn btn-primary" onclick="answerModal('ok')">${okLabel}</button>
+    </div>`);
+}
+function answerModal(which){
+  const f=_modalAnswers[which];
+  _modalAnswers={};
+  closeModal(); if(f)f();
+}
+function modalList(items){ return `<ul class="modal-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul>`; }
+
+// ─── Unsaved-changes guard ────────────────────────────────────
+// guardForm snapshots a container's field values; it counts as dirty once they
+// differ. Fields marked data-noguard (e.g. search boxes) are ignored.
+function formSnap(el){
+  return [...el.querySelectorAll('input,textarea,select')].filter(f=>!f.hasAttribute('data-noguard'))
+    .map(f=>f.type==='checkbox'?f.checked:f.value).join('\u0000');
+}
+function guardForm(el){ if(el)el.dataset.snap=formSnap(el); }
+function isDirty(el){ return !!el&&el.dataset.snap!=null&&formSnap(el)!==el.dataset.snap; }
+function confirmDiscard(el){ return !isDirty(el)||confirm('Discard unsaved changes?'); }
+function anyFormDirty(){
+  const modalOpen=$('modal').classList.contains('open');
+  const addActive=$('view-add').classList.contains('active');
+  return (modalOpen&&isDirty($('modal-body')))||(addActive&&isDirty($('tab-manual')));
+}
+window.addEventListener('beforeunload',e=>{ if(anyFormDirty())e.preventDefault(); });
 
 // ─── Helpers ──────────────────────────────────────────────────
+// Image layered over the emoji. A broken image removes itself, so the emoji shows through.
+function imgTag(url,attrs=''){
+  if(!url)return '';
+  return `<img src="${esc(url)}" alt="" ${attrs} class="${isWgerUrl(url)?'wger-img':''}" onerror="this.remove()">`;
+}
 // First user-perceived character, so multi-codepoint emoji (👍🏽, 🏋️‍♀️) stay intact.
 function firstGrapheme(str){
   str=String(str||'').trim(); if(!str)return '';
@@ -1543,12 +1517,19 @@ function firstGrapheme(str){
   return Array.from(str)[0];
 }
 function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-function autolink(s){return esc(s).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,(u)=>{const label=u.length>40?u.slice(0,37)+'…':u;return '<a href="'+u+'" target="_blank" rel="noopener" style="color:var(--accent)">'+label+'</a>';});}
+function autolink(s){return esc(s).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,(u)=>{const label=u.length>40?u.slice(0,37)+'…':u;return '<a href="'+u+'" target="_blank" rel="noopener">'+label+'</a>';});}
+function downloadJson(filename,obj){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));
+  a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function isWgerUrl(url){ return !!url&&url.includes('wger.de'); }
 function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger.de'+url:url;}
 
 // ─── Init ─────────────────────────────────────────────────────
 let bPrompt, isDebug = location.search.includes('debug=install');
-const btnInst = document.getElementById('btn-install');
+const btnInst = $('btn-install');
 if (isDebug && btnInst) btnInst.style.display = '';
 
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); bPrompt = e; if (btnInst) btnInst.style.display = ''; });
@@ -1561,8 +1542,8 @@ async function installApp() {
   if ((await bPrompt.userChoice).outcome === 'accepted') { bPrompt = null; if (btnInst) btnInst.style.display = 'none'; }
 }
 
+initReorder();
 routeHash();
-renderHome();
 const _pending=getPendingBuiltinUpdates();
 if(_pending) setTimeout(()=>promptBuiltinUpdate(_pending),400);
 window._pulse = { getState: () => state };

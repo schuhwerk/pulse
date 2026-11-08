@@ -46,7 +46,6 @@ The modal needs both a stale `builtinHash` and a version that differs from `APP_
 
 ## Todo
 
-- Export only trainings instead of the full state, so merging works better.
 - Decide whether and how to update the default trainings.
 
 ## License

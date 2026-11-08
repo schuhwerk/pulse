@@ -42,35 +42,64 @@ test.describe('share links & import', () => {
     await expect(page.locator('#view-home.active')).toBeVisible();
   });
 
-  test('import JSON backup via file input (overwrite flow)', async ({ page }) => {
-    await seedState(page, makeState());
+  test('import trainings file: adds new ones, skips duplicates, keeps settings', async ({ page }) => {
+    const settings = { autoUpdate: false, speechVolume: 0.3 };
+    await seedState(page, { ...makeState(), settings });
     await page.goto('/index.html');
     await page.locator('button[title="Settings"]').click();
 
+    // Older full-state backup format: ids, settings — all of which import ignores.
     const backup = {
-      trainings: [makeTraining({ id: 'b1', name: 'From Backup', exercises: [
-        { id: 'bx', name: 'Squats', emoji: '🦵', s: 30 },
-      ]})],
-      settings: { restDefault: 8, audioEnabled: false },
+      trainings: [
+        makeTraining({ id: 'other-id' }), // same content as the seeded one
+        makeTraining({ id: 'b1', name: 'From Backup', exercises: [{ id: 'bx', name: 'Squats', emoji: '🦵', s: 30 }] }),
+      ],
+      settings: { autoUpdate: true },
     };
-
-    // Feed the hidden file input directly.
     await page.locator('#import-file').setInputFiles({
-      name: 'pulse-backup.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(JSON.stringify(backup)),
+      name: 'pulse-backup.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)),
     });
 
-    await expect(page.locator('#modal-title')).toHaveText('Import Backup');
-    await expect(page.locator('#modal-body')).toContainText('overwrite all your data');
-    await page.getByRole('button', { name: 'Overwrite' }).click();
+    await expect(page.locator('#modal-title')).toHaveText('Import Trainings');
+    await expect(page.locator('#modal-body')).toContainText('already there');
+    await page.getByRole('button', { name: 'Add 1' }).click();
 
-    // commitFullImport → goHome() is a no-op when hash is already empty, so
-    // the home list isn't re-rendered in-place. Reloading reads the new state.
-    await page.reload();
     await expect(page.locator('#view-home.active')).toBeVisible();
-    await expect(page.locator('.training-card', { hasText: 'From Backup' })).toBeVisible();
-    await expect(page.locator('.training-card', { hasText: 'Test Workout' })).toHaveCount(0);
+    await expect(page.locator('.training-card .name')).toHaveText(['Test Workout', 'From Backup']);
+    const s = await page.evaluate(() => JSON.parse(localStorage.getItem('pulse_data') ?? '{}'));
+    expect(s.settings).toMatchObject(settings);
+  });
+
+  test('import trainings file: replace all', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    await page.locator('button[title="Settings"]').click();
+    page.on('dialog', d => d.accept());
+    const file = { trainings: [{ name: 'Only One', exercises: [{ name: 'Squats' }] }] };
+    await page.locator('#import-file').setInputFiles({
+      name: 't.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(file)),
+    });
+    await page.getByRole('button', { name: 'Replace all' }).click();
+    await expect(page.locator('.training-card .name')).toHaveText(['Only One']);
+  });
+
+  test('export contains only trainings, and re-imports as nothing new', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    await page.locator('button[title="Settings"]').click();
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.locator('.setting-row', { hasText: 'Export Trainings' }).getByRole('button').click(),
+    ]);
+    const data = JSON.parse(await (await import('node:fs/promises')).readFile(await download.path(), 'utf8'));
+    expect(Object.keys(data).sort()).toEqual(['exportedAt', 'trainings']);
+    expect(data.trainings[0].name).toBe('Test Workout');
+    expect(data.trainings[0].id).toBeUndefined();
+
+    await page.locator('#import-file').setInputFiles({
+      name: 'x.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(data)),
+    });
+    await expect(page.getByRole('button', { name: 'Nothing to add' })).toBeVisible();
   });
 
   test('share payload round-trip preserves exercises', async ({ page }) => {

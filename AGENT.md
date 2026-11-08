@@ -27,13 +27,15 @@ Anchors (script section comments — all match `^// ───`):
 | `// ─── Navigation`                 | `load`, `save`, `routeHash`, `showView`                    |
 | `// ─── Home View`                  | home rendering, training CRUD                              |
 | `// ─── Detail View`                | detail rendering, exercise CRUD                            |
-| `// ─── Reorder`                    | touch + mouse drag-reorder + tap-to-edit delegation        |
+| `// ─── Reorder`                    | long-press drag-reorder + tap for exercises and trainings (`REORDER_LISTS`) |
 | `// ─── Add Exercise`               | wger search, filters, manual add                           |
+| `// ─── Exercise Form`              | shared form for Manual add + Edit (emoji tile, image URL)  |
 | `// ─── Player`                     | start, prepause, exercise/rest cycle, finish               |
 | `// ─── Audio`                      | `beep`, audio context lifecycle, volume                    |
 | `// ─── Wake Lock`                  | screen wake lock + visibilitychange resync                 |
 | `// ─── Settings / Import`          | settings modal, export/import, update check, reset         |
 | `// ─── Modal`                      | modal open/close, esc                                      |
+| `// ─── Unsaved-changes guard`    | `guardForm`/`confirmDiscard`, beforeunload, add-view leave |
 | `// ─── Helpers`                    | `autolink`, `wgerImg`, misc                                |
 | `// ─── Init`                       | startup                                                    |
 
@@ -50,23 +52,23 @@ When making a small change, prefer `Edit` with a tight `old_string` over rewriti
 The `pl` object (declared at the top of `// ─── State`) drives the player:
 
 ```
-pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, isRest, isPrepause, training }
+pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, phase, training }
 ```
 
-Phase is expressed as two booleans — only one is true at a time:
+`pl.phase` is one of:
 
-| Phase      | `isPrepause` | `isRest` | Notes                                                  |
-|------------|--------------|----------|--------------------------------------------------------|
-| GET READY  | `true`       | `false`  | 5s static pause at start; shows upcoming first exercise |
-| EXERCISE   | `false`      | `false`  | active rep countdown                                   |
-| REST       | `false`      | `true`   | between exercises; shows next exercise image           |
+| `phase`      | `#pl-phase` | Notes                                                   |
+|--------------|-------------|---------------------------------------------------------|
+| `'prepause'` | GET READY   | 5s static pause at start; shows upcoming first exercise |
+| `'exercise'` | EXERCISE    | active rep countdown                                    |
+| `'rest'`     | REST        | between exercises; shows next exercise image            |
 
-`beginPrepause` / `beginExercise` / `beginRest` set both flags explicitly. `startTick` uses `pl.tickAnchor = {startMs, startLeft, lastLeft}` so the timer stays accurate when `setInterval` is throttled in a backgrounded tab; the `visibilitychange` handler calls `tickStep()` to resync on return.
+`beginPrepause` / `beginExercise` / `beginRest` are thin wrappers around `beginSegment(phase)`, which sets the phase, resets `secondsLeft` from `segmentDuration()`, renders static content once (`renderSegment`) and starts the tick. `renderPlayer` only does per-tick updates (timer, progress bar, play/pause icon). `startTick` uses `pl.tickAnchor = {startMs, startLeft, lastLeft}` so the timer stays accurate when `setInterval` is throttled in a backgrounded tab; the `visibilitychange` handler calls `tickStep()` to resync on return.
 
-**`playerNext`** skips to the next segment in the natural flow (same order as `tickStep` expiry):
+**`playerNext`** skips to the next segment in the natural flow; `tickStep` calls it on expiry:
 prepause → exercise 0 → rest 0 → exercise 1 → … → finishWorkout.
 
-**`playerPrev`** works like an audio-player back button. "At start" is defined as `secondsLeft >= maxDur - 1` (within the first second of the segment):
+**`playerPrev`** works like an audio-player back button. "At start" is defined as `secondsLeft >= segmentDuration() - 1` (within the first second of the segment):
 - mid-segment → restart current segment
 - at start, prepause → restart prepause
 - at start, rest → `beginExercise()` (same `exerciseIdx` — the exercise that just finished)

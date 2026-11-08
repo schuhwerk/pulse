@@ -61,7 +61,12 @@ export const test = base.extend({
     // Don't register the service worker during tests (avoids cache flakiness).
     await page.route('**/sw.js', route => route.fulfill({ status: 404, body: '' }));
 
+    // Fail the test on any uncaught exception in the page.
+    const pageErrors = [];
+    page.on('pageerror', e => pageErrors.push(e.message));
+
     await use(page);
+    expect(pageErrors, 'uncaught page errors').toEqual([]);
   },
 });
 
