@@ -31,6 +31,7 @@ Anchors (script section comments — all match `^// ───`):
 | `// ─── Add Exercise`               | wger search, filters, manual add                           |
 | `// ─── Exercise Form`              | shared form for Manual add + Edit (emoji tile, image URL)  |
 | `// ─── Player`                     | start, prepause, exercise/rest cycle, finish               |
+| `// ─── Player slide / swipe`        | `viewAt`/`slideTo` card + Up-next badge transitions, horizontal swipe |
 | `// ─── Audio`                      | `beep`, audio context lifecycle, volume                    |
 | `// ─── Wake Lock`                  | screen wake lock + visibilitychange resync                 |
 | `// ─── Settings / Import`          | settings modal, export/import, update check, reset         |
@@ -67,6 +68,8 @@ pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, phase, training }
 
 **`playerNext`** skips to the next segment in the natural flow; `tickStep` calls it on expiry:
 prepause → exercise 0 → rest 0 → exercise 1 → … → finishWorkout.
+
+**Slide / swipe.** The flow is a strip of positions (`segOrd`: prepause=0, exercise N=2N+1, rest N=2N+2, done=2n). `viewAt(ord)` gives `{card, badge}`: prepause and rest show the upcoming exercise's card (`#pl-card`: emoji, name, description) with the `#pl-upnext` badge. `renderSegment` calls `slideTo`, which always slides the `#pl-phase` pill, and slides the card when it changes (old content as a `.pl-ghost` clone) or only the badge when the card stays; direction comes from the ord delta. Swiping left calls `playerNext`, right calls `playerBack` (strict previous segment, no restart).
 
 **`playerPrev`** works like an audio-player back button. "At start" is defined as `secondsLeft >= segmentDuration() - 1` (within the first second of the segment):
 - mid-segment → restart current segment

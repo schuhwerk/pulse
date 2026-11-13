@@ -34,6 +34,7 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | `// ─── training CRUD` | `crud.spec.js` | Duration +10/−10, duplicate/remove exercise, delete/duplicate training, rename, exercise form (image/emoji fallback, manual add) |
 | `// ─── player: cycle, pause, skip, exit` | `player.spec.js` | Full exercise→rest→done cycle, pause halts timer, next-skip, exit to detail |
 | `// ─── player: playerPrev navigation` | `player.spec.js` | Audio-player-style back: mid-segment restart vs. prev-segment navigation; uses 10 s exercises |
+| `// ─── player: swipe navigation` | `player.spec.js` | Mouse drags across `#pl-timer`: swipe forward/back, no-op at prepause, short drag springs back, swipe to DONE |
 | `// ─── player: edge cases` | `player.spec.js` | Refuses to start with no exercises |
 | `// ─── unsaved-changes guard` | `crud.spec.js` | Discard-confirm on modal close (Esc) and leaving the Manual add form; save never asks |
 | `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |

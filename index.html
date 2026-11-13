@@ -225,10 +225,15 @@ a{color:var(--accent)}
 @property --wash{syntax:'<color>';inherits:false;initial-value:rgba(196,236,90,.14)}
 @keyframes half-flash{15%{--wash:rgba(196,236,90,.34)}100%{--wash:rgba(196,236,90,.14)}}
 .player-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:2}
-.player-top .btn-icon{background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);color:var(--text)}
+/* No backdrop blur inside the player: what sits behind is smooth gradients, where blur is invisible but re-renders on every animated frame. */
+.player-top .btn-icon{background:var(--glass);box-shadow:var(--glass-edge);color:var(--text)}
 .player-top .btn-icon:hover{background:rgba(39,37,34,.7)}
 .player-top .btn-icon svg{width:24px;height:24px}
-.player-top-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden;overflow-y:auto;position:relative}
+.player-top-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;overflow:hidden;overflow-y:auto;position:relative;margin:0 -24px;padding:0 24px}
+.pl-card{display:flex;flex-direction:column;align-items:center;width:100%;flex-shrink:0}
+.pl-ghost{position:absolute;margin:0;pointer-events:none}
+.player{touch-action:pan-y}
+.player.dragging{-webkit-user-select:none;user-select:none;cursor:grabbing}
 .player-phase{--ph:var(--text2);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ph);background:color-mix(in srgb,var(--ph) 14%,transparent);padding:6px 14px;border-radius:999px;margin-bottom:20px}
 .player-phase.is-exercise{--ph:var(--accent)}
 .player-phase.is-rest{--ph:var(--rest)}
@@ -240,16 +245,13 @@ a{color:var(--accent)}
 .player-desc-wrap.has-overflow .more-btn{display:inline-block}
 .player-image-wrap{position:relative;flex-shrink:0;margin-bottom:24px}
 .player-image{position:relative;width:156px;height:156px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:72px}
-.player-image:not(:has(img)){background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.015) 60%),rgba(39,37,34,.4);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.05),0 12px 32px -16px rgba(0,0,0,.6)}
+.player-image:not(:has(img)){background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,0) 60%),rgba(39,37,34,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 0 0 1px rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.35)}
 .player-image:has(img){border-radius:28px;width:200px;height:200px}
 .player-image:has(img.wger-img){background:#ede8e1}
 .player-image img{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);object-fit:contain;background:inherit}
 @media (max-height:700px){.player-image{width:120px;height:120px;font-size:56px}.player-image:has(img){width:150px;height:150px}.player-image-wrap{margin-bottom:18px}.player-phase{margin-bottom:14px}}
-#pl-upnext{position:absolute;bottom:-13px;left:50%;background:rgba(51,48,44,.72);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);color:var(--rest);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:13px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
-#pl-upnext.visible{animation:badge-in .35s var(--ease-out) forwards}
-#pl-upnext.out{animation:badge-out .2s ease-in forwards}
-@keyframes badge-in{from{transform:translate(-50%,8px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
-@keyframes badge-out{from{transform:translate(-50%,0);opacity:1}to{transform:translate(-50%,6px);opacity:0}}
+#pl-upnext{position:absolute;bottom:-16px;left:50%;background:rgba(51,48,44,.72);color:var(--rest);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 15px;border-radius:16px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
+#pl-upnext.on{opacity:1}
 .player-mid-zone{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px}
 .player-timer{font-size:100px;font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .player-timer.rest-time{color:var(--rest)}
@@ -264,11 +266,11 @@ a{color:var(--accent)}
 .player-upcoming:not(:empty)::before{content:'·';margin:0 8px}
 .player-upcoming span{color:var(--text2)}
 .player-controls{display:flex;gap:24px;margin-top:20px;align-items:center}
-.player-controls button{width:52px;height:52px;border-radius:50%;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.player-controls button{width:52px;height:52px;border-radius:50%;background:var(--glass);box-shadow:var(--glass-edge);color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .15s}
 .player-controls button:hover{background:rgba(39,37,34,.7)}
 .player-controls button svg{width:22px;height:22px}
 .player-controls .play-pause,.player-controls .play-pause:hover{position:relative;width:76px;height:76px;background:var(--shine),var(--accent);color:#111;box-shadow:var(--lift)}
-.player-controls .play-pause.running::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);animation:pulse-ring 2.4s var(--ease-out) infinite;pointer-events:none}
+.player-controls .play-pause.running::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);animation:pulse-ring 2.4s var(--ease-out) 2;pointer-events:none}
 @keyframes pulse-ring{from{transform:scale(1);opacity:.35}to{transform:scale(1.4);opacity:0}}
 .player-controls .play-pause svg{width:28px;height:28px}
 .player-timer.finish-check{color:#111;background:var(--shine),var(--accent);box-shadow:var(--lift);width:88px;height:88px;animation:pop-in .6s var(--spring) .15s both;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:600;letter-spacing:0;margin:16px auto;cursor:pointer;border:none;transition:transform .15s}
@@ -433,14 +435,16 @@ a{color:var(--accent)}
     </div>
     <div class="player-top-zone">
       <div class="player-phase" id="pl-phase">GET READY</div>
-      <div class="player-image-wrap">
-        <div class="player-image" id="pl-image">💪</div>
-        <div id="pl-upnext"></div>
-      </div>
-      <div class="player-exercise" id="pl-name">—</div>
-      <div class="player-desc-wrap" id="pl-desc-wrap">
-        <div class="player-desc" id="pl-desc"></div>
-        <button class="more-btn" id="pl-more" onclick="toggleDesc()">more ▾</button>
+      <div class="pl-card" id="pl-card">
+        <div class="player-image-wrap">
+          <div class="player-image" id="pl-image">💪</div>
+          <div id="pl-upnext">Up next</div>
+        </div>
+        <div class="player-exercise" id="pl-name">—</div>
+        <div class="player-desc-wrap" id="pl-desc-wrap">
+          <div class="player-desc" id="pl-desc"></div>
+          <button class="more-btn" id="pl-more" onclick="toggleDesc()">more ▾</button>
+        </div>
       </div>
     </div>
     <div class="player-mid-zone">
@@ -475,7 +479,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.40';
+const APP_VERSION = '1.0.41';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -1235,6 +1239,8 @@ function readExForm(p){
 function startPlayer(){
   const t=getTraining(); if(!t||!t.exercises.length){toast('Add exercises first');return;}
   pl.training={...t,exercises:[...t.exercises]};
+  pl.view=null;
+  document.querySelectorAll('.pl-ghost').forEach(g=>g.remove());
   $('pl-image').classList.remove('trophy');
   location.hash='player:'+currentTrainingId;
   showView('view-player');
@@ -1254,9 +1260,6 @@ function segmentDuration(){
 function beginSegment(phase){
   pl.phase=phase; pl.running=true;
   pl.secondsLeft=segmentDuration();
-  const u=$('pl-upnext');
-  if(phase==='rest'){ u.textContent='Up next'; u.classList.remove('out'); u.classList.add('visible'); }
-  else u.classList.replace('visible','out');
   renderSegment(); renderPlayer(); startTick();
 }
 function beginPrepause(){ pl.exerciseIdx=0; beginSegment('prepause'); }
@@ -1271,19 +1274,19 @@ function beginRest(){
 function renderSegment(){
   const exs=pl.training.exercises, e=curEx(), next=exs[pl.exerciseIdx+1];
   const rest=pl.phase==='rest', shown=rest?(next||e):e;
-  $('pl-phase').textContent={prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
-  $('pl-phase').className='player-phase is-'+pl.phase;
-  $('pl-name').textContent=shown.name;
-  const descWrap=$('pl-desc-wrap'), descEl=$('pl-desc');
-  descWrap.classList.remove('expanded','has-overflow');
-  descEl.innerHTML=autolink(shown.description||'');
-  $('pl-more').textContent='more ▾';
-  requestAnimationFrame(()=>{
-    if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
+  slideTo(viewAt(segOrd()),()=>{
+    $('pl-phase').textContent={prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
+    $('pl-phase').className='player-phase is-'+pl.phase;
+    $('pl-name').textContent=shown.name;
+    const descWrap=$('pl-desc-wrap'), descEl=$('pl-desc');
+    descWrap.classList.remove('expanded','has-overflow');
+    descEl.innerHTML=autolink(shown.description||'');
+    $('pl-more').textContent='more ▾';
+    requestAnimationFrame(()=>{
+      if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
+    });
+    $('pl-image').innerHTML=esc(shown.emoji||'💪')+imgTag(shown.imageUrl);
   });
-  replay($('pl-image').parentElement.parentElement,'swap');
-  const imgEl=$('pl-image');
-  imgEl.innerHTML=esc(shown.emoji||'💪')+imgTag(shown.imageUrl);
   $('player-area').dataset.phase=pl.phase;
   $('pl-next').innerHTML=rest ? ''
     : next ? `Next: <span>${esc(next.name)}</span>` : 'Last exercise';
@@ -1344,15 +1347,20 @@ function playerNext(){
   else if(pl.exerciseIdx+1<pl.training.exercises.length) beginRest();
   else finishWorkout();
 }
-// Like an audio player's back button: restart the segment, or go to the
-// previous one when already within its first second.
-function playerPrev(){
+// Previous segment in the flow (swipe back); prepause restarts itself.
+function playerBack(){
   clearInterval(pl.timer);
-  const atStart=pl.secondsLeft>=segmentDuration()-1;
-  if(!atStart||pl.phase==='prepause') ({prepause:beginPrepause,exercise:beginExercise,rest:beginRest})[pl.phase]();
+  if(pl.phase==='prepause') beginPrepause();
   else if(pl.phase==='rest') beginExercise();
   else if(pl.exerciseIdx>0){ pl.exerciseIdx--; beginRest(); }
   else beginPrepause();
+}
+// Like an audio player's back button: restart the segment, or go to the
+// previous one when already within its first second.
+function playerPrev(){
+  if(pl.secondsLeft>=segmentDuration()-1) return playerBack();
+  clearInterval(pl.timer);
+  ({prepause:beginPrepause,exercise:beginExercise,rest:beginRest})[pl.phase]();
 }
 function stopPlayer(){ clearInterval(pl.timer); $('pl-playpause').classList.remove('running'); pl.running=false; pl.tickAnchor=null; releaseWakeLock(); }
 function exitPlayer(){ stopPlayer(); goDetail(); }
@@ -1360,16 +1368,18 @@ function finishWorkout(){
   stopPlayer(); soundDone();
   const t=getTraining();
   if(t){t.lastCompleted=new Date().toISOString();save();}
-  $('pl-phase').textContent='DONE';
-  $('pl-phase').className='player-phase';
   $('player-area').dataset.phase='done';
-  $('pl-name').textContent='Well done! 🎉';
   say('Well done!');
-  $('pl-desc').textContent='Workout complete.';
-  $('pl-desc-wrap').classList.remove('expanded','has-overflow');
-  $('pl-image').className='player-image';
-  $('pl-image').innerHTML='🏆';
-  replay($('pl-image'),'trophy');
+  slideTo(viewAt(2*pl.training.exercises.length),()=>{
+    $('pl-phase').textContent='DONE';
+    $('pl-phase').className='player-phase';
+    $('pl-name').textContent='Well done! 🎉';
+    $('pl-desc').textContent='Workout complete.';
+    $('pl-desc-wrap').classList.remove('expanded','has-overflow');
+    $('pl-image').className='player-image';
+    $('pl-image').innerHTML='🏆';
+    replay($('pl-image'),'trophy');
+  });
   const tm=$('pl-timer');
   tm.textContent='✓';
   tm.className='player-timer finish-check';
@@ -1380,9 +1390,140 @@ function finishWorkout(){
   $('pl-bar').className='player-progress-bar';
   $('pl-next').innerHTML='';
   $('pl-counter').textContent='Done';
-  $('pl-upnext').classList.remove('visible');
   document.querySelector('.player-controls').style.display='none';
 }
+
+// ─── Player slide / swipe ─────────────────────────────────────
+// The flow as a strip of positions: prepause=0, exercise N=2N+1, rest N=2N+2,
+// done=2n. Each position shows a card (emoji, name, description); prepause
+// and rest show the upcoming exercise's card plus the Up-next badge. Moving
+// between positions slides the card, or only the badge when the card stays.
+const segOrd=()=>pl.phase==='prepause'?0:2*pl.exerciseIdx+(pl.phase==='exercise'?1:2);
+function viewAt(ord){
+  const n=pl.training.exercises.length;
+  if(ord<0||ord>2*n) return null;
+  if(ord===2*n) return {ord,card:'done',badge:false};
+  if(ord===0) return {ord,card:0,badge:true};
+  return ord%2?{ord,card:(ord-1)/2,badge:false}:{ord,card:ord/2,badge:true};
+}
+const SLIDE_MS=320, EASE_OUT='cubic-bezier(.16,1,.3,1)', EASE_ON='cubic-bezier(.3,0,.4,1)';
+const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+const badgeDist=W=>Math.min(160,W*.4);
+const tx=x=>`translateX(${x}px)`;
+// Current on-screen position/opacity (drag or running animation), then
+// cleared so the element is back at its resting state.
+function grab(el){
+  const cs=getComputedStyle(el);
+  const at={transform:cs.transform,opacity:cs.opacity,x:cs.transform==='none'?0:new DOMMatrix(cs.transform).m41};
+  el.getAnimations().forEach(a=>a.cancel());
+  el.style.transform=el.style.opacity='';
+  return at;
+}
+// Static copy that animates out while the real element shows the new content.
+function slideOut(el,at,to){
+  const g=el.cloneNode(true);
+  g.removeAttribute('id'); g.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+  g.classList.add('pl-ghost');
+  Object.assign(g.style,{left:el.offsetLeft+'px',top:el.offsetTop+'px',width:el.offsetWidth+'px'});
+  el.parentElement.appendChild(g);
+  g.animate([at,{transform:tx(to),opacity:0}],{duration:SLIDE_MS,easing:EASE_ON}).onfinish=()=>g.remove();
+}
+// The phase pill changes on every step; the card only when the shown
+// exercise changes, otherwise just the Up-next badge moves.
+function slideTo(v,update){
+  const prev=pl.view, card=$('pl-card'), badge=$('pl-upnext'), pill=$('pl-phase'), zone=card.parentElement;
+  pl.view=v;
+  const dir=prev?Math.sign(v.ord-prev.ord):0, motion=dir&&!reducedMotion.matches;
+  const cAt=grab(card), bAt=grab(badge), pAt=grab(pill);
+  const W=zone.clientWidth, D=badgeDist(W), cardChanges=!prev||prev.card!==v.card;
+  if(dir) zone.classList.remove('swap');
+  if(motion){
+    slideOut(pill,pAt,pAt.x-dir*D);
+    if(cardChanges) slideOut(card,cAt,cAt.x-dir*W);
+  }
+  update();
+  badge.classList.toggle('on',v.badge);
+  if(reducedMotion.matches) return;
+  if(!dir){ replay(zone,'swap'); return; }
+  pill.animate([{transform:tx(dir*D),opacity:0},{transform:'none',opacity:1}],{duration:SLIDE_MS,easing:EASE_OUT});
+  if(cardChanges){
+    card.animate([{transform:tx(dir*W*.5),opacity:0},{transform:'none',opacity:1}],{duration:SLIDE_MS+120,easing:EASE_OUT});
+    return;
+  }
+  if(cAt.x) card.animate([cAt,{transform:'none',opacity:1}],{duration:250,easing:EASE_OUT});
+  const half=badge.offsetWidth/2;
+  if(prev.badge&&!v.badge)
+    badge.animate([bAt,{transform:tx(bAt.x-dir*D),opacity:0}],{duration:SLIDE_MS*.8,easing:EASE_ON});
+  else if(!prev.badge&&v.badge)
+    badge.animate([+bAt.opacity>.01?bAt:{transform:tx(dir*D-half),opacity:0},{transform:tx(-half),opacity:1}],{duration:SLIDE_MS,easing:EASE_OUT});
+}
+
+// Horizontal swipe on the player: pill and card (or badge) follow the
+// finger; release past a threshold or with a flick moves one position.
+// Measurements are taken once per drag so moves only write styles.
+const sw={id:null,x:0,y:0,dx:0,vx:0,t:0,drag:false,clicked:false,v:null,W:0,D:0,half:0};
+const swEls=()=>[$('pl-card'),$('pl-upnext'),$('pl-phase')];
+function dragStart(){
+  swEls().forEach(grab);
+  const W=$('pl-card').parentElement.clientWidth;
+  Object.assign(sw,{v:pl.view,W,D:badgeDist(W),half:$('pl-upnext').offsetWidth/2});
+}
+function dragPaint(dx){
+  if(pl.view!==sw.v) dragStart(); // segment auto-advanced mid-drag
+  const [c,b,p]=swEls(), {W,D,half}=sw, cur=pl.view, to=viewAt(cur.ord+(dx<0?1:-1)), ad=Math.abs(dx);
+  const st={c:['',''],b:['',''],p:['','']};
+  if(!to) st.c=[tx(dx/4),''];
+  else {
+    st.p=[tx(dx),Math.max(0,1-ad/D)];
+    if(to.card!==cur.card) st.c=[tx(dx),1-Math.min(1,ad/W)*.6];
+    else if(cur.badge) st.b=[tx(dx-half),Math.max(0,1-ad/D)];
+    else st.b=[tx((dx>0?Math.min(0,dx-D):Math.max(0,dx+D))-half),Math.min(1,ad/D)];
+  }
+  [[c,st.c],[b,st.b],[p,st.p]].forEach(([el,[t,o]])=>{ el.style.transform=t; el.style.opacity=o; });
+}
+function springBack(){
+  swEls().forEach(el=>{
+    if(!el.style.transform) return;
+    const from=grab(el), rest=getComputedStyle(el);
+    el.animate([from,{transform:rest.transform,opacity:rest.opacity}],{duration:280,easing:EASE_OUT});
+  });
+}
+(()=>{
+  const area=$('player-area');
+  area.addEventListener('pointerdown',e=>{
+    if(sw.id!=null||e.button>0||!pl.view||pl.view.card==='done'||e.target.closest('button,a,.player-top'))return;
+    Object.assign(sw,{id:e.pointerId,x:e.clientX,y:e.clientY,dx:0,vx:0,t:e.timeStamp,drag:false});
+  });
+  area.addEventListener('pointermove',e=>{
+    if(e.pointerId!==sw.id)return;
+    const dx=e.clientX-sw.x, dy=e.clientY-sw.y;
+    if(!sw.drag){
+      if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){ sw.id=null; return; }
+      if(Math.abs(dx)<10) return;
+      sw.drag=true; sw.x+=Math.sign(dx)*10; dragStart();
+      area.setPointerCapture(e.pointerId); area.classList.add('dragging');
+    }
+    const d=e.clientX-sw.x, dt=e.timeStamp-sw.t;
+    if(dt>0) sw.vx=.7*(d-sw.dx)/dt+.3*sw.vx;
+    sw.dx=d; sw.t=e.timeStamp;
+    dragPaint(d);
+  });
+  const end=e=>{
+    if(e.pointerId!==sw.id)return;
+    sw.id=null;
+    if(!sw.drag)return;
+    area.classList.remove('dragging');
+    sw.clicked=true; setTimeout(()=>sw.clicked=false,0);
+    const dx=sw.dx, dir=dx<0?1:-1, cur=pl.view, to=cur&&viewAt(cur.ord+dir);
+    const thr=to&&to.card!==cur.card?sw.W*.25:sw.D*.5;
+    const flick=Math.abs(dx)>30&&Math.sign(sw.vx)===Math.sign(dx)&&Math.abs(sw.vx)>.4;
+    if(to&&e.type==='pointerup'&&(Math.abs(dx)>thr||flick)) dir>0?playerNext():playerBack();
+    else springBack();
+  };
+  area.addEventListener('pointerup',end);
+  area.addEventListener('pointercancel',end);
+  area.addEventListener('click',e=>{ if(sw.clicked){ e.stopPropagation(); e.preventDefault(); } },true);
+})();
 
 // ─── Audio ────────────────────────────────────────────────────
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();

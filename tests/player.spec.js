@@ -167,3 +167,77 @@ test.describe('player edge cases', () => {
     await expect(page.locator('#view-detail.active')).toBeVisible();
   });
 });
+
+// ─── player: swipe navigation ───────────────────────────────────────────────
+test.describe('player swipe', () => {
+  /**
+   * Horizontal mouse drag across the timer (not a button).
+   * @param {import('@playwright/test').Page} page
+   * @param {number} dx
+   */
+  const swipe = async (page, dx) => {
+    const box = await page.locator('#pl-timer').boundingBox();
+    if (!box) throw new Error('no timer');
+    const x = box.x + box.width / 2, y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    for (let i = 1; i <= 8; i++) await page.mouse.move(x + (dx * i) / 8, y);
+    await page.mouse.up();
+  };
+  const phase = (page) => page.locator('#pl-phase');
+  const name = (page) => page.locator('#pl-name');
+  const badge = (page) => page.locator('#pl-upnext');
+
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install();
+    await seedState(page, makeState([makeTraining({
+      exercises: [
+        { id: 'e1', name: 'Alpha', emoji: '💪', s: 10, description: '' },
+        { id: 'e2', name: 'Bravo', emoji: '🔥', s: 10, description: '' },
+      ],
+      restSeconds: 10,
+    })]));
+    await page.goto('/index.html');
+    await page.locator('.training-card', { hasText: 'Test Workout' }).click();
+    await page.locator('.play-fab').click();
+    await expect(phase(page)).toHaveText('GET READY');
+  });
+
+  test('swipe left steps forward, swipe right steps back', async ({ page }) => {
+    await expect(badge(page)).toHaveClass(/\bon\b/);
+    await swipe(page, -200);
+    await expect(phase(page)).toHaveText('EXERCISE');
+    await expect(name(page)).toHaveText('Alpha');
+    await expect(badge(page)).not.toHaveClass(/\bon\b/);
+
+    await swipe(page, -200);
+    await expect(phase(page)).toHaveText('REST');
+    await expect(name(page)).toHaveText('Bravo');
+    await expect(badge(page)).toHaveClass(/\bon\b/);
+
+    // Back from rest goes to the exercise, even mid-segment.
+    await page.clock.runFor(3000);
+    await swipe(page, 200);
+    await expect(phase(page)).toHaveText('EXERCISE');
+    await expect(name(page)).toHaveText('Alpha');
+
+    await swipe(page, 200);
+    await expect(phase(page)).toHaveText('GET READY');
+  });
+
+  test('swipe right at prepause and short drags do nothing', async ({ page }) => {
+    await swipe(page, 200);
+    await expect(phase(page)).toHaveText('GET READY');
+    await swipe(page, -20);
+    await expect(phase(page)).toHaveText('GET READY');
+    await expect(page.locator('#pl-card')).not.toHaveAttribute('style', /translate/);
+  });
+
+  test('swipe past the last exercise finishes', async ({ page }) => {
+    for (const p of ['EXERCISE', 'REST', 'EXERCISE', 'DONE']) {
+      await swipe(page, -200);
+      await expect(phase(page)).toHaveText(p);
+    }
+    await expect(page.locator('.pl-ghost[id]')).toHaveCount(0);
+  });
+});

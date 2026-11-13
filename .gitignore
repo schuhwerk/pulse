@@ -4,3 +4,4 @@ playwright-report/
 playwright/.cache/
 *.code-workspace
 shots/
+test-animate/
