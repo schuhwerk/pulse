@@ -1,9 +1,10 @@
-const CACHE_NAME = 'pulse-v37';
+const CACHE_NAME = 'pulse-v38';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
+  './icon-maskable.svg',
 ];
 
 self.addEventListener('install', e => {
