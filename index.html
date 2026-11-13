@@ -23,6 +23,7 @@
 --spring:cubic-bezier(.3,1.25,.5,1);
 --shine:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 55%);
 --lift:inset 0 1px 0 rgba(255,255,255,.35),0 8px 24px -10px rgba(196,236,90,.6);--ease-out:cubic-bezier(.16,1,.3,1);
+--glass:rgba(29,27,25,.55);--glass-blur:blur(20px) saturate(1.6);--glass-edge:inset 0 1px 0 rgba(255,255,255,.06);
 --font:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 html,body{height:100%;overflow:hidden}
@@ -37,11 +38,22 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.22)}
 
 /* App Shell */
 #app{height:100%;display:flex;flex-direction:column;overflow:hidden;max-width:480px;margin:0 auto;position:relative}
-.view{display:none;flex-direction:column;height:100%;overflow:hidden}
+.view{--hh:64px;display:none;flex-direction:column;height:100%;overflow:hidden}
+#view-home{--hh:84px}
 .view.active{display:flex}
 
 /* Header — icon buttons sit 10px in, so their glyphs line up with the 20px content edge */
-.header{min-height:64px;padding:8px 10px;display:flex;align-items:center;gap:2px;flex-shrink:0}
+/* Glass header: fixed height (--hh) so .content can scroll beneath it.
+   The glass layer only appears once the list is scrolled (.view.scrolled) and fades out at its edges,
+   so it never shows as a hard-edged box against the page background on wide screens. */
+.header{height:var(--hh);padding:8px 10px;display:flex;align-items:center;gap:2px;flex-shrink:0;position:relative;z-index:5}
+.header::before{content:'';position:absolute;inset:0 0 -14px;z-index:-1;pointer-events:none;opacity:0;transition:opacity .25s ease;
+  background:linear-gradient(rgba(19,18,17,.7),rgba(19,18,17,.4) 70%,rgba(19,18,17,0));-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+  -webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent)}
+.view.scrolled .header::before{opacity:1}
+@media (min-width:481px){.header::before{
+  -webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent),linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);
+  -webkit-mask-composite:source-in;mask-image:linear-gradient(#000 calc(100% - 22px),transparent),linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);mask-composite:intersect}}
 .header-title{flex:1;min-width:0;padding:0 6px}
 .header-title:first-child{padding-left:10px}
 .header h1{font-size:19px;font-weight:700;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -54,13 +66,15 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.22)}
 .btn-icon svg{width:20px;height:20px;stroke-width:1.75}
 
 /* Scrollable Content */
-.content{flex:1;overflow-y:auto;padding:4px 20px 104px;-webkit-overflow-scrolling:touch}
+.content{flex:1;overflow-y:auto;margin-top:calc(-1 * var(--hh));padding:calc(var(--hh) + 4px) 20px 104px;-webkit-overflow-scrolling:touch}
+.content{scrollbar-width:none}
 .content::-webkit-scrollbar{display:none}
-#view-detail .content,#view-add .content{padding-bottom:24px}
-.detail-desc{margin:0 20px 16px;font-size:14px;line-height:1.5;color:var(--text2);text-wrap:pretty}
+#view-add .content{padding-bottom:24px}
+#view-detail .content{padding-bottom:24px}
+.detail-desc{margin:0 0 16px;font-size:14px;line-height:1.5;color:var(--text2);text-wrap:pretty}
 
 /* Cards */
-.card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0) 60%),var(--surface);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px;position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .card:active{background:var(--surface2)}
 
 /* Training Card */
@@ -106,9 +120,8 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.22)}
 .fab svg{width:20px;height:20px}
 
 /* Bottom Bar (detail) */
-.bottom-bar{display:flex;gap:8px;padding:12px 20px calc(16px + env(safe-area-inset-bottom));flex-shrink:0;position:relative}
+.bottom-bar{display:flex;gap:8px;padding:12px 20px calc(16px + env(safe-area-inset-bottom));flex-shrink:0;position:relative;background:var(--bg)}
 .bottom-bar::before{content:'';position:absolute;left:0;right:0;bottom:100%;height:24px;background:linear-gradient(rgba(19,18,17,0),var(--bg));pointer-events:none}
-.bottom-bar{background:var(--bg)}
 .bottom-bar .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:52px}
 .bottom-bar .btn svg{width:18px;height:18px;flex-shrink:0}
 .bottom-bar .play-fab{flex:1.4}
@@ -172,9 +185,9 @@ a{color:var(--accent)}
 .search-loader small{display:block;margin-top:4px;font-size:13px}
 
 /* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border-radius:26px 26px 0 0;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.modal{background:rgba(29,27,25,.82);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);border-radius:26px 26px 0 0;width:100%;max-width:480px;max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
 .modal-header{padding:16px 12px 8px 20px;display:flex;align-items:center;gap:12px;position:relative}
 .modal-header::before{content:'';position:absolute;top:7px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--surface3)}
 .modal-header h2{font-size:19px;font-weight:700;letter-spacing:-.01em;flex:1}
@@ -223,7 +236,7 @@ a{color:var(--accent)}
 .player-image:has(img){border-radius:28px;width:200px;height:200px}
 .player-image:has(img.wger-img){background:#ede8e1}
 .player-image img{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);object-fit:contain;background:inherit}
-#pl-upnext{position:absolute;bottom:-13px;left:50%;background:var(--surface3);color:var(--rest);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:13px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
+#pl-upnext{position:absolute;bottom:-13px;left:50%;background:rgba(51,48,44,.72);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);color:var(--rest);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:13px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
 #pl-upnext.visible{animation:badge-in .35s var(--ease-out) forwards}
 #pl-upnext.out{animation:badge-out .2s ease-in forwards}
 @keyframes badge-in{from{transform:translate(-50%,8px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
@@ -242,8 +255,8 @@ a{color:var(--accent)}
 .player-upcoming:not(:empty)::before{content:'·';margin:0 8px}
 .player-upcoming span{color:var(--text2)}
 .player-controls{display:flex;gap:24px;margin-top:20px;align-items:center}
-.player-controls button{width:52px;height:52px;border-radius:50%;background:var(--surface);color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .15s}
-.player-controls button:hover{background:var(--surface2)}
+.player-controls button{width:52px;height:52px;border-radius:50%;background:var(--glass);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge);color:var(--text);display:flex;align-items:center;justify-content:center;transition:background .15s}
+.player-controls button:hover{background:rgba(39,37,34,.7)}
 .player-controls button svg{width:22px;height:22px}
 .player-controls .play-pause,.player-controls .play-pause:hover{position:relative;width:76px;height:76px;background:var(--shine),var(--accent);color:#111;box-shadow:var(--lift)}
 .player-controls .play-pause.running::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent);animation:pulse-ring 2.4s var(--ease-out) infinite;pointer-events:none}
@@ -254,7 +267,7 @@ a{color:var(--accent)}
 
 /* Toast */
 .toast-wrap{position:fixed;bottom:calc(96px + env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;z-index:200;pointer-events:none;padding:0 16px}
-.toast{background:var(--surface3);color:var(--text);padding:11px 20px;border-radius:999px;font-size:14px;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.4);max-width:100%;text-align:center;opacity:0;transform:translateY(16px) scale(.9);transition:opacity .2s ease,transform .35s var(--spring)}
+.toast{background:rgba(51,48,44,.7);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);color:var(--text);padding:11px 20px;border-radius:999px;font-size:14px;font-weight:500;box-shadow:var(--glass-edge),0 6px 24px rgba(0,0,0,.4);max-width:100%;text-align:center;opacity:0;transform:translateY(16px) scale(.9);transition:opacity .2s ease,transform .35s var(--spring)}
 .toast.show{opacity:1;transform:none}
 
 /* Empty State */
@@ -307,7 +320,11 @@ a{color:var(--accent)}
 @keyframes dialog-in{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
 /* Wide screens: modals become centered dialogs instead of bottom sheets */
 @media (min-width:720px) and (min-height:560px){
-  #app{padding-top:32px}
+  /* Top spacing lives inside the header so the list scrolls up to the window edge, not a hard line below it */
+  .view{--hh:96px}
+  #view-home{--hh:116px}
+  .header,#view-home .header{padding-top:40px}
+  #view-player{padding-top:32px}
   .modal-overlay{align-items:center;padding:24px}
   .modal{border-radius:24px;max-height:min(760px,86vh);padding-bottom:0;box-shadow:0 24px 64px rgba(0,0,0,.5)}
   .modal-header{padding-top:14px}
@@ -353,7 +370,6 @@ a{color:var(--accent)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     </button>
   </div>
-  <p id="detail-desc" class="detail-desc" style="display:none"></p>
   <div class="content" id="detail-exercises"></div>
   <div class="bottom-bar">
     <button class="btn btn-secondary btn-add" onclick="openAddExercise()" title="Add Exercise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add exercise</button>
@@ -445,7 +461,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.37';
+const APP_VERSION = '1.0.38';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -803,11 +819,10 @@ function renderDetail(){
   const t=getTraining(); if(!t)return goHome();
   $('detail-title').textContent=t.name;
   $('detail-duration').textContent=trainingMeta(t);
-  const descEl=$('detail-desc');
-  if(t.description){descEl.innerHTML=autolink(t.description);descEl.style.display='';}else{descEl.style.display='none';}
+  const desc=t.description?`<p id="detail-desc" class="detail-desc">${autolink(t.description)}</p>`:'';
   const c=$('detail-exercises');
-  if(!t.exercises.length){ c.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No exercises yet.<br>Tap + to add some.</p></div>'; return; }
-  c.innerHTML=`<div class="reorder-hint">tap to edit · long-press to reorder</div>`+t.exercises.map((e,i)=>{
+  if(!t.exercises.length){ c.innerHTML=desc+'<div class="empty-state"><div class="icon">📋</div><p>No exercises yet.<br>Tap + to add some.</p></div>'; return; }
+  c.innerHTML=desc+`<div class="reorder-hint">tap to edit · long-press to reorder</div>`+t.exercises.map((e,i)=>{
     const thumb=esc(e.emoji||'💪')+imgTag(e.imageUrl,'loading="lazy"');
     return `<div class="card exercise-card" data-idx="${i}" style="--i:${i}">
       <div class="thumb">${thumb}</div>
@@ -968,8 +983,10 @@ function drMove(ev){
   const y=ev.clientY;
   drag.ghost.style.top=(y-30)+'px';
   // Auto-scroll near the container edges
+  // (the header overlays the scroller, so measure from its bottom edge)
   const container=$(drag.cfg.container),cr=container.getBoundingClientRect();
-  if(y<cr.top+50)container.scrollTop-=8;
+  const hd=container.closest('.view').querySelector('.header'),top=hd?hd.getBoundingClientRect().bottom:cr.top;
+  if(y<top+50)container.scrollTop-=8;
   else if(y>cr.bottom-50)container.scrollTop+=8;
   drag.cards.forEach(c=>c.classList.remove('drag-over-top','drag-over-bot'));
   const over=drag.cards.find(c=>{const r=c.getBoundingClientRect();return y>r.top&&y<r.bottom;});
@@ -1651,6 +1668,7 @@ async function installApp() {
 }
 
 initReorder();
+document.querySelectorAll('.view .content').forEach(el=>el.addEventListener('scroll',()=>el.closest('.view').classList.toggle('scrolled',el.scrollTop>2),{passive:true}));
 routeHash();
 const _pending=getPendingBuiltinUpdates();
 if(_pending) setTimeout(()=>promptBuiltinUpdate(_pending),400);
