@@ -39,6 +39,10 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |
 | `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, trainings file import (add/skip duplicates, replace all), export format, round-trip payload |
 
+## Motion
+
+`playwright.config.js` sets `contextOptions: { reducedMotion: 'reduce' }`. The app's `prefers-reduced-motion` rule turns off all CSS animations and transitions; without it, Playwright's stability waits make the suite ~2–3× slower.
+
 ## Player test conventions
 
 - **Skip prepause**: `page.locator('.player-controls button').nth(2).click()` (the Next button, index 2). All player tests that aren't specifically testing prepause call this first.

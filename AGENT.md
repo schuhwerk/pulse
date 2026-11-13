@@ -63,7 +63,7 @@ pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, phase, training }
 | `'exercise'` | EXERCISE    | active rep countdown                                    |
 | `'rest'`     | REST        | between exercises; shows next exercise image            |
 
-`beginPrepause` / `beginExercise` / `beginRest` are thin wrappers around `beginSegment(phase)`, which sets the phase, resets `secondsLeft` from `segmentDuration()`, renders static content once (`renderSegment`) and starts the tick. `renderPlayer` only does per-tick updates (timer, progress bar, play/pause icon). `startTick` uses `pl.tickAnchor = {startMs, startLeft, lastLeft}` so the timer stays accurate when `setInterval` is throttled in a backgrounded tab; the `visibilitychange` handler calls `tickStep()` to resync on return.
+`beginPrepause` / `beginExercise` / `beginRest` are thin wrappers around `beginSegment(phase)`, which sets the phase, resets `secondsLeft` from `segmentDuration()`, renders static content once (`renderSegment`) and starts the tick. `renderPlayer` only does per-tick updates (timer, progress bar, play/pause icon, and the `--p` 0…1 custom property on `#player-area` that drives the rising exercise wash). `renderSegment` sets `data-phase` on `#player-area`, which CSS uses for the phase glow and wash. `startTick` uses `pl.tickAnchor = {startMs, startLeft, lastLeft}` so the timer stays accurate when `setInterval` is throttled in a backgrounded tab; the `visibilitychange` handler calls `tickStep()` to resync on return.
 
 **`playerNext`** skips to the next segment in the natural flow; `tickStep` calls it on expiry:
 prepause → exercise 0 → rest 0 → exercise 1 → … → finishWorkout.

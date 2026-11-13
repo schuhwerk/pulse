@@ -27,7 +27,7 @@ test.describe('smoke: create → play → finish', () => {
     await expect(page.locator('#view-detail.active')).toBeVisible();
 
     // Open add-exercise, switch to Manual tab, fill, add.
-    await page.locator('#view-detail .fab').last().click();
+    await page.locator('#view-detail .btn-add').click();
     await page.locator('.tab[data-tab="manual"]').click();
     await page.fill('#man-name', 'Jumping Jacks');
     await page.fill('#man-dur', '10');

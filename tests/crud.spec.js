@@ -114,7 +114,7 @@ test.describe('training CRUD', () => {
     await seedState(page, makeState());
     await page.goto('/index.html');
     await page.locator('.training-card').click();
-    await page.locator('#view-detail .fab').last().click();
+    await page.locator('#view-detail .btn-add').click();
     await page.locator('.tab[data-tab="manual"]').click();
     await page.fill('#man-name', 'Burpees');
     await page.fill('#man-emoji', '🐸');
@@ -144,7 +144,7 @@ test.describe('training CRUD', () => {
 
     await page.clock.runFor(400); // clicks are swallowed for 350ms after a drop
     await page.locator('.exercise-card', { hasText: 'Alpha' }).locator('.ex-name').click();
-    await expect(page.locator('#modal-title')).toHaveText('Edit Exercise');
+    await expect(page.locator('#modal-title')).toHaveText('Edit exercise');
   });
 
   test('long-press drag reorders trainings on home; tap opens detail', async ({ page }) => {
@@ -208,7 +208,7 @@ test.describe('unsaved-changes guard', () => {
     await seedState(page, makeState());
     await page.goto('/index.html');
     await page.locator('.training-card').click();
-    await page.locator('#view-detail .fab').last().click();
+    await page.locator('#view-detail .btn-add').click();
     await page.locator('.tab[data-tab="manual"]').click();
     await page.fill('#man-name', 'Half typed');
 

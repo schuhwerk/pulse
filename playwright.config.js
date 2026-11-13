@@ -21,6 +21,8 @@ export default defineConfig({
     // Guarantee empty localStorage/sessionStorage at the start of every test,
     // even when Playwright reuses a persistent browser profile between runs.
     storageState: { cookies: [], origins: [] },
+    // Animations only delay Playwright's stability checks; the app disables them under reduced motion.
+    contextOptions: { reducedMotion: 'reduce' },
   },
   webServer: {
     // `bun` has no single-line built-in static server, and adding a JS server

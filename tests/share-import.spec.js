@@ -89,7 +89,7 @@ test.describe('share links & import', () => {
     await page.locator('button[title="Settings"]').click();
     const [download] = await Promise.all([
       page.waitForEvent('download'),
-      page.locator('.setting-row', { hasText: 'Export Trainings' }).getByRole('button').click(),
+      page.locator('.setting-row', { hasText: 'Export trainings' }).getByRole('button').click(),
     ]);
     const data = JSON.parse(await (await import('node:fs/promises')).readFile(await download.path(), 'utf8'));
     expect(Object.keys(data).sort()).toEqual(['exportedAt', 'trainings']);
