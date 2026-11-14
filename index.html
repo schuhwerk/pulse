@@ -9,10 +9,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="apple-touch-icon" href="icon.svg">
 <title>PULSE — Workout Timer</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+/* Figtree (SIL OFL 1.1, fonts/OFL.txt), self-hosted: no requests to Google. Variable weight, latin subset. */
+@font-face{font-family:'Figtree';font-style:normal;font-weight:300 900;font-display:swap;src:url('fonts/figtree.woff2') format('woff2')}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
 --bg:#131211;--surface:#1d1b19;--surface2:#272522;--surface3:#33302c;--line:rgba(255,240,220,.07);
@@ -312,8 +314,16 @@ a{color:var(--accent)}
 .toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s}
 .toggle input:checked+.toggle-slider{background:var(--accent)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(18px)}
+.welcome-intro{color:var(--text2);font-size:16px;line-height:1.5;margin-bottom:12px}
+.welcome-list{margin:0 0 12px;padding-left:18px;color:var(--text2);font-size:16px;line-height:1.5}
+.welcome-list li{margin:0 0 10px}
+.welcome-list li:last-child{margin-bottom:0}
+.welcome-list b{color:var(--text);font-weight:600}
+.welcome-list a,.welcome-sign a{color:var(--accent)}
+.welcome-sign{color:var(--text2);font-size:16px;line-height:1.6;margin:4px 0 8px}
 .about{padding:16px 0 0;text-align:center;color:var(--text2);font-size:13px;line-height:1.7}
 .about strong{color:var(--text);font-size:15px;font-weight:600}
+.about-welcome{margin:8px 0 10px}
 
 /* Inline tag */
 .tag{display:inline-block;background:var(--surface2);color:var(--text2);font-size:12px;padding:2px 7px;border-radius:6px;margin-left:6px}
@@ -481,7 +491,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.43';
+const APP_VERSION = '1.0.44';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -544,26 +554,24 @@ const BUILTIN_TRAININGS=[
       ex('Lateral Lunge to Triceps Extension','💪',60,'','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
       ex('Bent-Over Row','🚣',60,'','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
-    { builtinId:'vitus-2026', name:'Vitus 2026', restSeconds:15, description:'Prepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Band on Door + Hip\n- 1kg weights (bottles?)\n- Finger Training thingies', exercises:[
-      ex('Cable Tri Extension - Internal Rotation','💪',50,'','Single-arm: hold cable at opposite shoulder with elbow bent, rotate toward the cable and straighten the elbow across the body.'),
+    // builtinId stays 'vitus-2026' so existing copies get the update prompt.
+    { builtinId:'vitus-2026', name:'Full Body, No Jumps', restSeconds:10, description:'Strength for the whole body without jumping or running (it was put together around a toe injury). Muscle groups take turns, so each one gets a break.\n\nPrepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Resistance band: one on a door, one for the hips\n- 1 kg weights (water bottles work)\n- Pull-up bar, chair, wall\n- Towel or socks for the leg curls\n- Finger trainer (grip ring or hangboard)', exercises:[
+      ex('Internal Rotation with Band','🔁',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, pull your forearm in toward your belly, then slowly back. Switch arms halfway.'),
+      ex('Side Plank Crunch','↗️',80,'','Side plank on one forearm. Pull your top elbow and top knee together, then stretch out again. Switch sides halfway.',15),
+      ex('Clamshells with Band','🐚',60,'','Band around your thighs above the knees. Lie on your side, knees bent, feet together. Open the top knee like a clamshell, then lower slowly. Switch sides halfway.',15),
+      ex('Chair Dips','🪑',40,'','Hands on chair edge, lower body by bending arms, push back up.',15),
+      ex('Pull-ups','🧗',40,'','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar. No bar? Band rows: band on the door at chest height, pull your elbows back.',20),
+      ex('Hip Raise with Band','🍑',60,'','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.',15),
+      ex('External Rotation with Band','↪️',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, rotate your forearm outward, away from your belly, then slowly back. Switch arms halfway.'),
+      ex('Push-up Rotations','🔄',60,'','Push-up, then rotate to side plank, alternate sides.'),
+      ex('Wall Sit','🧱',70,'','Back flat against wall, thighs parallel to ground.'),
+      ex('Superman Hold','🦸',40,'','Lie face down, arms stretched forward. Lift arms, chest and legs a little off the floor and hold. Look at the floor to keep your neck long.'),
+      ex('Triceps Extension with Internal Rotation','💪',50,'','Single-arm: hold the band at the opposite shoulder with elbow bent, rotate toward the band and straighten the elbow across the body. Switch arms halfway.'),
+      ex('Finger Training','🤏',60,'','Squeeze a grip ring for 5 s, release, repeat. With a hangboard: hang 7 s, rest 3 s.'),
       ex('Crunches','🔥',60,'','Lie on back, curl shoulders toward pelvis, engaging the core.'),
-      ex('Pistol Squat','🦵',40,'','Single-leg squat: extend one leg forward and lower into a full squat on the other leg, then drive back up. Optional load: dumbbell or kettlebell at chest.'),
-      ex('Reverse Wood Chops','🪓',70,'','Band anchored low: grip with both hands at hip, rotate hips and pull the band up and over the opposite shoulder like a baseball swing.'),
-      ex('Push-ups','🙇',60,'','Plank position, lower chest to floor, push up.'),
-      ex('Prone YTWL with Chin Tuck','🦅',50,'','Lying face down, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades as if squeezing a coin between them.'),
-      ex('Wall Sit','🧱',40,'','Back flat against wall, thighs parallel to ground.'),
-      ex('Chair Dips','🪑',40,'','Hands on chair edge, lower body by bending arms, push back up.'),
-      ex('Hip Raise, Lying, with Band','🍑',60,'','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.'),
-      ex('Handstand Pushup','🤸',30,'','Handstand position against a wall, lower head toward floor, press back up.'),
-      ex('Pull-ups','🧗',40,'','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar.'),
-      ex('Side Plank Left','↙️',50,'','Hold side plank on left forearm.'),
-      ex('Internal Rotator Right','🔁',40,'','Shoulder internal rotation with resistance band.'),
-      ex('Internal Rotator Left','🔁',40,'','Shoulder internal rotation with resistance band.'),
-      ex('Push-up Rotations','🔄',40,'','Push-up, then rotate to side plank, alternate sides.'),
-      ex('Side Plank Right','↗️',50,'','Hold side plank on right forearm.'),
-      ex('Forearm Plank','🪵',60,'','Hold body straight on forearms and toes, core tight.'),
-      ex('Finger Training','🤏',60,'','Hang/grip holds for finger strength.'),
-      ex('Prone YTWL with Chin Tuck + Weight','🦅',40,'','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades (imagine you have a coin between them).'),
+      ex('Leg Curls with Towel or Socks','🧦',30,'','Lie on your back, heels on a towel or in socks on a smooth floor. Lift your hips, pull your heels toward your bottom, slide them back out.',15),
+      ex('Handstand Push-up','🤸',30,'','Handstand position against a wall, lower head toward floor, press back up. Easier: pike push-up with your feet on a chair.',20),
+      ex('Prone YTWL with Chin Tuck + Weight','🦅',50,'','Lying face down with light weights, perform Y-T-W-L arm raises while keeping a chin tuck and lifting head/chest slightly. Thumbs up, actively retract shoulder blades (imagine you have a coin between them).'),
     ]},
 ];
 // ─── State / end-builtins ─────────────────────────────────────
@@ -572,7 +580,7 @@ const $=id=>document.getElementById(id);
 function defaultState(){
   return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ autoUpdate:true }, version: APP_VERSION };
 }
-function ex(name,emoji,dur,img,desc){ return {name,emoji,s:dur,description:desc,imageUrl:img}; }
+function ex(name,emoji,dur,img,desc,rest){ const e={name,emoji,s:dur,description:desc,imageUrl:img}; if(rest!=null) e.restAfterSeconds=rest; return e; }
 function validateSharePayload(obj){
   if(!obj || typeof obj!=='object' || !Array.isArray(obj.exercises)) throw new Error('Invalid training payload');
   return obj;
@@ -1659,11 +1667,17 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 // ─── Settings / Import / Export ───────────────────────────────
-function handleSwWaiting(sw){
+// An auto-update reloads the page. If a sheet is open (welcome, update prompt…), wait
+// until it closes (see closeModal) unless the user asked for the update (`now`).
+let _swDeferred = false;
+function handleSwWaiting(sw,now){
   _swWaiting = sw;
-  if(autoUpdateEnabled()){ applySwUpdate(); return; }
+  if(autoUpdateEnabled()){
+    if(isModalOpen()&&!now){ _swDeferred=true; return; }
+    applySwUpdate(); return;
+  }
   toast('New version available!');
-  if(isModalOpen()) openSettings();
+  if(isModalOpen()&&$('modal-title').textContent==='Settings') openSettings();
 }
 function applySwUpdate(){ if(!_swWaiting) return; _swWaiting.postMessage({type:'SKIP_WAITING'}); toast('Updating…'); }
 function setAutoUpdate(v){ state.settings.autoUpdate=v; save(); }
@@ -1690,11 +1704,32 @@ function openSettings(){
     <div class="setting-row"><div class="setting-label">Version<small>v${APP_VERSION}</small></div><button class="btn ${_swWaiting?'btn-primary':'btn-secondary'}" onclick="checkForUpdate()">${_swWaiting?'Update now':'Check for update'}</button></div>
     <div class="about">
       <strong>Pulse</strong><br>
-      Open-source interval workout timer. Your trainings stay on your device; exercise search and images are loaded from wger.de.<br>
+      Free, open-source workout timer.<br>
+      <button class="btn btn-secondary about-welcome" onclick="openWelcome()">Welcome &amp; basics</button><br>
       Exercise text and images from <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a>, mostly under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA</a>; each exercise lists its author and license.<br>
       <a href="https://github.com/schuhwerk/pulse/" target="_blank" rel="noopener">github.com/schuhwerk/pulse</a>
     </div>
   `);
+}
+// Shown on start until closed once (settings.welcomeSeen), reopenable from Settings.
+// Marked seen on close, not on open, so a reload (e.g. an update) can't swallow it.
+function openWelcome(){
+  openModal('Welcome to Pulse',`
+    <div class="welcome-intro">A simple timer for home workouts. Pick a training, press Start, follow the beeps.</div>
+    <ul class="welcome-list">
+      <li><b>Free</b>, now and later. No account, no ads, no tracking.</li>
+      <li><b>Make it yours.</b> The trainings are examples, change or delete anything. Reset in Settings brings them back.</li>
+      <li><b>Private.</b> Your changes stay on this device. Export or share them anytime.</li>
+      <li><b>Works offline.</b> Add Pulse to your home screen to use it like an app.</li>
+      <li><b>New exercises</b> come from <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a>, a free database, only when you search.</li>
+    </ul>
+    <div class="welcome-sign">Have fun!<br><a href="https://vs.digital" target="_blank" rel="noopener">Vitus (vs.digital)</a></div>
+    <div class="modal-actions"><button class="btn btn-primary" onclick="closeModal()">Let's go</button></div>`,{onClose:()=>{
+    state.settings.welcomeSeen=true; save();
+    // A deferred auto-update reloads now; the prompt then shows after the reload.
+    const pending=getPendingBuiltinUpdates();
+    if(pending&&!_swDeferred) setTimeout(()=>promptBuiltinUpdate(pending),300);
+  }});
 }
 function exportData(){
   const d=new Date(), p2=n=>String(n).padStart(2,'0');
@@ -1729,7 +1764,7 @@ function checkForUpdate(){
     toast('Checking…');
     reg.update().then(()=>{
       // If a waiting worker appeared immediately
-      if(reg.waiting){handleSwWaiting(reg.waiting);if(!autoUpdateEnabled())openSettings();return;}
+      if(reg.waiting){handleSwWaiting(reg.waiting,true);if(!autoUpdateEnabled())openSettings();return;}
       // If a new worker is installing, wait for it
       if(reg.installing){
         waitForInstalled(reg.installing);return;
@@ -1745,7 +1780,7 @@ function checkForUpdate(){
 function waitForInstalled(sw){
   sw.addEventListener('statechange',()=>{
     if(sw.state==='installed'){
-      handleSwWaiting(sw);
+      handleSwWaiting(sw,true);
       if(!autoUpdateEnabled()){openSettings();toast('Update ready!');}
     }
   });
@@ -1754,14 +1789,21 @@ function waitForInstalled(sw){
 // ─── Modal ────────────────────────────────────────────────────
 // opts.guard: warn before discarding edits when the user dismisses the modal.
 // closeModal() is the programmatic close (after save) and never asks.
+// opts.onClose runs once when the sheet closes, however it is closed.
+let _onModalClose=null;
 function openModal(title,html,opts={}){
+  _onModalClose=opts.onClose||null;
   const body=$('modal-body');
   $('modal-title').textContent=title;
   body.innerHTML=html;
   if(opts.guard)guardForm(body);else delete body.dataset.snap;
   $('modal').classList.add('open');
 }
-function closeModal(){$('modal').classList.remove('open');}
+function closeModal(){
+  $('modal').classList.remove('open');
+  const f=_onModalClose; _onModalClose=null; if(f) f();
+  if(_swDeferred){ _swDeferred=false; applySwUpdate(); }
+}
 function isModalOpen(){ return $('modal').classList.contains('open'); }
 function requestCloseModal(){ if(confirmDiscard($('modal-body')))closeModal(); }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&isModalOpen())requestCloseModal();});
@@ -1926,7 +1968,8 @@ initReorder();
 document.querySelectorAll('.view .content').forEach(el=>el.addEventListener('scroll',()=>el.closest('.view').classList.toggle('scrolled',el.scrollTop>2),{passive:true}));
 routeHash();
 const _pending=getPendingBuiltinUpdates();
-if(_pending) setTimeout(()=>promptBuiltinUpdate(_pending),400);
+if(!state.settings.welcomeSeen && !window.__SKIP_WELCOME__) setTimeout(openWelcome,400);
+else if(_pending) setTimeout(()=>promptBuiltinUpdate(_pending),400);
 window._pulse = { getState: () => state };
 </script>
 </body>

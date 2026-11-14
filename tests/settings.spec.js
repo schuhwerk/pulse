@@ -123,3 +123,49 @@ test.describe('settings', () => {
     await expect(page.locator('#modal.open')).not.toBeVisible();
   });
 });
+
+// ─── welcome ────────────────────────────────────────────────────────────────
+test.describe('welcome', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => { window['__WANT_WELCOME__'] = true; delete window['__SKIP_WELCOME__']; });
+  });
+
+  test('shows once on first start, then only from settings', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+    await page.getByRole('button', { name: "Let's go" }).click();
+    await expect(page.locator('#modal.open')).not.toBeVisible();
+
+    await page.reload();
+    await page.waitForTimeout(600);
+    await expect(page.locator('#modal.open')).not.toBeVisible();
+
+    await page.locator('button[title="Settings"]').click();
+    await page.locator('#modal-body').getByRole('button', { name: 'Welcome & basics' }).click();
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+  });
+
+  test('pending builtin update follows the welcome', async ({ page }) => {
+    await seedState(page, { ...makeState([staleBuiltin()]), version: '1.0.0' });
+    await page.goto('/index.html');
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+    await page.getByRole('button', { name: "Let's go" }).click();
+    await expect(page.locator('#modal-title')).toHaveText('Built-in trainings updated');
+  });
+
+  test('closing the welcome with X also counts and chains the update prompt', async ({ page }) => {
+    await seedState(page, { ...makeState([staleBuiltin()]), version: '1.0.0' });
+    await page.goto('/index.html');
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+    await page.getByRole('button', { name: 'Close' }).click();
+    await expect(page.locator('#modal-title')).toHaveText('Built-in trainings updated');
+    expect(await page.evaluate(() => window['_pulse'].getState().settings.welcomeSeen)).toBe(true);
+  });
+
+  test('a reload while the welcome is open shows it again', async ({ page }) => {
+    await page.goto('/index.html');
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+    await page.reload();
+    await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+  });
+});

@@ -14,6 +14,7 @@
     "confirmImportTraining", "confirmFullImport", "exportTraining", "shareTraining",
     "encodeShareUrl", "decodeSharePayload", "bytesToB64url", "b64urlToBytes", "streamBytes", "deflate", "goDetail", "goHome", "getTraining",
     "hydrateBuiltin", "defaultSecondstate", "routeHash", "showView", "currentTrainingId",
-    "BUILTIN_TRAININGS", "APP_VERSION"
+    "BUILTIN_TRAININGS", "APP_VERSION",
+    "hangboard", "Clamshells", "clamshell", "Figtree", "welcomeSeen"
   ]
 }

@@ -16,7 +16,7 @@ You can create several trainings. Exercises come from [wger.de](https://wger.de)
 
 ## Running it
 
-The whole app is one file, `index.html`. You can download it and open it directly. The illustrations for the built-in exercises are in `images/`, so put that folder next to the file if you want them.
+The whole app is one file, `index.html`. You can download it and open it directly. The illustrations for the built-in exercises are in `images/` and the font is in `fonts/`, so put those folders next to the file if you want them.
 
 The wger search, offline mode and the screen wake lock need HTTP(S):
 

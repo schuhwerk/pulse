@@ -22,6 +22,8 @@ export const test = base.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(() => {
       window['__DISABLE_SERVICE_WORKER__'] = true;
+      // The first-start welcome sheet would cover the UI; welcome tests opt back in.
+      if (!window['__WANT_WELCOME__']) window['__SKIP_WELCOME__'] = true;
       window['__preInit'] = { ls: localStorage.getItem('pulse_data'), ss: sessionStorage.getItem('__pw_init') };
       // window.name is empty when a new tab opens (even with a persistent Chromium
       // profile), but survives page.reload() within the same tab.  Use it as a
@@ -48,14 +50,6 @@ export const test = base.extend({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ results: [] }),
-    }));
-
-    // Stub Google Fonts: the CSS @import blocks the `load` event, so a slow or
-    // rate-limited fetch would stall page.goto/reload past the test timeout.
-    await page.route(/fonts\.(googleapis|gstatic)\.com/, route => route.fulfill({
-      status: 200,
-      contentType: 'text/css',
-      body: '',
     }));
 
     // Don't register the service worker during tests (avoids cache flakiness).
