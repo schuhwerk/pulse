@@ -39,6 +39,8 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | `// ─── player: edge cases` | `player.spec.js` | Refuses to start with no exercises |
 | `// ─── unsaved-changes guard` | `crud.spec.js` | Discard-confirm on modal close (Esc) and leaving the Manual add form; save never asks |
 | `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |
+| `// ─── wger: attribution` | `wger.spec.js` | Stubbed wger search: picked/enhanced exercises store `src` (license + author), credit in edit form and player sheet, thumbnails in search, About text |
+| `// ─── wger: share & import keep attribution` | `wger.spec.js` | `src` survives share payload round trip; imported `src` is sanitized and escaped |
 | `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, trainings file import (add/skip duplicates, replace all), export format, round-trip payload |
 
 ## Motion
@@ -58,5 +60,5 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 - Audio (AudioContext is stubbed to a no-op)
 - Wake lock (stubbed)
 - Service worker / cache (SW blocked with 404)
-- wger exercise search (network blocked, returns `{ results: [] }`)
+- wger exercise search against the live API (network blocked, returns `{ results: [] }`; `wger.spec.js` stubs `exerciseinfo` per test)
 - Drag-reorder with touch (only the mouse path is covered, in `crud.spec.js`)

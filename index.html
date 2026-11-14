@@ -200,6 +200,9 @@ a{color:var(--accent)}
 .illu.has-img .illu-emoji{inset:auto 3px 3px auto;width:24px;height:24px;font-size:13px;border-radius:6px;background:var(--surface3)}
 .illu-hint{font-size:12px;color:var(--text3)}
 .illu-hint:empty{display:none}
+.credit{font-size:12px;color:var(--text3);line-height:1.5;margin-top:6px}
+.credit:empty{display:none}
+.credit a{color:var(--text2)}
 .field{display:flex;flex-direction:column;gap:6px}
 .field>label{font-size:13px;color:var(--text2);font-weight:500}
 .dur-input{display:flex;align-items:center;gap:8px}
@@ -478,7 +481,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.42';
+const APP_VERSION = '1.0.43';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -622,6 +625,7 @@ function hydrateTraining(t){
     exercises: (t.exercises||[]).map(e=>{
       const o={ id:uid(), name:String(e.name||''), description:e.description||'', imageUrl:wgerImg(e.imageUrl||''), emoji:e.emoji||'💪', s:Number.isFinite(e.s)?e.s:defaultSeconds };
       if(e.restAfterSeconds!=null) o.restAfterSeconds=Number(e.restAfterSeconds);
+      const src=cleanSrc(e.src); if(src) o.src=src;
       return o;
     }),
   };
@@ -645,6 +649,8 @@ function toSharePayload(t){
     // Strip the wger host to save URL space; hydrateTraining re-expands via wgerImg().
     if(e.imageUrl) o.imageUrl=e.imageUrl.replace(/^https:\/\/wger\.de/,'');
     if(e.restAfterSeconds!=null) o.restAfterSeconds=e.restAfterSeconds;
+    // wger content is CC BY-SA: the attribution travels with it.
+    if(e.src) o.src=e.src;
     return o;
   });
   return p;
@@ -880,6 +886,7 @@ function removeExercise(i){ getTraining().exercises.splice(i,1); save(); closeMo
 
 function editExercise(i){
   const t=getTraining(),e=t.exercises[i];
+  _enhanceSrc=null;
   openModal('Edit exercise',`<div class="exform">${exFormHtml('ed',e,t,{submit:'Save',onSubmit:`saveExerciseEdit(${i})`,extra:`
     <div class="field"><label>Enhance from wger</label>
       <div class="row">
@@ -893,7 +900,7 @@ function editExercise(i){
   renderIllu('ed');
   renderLangToggle('ed-lang-toggle');
 }
-let _enhanceResults=[];
+let _enhanceResults=[], _enhanceSrc=null;
 async function enhanceExerciseFromWger(){
   const status=$('ed-wger-status');
   const q=$('ed-wger-q').value.trim();
@@ -911,6 +918,8 @@ function pickEnhanceResult(idx){
   const desc=wgerDesc(e), img=wgerFirstImg(e);
   if(desc)$('ed-desc').value=desc;
   if(img){$('ed-img').value=img;renderIllu('ed');}
+  _enhanceSrc=wgerSrc(e,!!desc,!!img);
+  $('ed-credit').innerHTML=creditHtml({src:_enhanceSrc,imageUrl:$('ed-img').value});
   $('ed-wger-status').innerHTML=`Applied "${esc(wgerTr(e).name||'exercise')}" — ${img?'image applied':'no image available'}.`;
   _enhanceResults=[];
 }
@@ -918,6 +927,8 @@ function saveExerciseEdit(i){
   const e=getTraining().exercises[i];
   const f=readExForm('ed');
   Object.assign(e,f,{name:f.name||e.name});
+  if(_enhanceSrc) e.src=_enhanceSrc;
+  _enhanceSrc=null;
   save(); closeModal(); renderDetail();
 }
 
@@ -1100,11 +1111,21 @@ async function wgerSearch(q,limit,equipment=[]){
   const url=`https://wger.de/api/v2/exerciseinfo/?format=json&name__search=${encodeURIComponent(q)}&language__code=${lang}${equip}&limit=${limit}`;
   return (await (await fetch(url)).json()).results||[];
 }
-function wgerFirstImg(e){ return wgerImg(e.images?.[0]?.image); }
+function wgerMainImg(e){ const ims=e.images||[]; return ims.find(i=>i.is_main)||ims[0]; }
+function wgerFirstImg(e){ return wgerImg(wgerMainImg(e)?.image); }
+// Attribution stored on the exercise: wger id plus license id and author of the text and image used.
+function wgerSrc(e,useText=true,useImg=true){
+  const lic=o=>{ const c={lic:o.license}; if(o.license_author) c.by=o.license_author; return c; };
+  const tr=wgerDescTr(e)||wgerTr(e), im=wgerMainImg(e);
+  const src={wger:e.id};
+  if(useText&&tr.license!=null) src.text=lic(tr);
+  if(useImg&&im) src.img=lic(im);
+  return src;
+}
 // Result card shared by the Add search and the Edit "Enhance from wger" picker.
 // `full` adds equipment and a description snippet.
 function wgerCard(e,onclick,full){
-  const img=wgerFirstImg(e);
+  const img=wgerImg(wgerMainImg(e)?.thumbnails?.small)||wgerFirstImg(e);
   const meta=[e.category?.name,(e.muscles||[]).map(m=>m.name_en||m.name).join(', ')];
   let snip='';
   if(full){
@@ -1152,21 +1173,19 @@ function cleanDesc(s){
     .replace(/\n{3,}/g,'\n\n')
     .trim();
 }
-// First non-empty description: selected language, then English, then any.
-function wgerDesc(e){
+// Translation with the first non-empty description: selected language, then English, then any.
+function wgerDescTr(e){
   const trs=e.translations||[];
-  for(const tr of [trs.find(t=>t.language===LANG_IDS[wgerLang]),trs.find(t=>t.language===LANG_IDS.en),...trs]){
-    const d=cleanDesc(tr?.description);
-    if(d)return d;
-  }
-  return '';
+  return [trs.find(t=>t.language===LANG_IDS[wgerLang]),trs.find(t=>t.language===LANG_IDS.en),...trs]
+    .find(tr=>cleanDesc(tr?.description));
 }
+function wgerDesc(e){ return cleanDesc(wgerDescTr(e)?.description); }
 
 function pickWgerResult(idx){
   const e=wgerSearchResults[idx]; if(!e)return;
   const t=getTraining(); if(!t)return;
   const name=wgerTr(e).name||'Exercise';
-  t.exercises.push({id:uid(),name,description:wgerDesc(e),imageUrl:wgerFirstImg(e),emoji:'🏋️',s:DEFAULT_DUR});
+  t.exercises.push({id:uid(),name,description:wgerDesc(e),imageUrl:wgerFirstImg(e),emoji:'🏋️',s:DEFAULT_DUR,src:wgerSrc(e)});
   save(); toast('Added: '+name); goDetail();
 }
 
@@ -1198,7 +1217,8 @@ function exFormHtml(p,e,t,o){
       <input id="${p}-img" value="${esc(e.imageUrl||'')}" placeholder="Optional — replaces the emoji" autocomplete="off" oninput="renderIllu('${p}')">
       <div class="illu-hint" id="${p}-illu-hint"></div>
     </div>
-    <div class="field"><label>Description</label><textarea id="${p}-desc" placeholder="How to perform…">${esc(e.description||'')}</textarea></div>
+    <div class="field"><label>Description</label><textarea id="${p}-desc" placeholder="How to perform…">${esc(e.description||'')}</textarea>
+      <div class="credit" id="${p}-credit">${creditHtml(e)}</div></div>
     ${o.extra||''}
     <div class="row" style="gap:12px">
       <div class="field grow"><label>Duration</label><div class="dur-input"><input id="${p}-dur" type="number" value="${e.s||30}" min="5" max="600"><span>s</span></div></div>
@@ -1330,9 +1350,13 @@ function playerToggle(){ pl.running=!pl.running; if(pl.running)startTick(); else
 function setDesc(html){
   const d=$('pl-desc');
   d.innerHTML=html;
-  $('pl-more').hidden=d.scrollHeight<=d.clientHeight+2;
+  // wger exercises always get "more": the sheet carries their license credit.
+  $('pl-more').hidden=d.scrollHeight<=d.clientHeight+2&&!creditHtml(shownEx());
 }
-function showDesc(){ const e=shownEx(); openModal(e.name,`<p class="modal-text">${autolink(e.description)}</p>`); }
+function showDesc(){
+  const e=shownEx(), credit=creditHtml(e);
+  openModal(e.name,`<p class="modal-text">${autolink(e.description||'')}</p>${credit?`<p class="credit">${credit}</p>`:''}`);
+}
 // Natural flow: prepause → exercise 0 → rest 0 → exercise 1 → … → finish.
 function playerNext(){
   clearInterval(pl.timer);
@@ -1666,8 +1690,8 @@ function openSettings(){
     <div class="setting-row"><div class="setting-label">Version<small>v${APP_VERSION}</small></div><button class="btn ${_swWaiting?'btn-primary':'btn-secondary'}" onclick="checkForUpdate()">${_swWaiting?'Update now':'Check for update'}</button></div>
     <div class="about">
       <strong>Pulse</strong><br>
-      Open-source interval workout timer. Your data stays on your device — nothing is sent to any server.<br>
-      Exercise data from <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a>.<br>
+      Open-source interval workout timer. Your trainings stay on your device; exercise search and images are loaded from wger.de.<br>
+      Exercise text and images from <a href="https://wger.de" target="_blank" rel="noopener">wger.de</a>, mostly under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA</a>; each exercise lists its author and license.<br>
       <a href="https://github.com/schuhwerk/pulse/" target="_blank" rel="noopener">github.com/schuhwerk/pulse</a>
     </div>
   `);
@@ -1849,6 +1873,39 @@ function swallowClick(){
 }
 function isWgerUrl(url){ return !!url&&url.includes('wger.de'); }
 function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger.de'+url:url;}
+// wger license ids, as listed by /api/v2/license/.
+const WGER_LICENSES={
+  1:['CC BY-SA 3.0','https://creativecommons.org/licenses/by-sa/3.0/'],
+  2:['CC BY-SA 4.0','https://creativecommons.org/licenses/by-sa/4.0/'],
+  3:['CC0 1.0','https://creativecommons.org/publicdomain/zero/1.0/'],
+  4:['CC BY 4.0','https://creativecommons.org/licenses/by/4.0/'],
+  5:['ODbL 1.0','https://opendatacommons.org/licenses/odbl/'],
+};
+// `src` comes from imported files and share links: keep only the expected shape.
+function cleanSrc(s){
+  if(!s||!Number.isInteger(s.wger)||s.wger<1)return null;
+  const part=x=>{ const c={lic:Number.isInteger(x.lic)?x.lic:0}; if(x.by) c.by=String(x.by).slice(0,200); return c; };
+  const o={wger:s.wger};
+  if(s.text&&typeof s.text==='object') o.text=part(s.text);
+  if(s.img&&typeof s.img==='object') o.img=part(s.img);
+  return o;
+}
+// License credit for wger content, or '' for exercises without any.
+// Images added before `src` existed only get a generic wger.de credit.
+function creditHtml(e){
+  const s=e?.src, wgerImage=isWgerUrl(e?.imageUrl);
+  if(!s&&!wgerImage)return '';
+  const a=(href,text)=>`<a href="${esc(href)}" target="_blank" rel="noopener">${esc(text)}</a>`;
+  if(!s)return `Image from ${a('https://wger.de','wger.de')}; see wger.de for its license.`;
+  const part=(label,c)=>{
+    const l=WGER_LICENSES[c.lic];
+    return label+(c.by?' by '+esc(c.by):'')+(l?', '+a(l[1],l[0]):'');
+  };
+  const parts=[`Adapted from ${a(`https://wger.de/en/exercise/${s.wger}/view-base`,'wger.de exercise #'+s.wger)}`];
+  if(s.text) parts.push(part('Text',s.text));
+  if(s.img&&wgerImage) parts.push(part('Image',s.img));
+  return parts.join(' · ');
+}
 
 // ─── Init ─────────────────────────────────────────────────────
 let bPrompt, isDebug = location.search.includes('debug=install');
