@@ -241,3 +241,34 @@ test.describe('player swipe', () => {
     await expect(page.locator('.pl-ghost[id]')).toHaveCount(0);
   });
 });
+
+// ─── player: card layout ────────────────────────────────────────────────────
+test.describe('player card layout', () => {
+  const long = 'Keep your back straight and your core tight. '.repeat(12);
+  test.beforeEach(async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedState(page, makeState([makeTraining({
+      exercises: [
+        { id: 'e1', name: 'Alpha', emoji: '💪', s: 10, description: 'Short.' },
+        { id: 'e2', name: 'A much longer exercise name that wraps', emoji: '🔥', s: 10, description: long },
+      ],
+    })]));
+    await page.goto('/index.html');
+    await page.locator('.training-card', { hasText: 'Test Workout' }).click();
+    await page.locator('.play-fab').click();
+  });
+
+  test('image stays put; long descriptions get a more link that opens a sheet', async ({ page }) => {
+    const img = page.locator('#pl-image');
+    await skipPrepause(page);
+    await expect(page.locator('#pl-name')).toHaveText('Alpha');
+    await expect(page.locator('#pl-more')).toBeHidden();
+    const y1 = (await img.boundingBox())?.y;
+    await skipPrepause(page); // → rest, showing the next exercise
+    await expect(page.locator('#pl-name')).toHaveText(/longer/);
+    expect((await img.boundingBox())?.y).toBe(y1);
+    await page.locator('#pl-more').click();
+    await expect(page.locator('#modal-title')).toHaveText(/longer/);
+    await expect(page.locator('#modal-body')).toContainText('core tight');
+  });
+});

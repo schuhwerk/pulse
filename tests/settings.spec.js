@@ -103,4 +103,23 @@ test.describe('settings', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('#modal.open')).not.toBeVisible();
   });
+
+  test('swipe down dismisses the sheet; a short drag does not', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    await page.locator('button[title="Settings"]').click();
+    const box = await page.locator('#modal-title').boundingBox();
+    if (!box) throw new Error('no title');
+    const drag = async (/** @type {number} */ dy) => {
+      await page.mouse.move(box.x + 10, box.y + 5);
+      await page.mouse.down();
+      for (let i = 1; i <= 8; i++) await page.mouse.move(box.x + 10, box.y + 5 + (dy * i) / 8);
+      await page.mouse.up();
+    };
+    await drag(20);
+    await expect(page.locator('#modal.open')).toBeVisible();
+    await drag(400);
+    await expect(page.locator('#modal.open')).not.toBeVisible();
+  });
 });

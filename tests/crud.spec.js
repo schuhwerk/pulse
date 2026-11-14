@@ -34,7 +34,9 @@ test.describe('training CRUD', () => {
     await seedState(page, makeState());
     await page.goto('/index.html');
     await page.locator('.training-card').click();
-    await page.locator('.exercise-card', { hasText: 'Alpha' }).getByTitle('Remove').click();
+    await page.locator('.exercise-card', { hasText: 'Alpha' }).locator('.ex-name').click();
+    await page.locator('#modal-body').getByRole('button', { name: 'Delete exercise' }).click();
+    await expect(page.locator('#modal')).not.toHaveClass(/open/);
     await expect(page.locator('.exercise-card', { hasText: 'Alpha' })).toHaveCount(0);
     await expect(page.locator('.exercise-card', { hasText: 'Bravo' })).toBeVisible();
   });
@@ -80,7 +82,7 @@ test.describe('training CRUD', () => {
     await page.goto('/index.html');
     await page.locator('.training-card').click();
     const alpha = page.locator('.exercise-card', { hasText: 'Alpha' });
-    await alpha.getByTitle('Edit').click();
+    await alpha.locator('.ex-name').click();
 
     await page.fill('#ed-emoji', '🔥');
     await expect(page.locator('#ed-illu')).not.toHaveClass(/has-img/);
@@ -90,7 +92,7 @@ test.describe('training CRUD', () => {
     await page.getByRole('button', { name: 'Save' }).click();
     await expect(alpha.locator('.thumb img')).toHaveAttribute('src', 'images/plank.svg');
 
-    await alpha.getByTitle('Edit').click();
+    await alpha.locator('.ex-name').click();
     await expect(page.locator('#ed-emoji')).toHaveValue('🔥');
     await page.fill('#ed-img', '');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -102,7 +104,7 @@ test.describe('training CRUD', () => {
     await page.goto('/index.html');
     await page.locator('.training-card').click();
     const alpha = page.locator('.exercise-card', { hasText: 'Alpha' });
-    await alpha.getByTitle('Edit').click();
+    await alpha.locator('.ex-name').click();
     await page.fill('#ed-emoji', '🔥');
     await page.fill('#ed-img', 'images/does-not-exist.png');
     await page.getByRole('button', { name: 'Save' }).click();
@@ -186,13 +188,13 @@ test.describe('unsaved-changes guard', () => {
     let dialogs = 0;
     page.on('dialog', d => { dialogs++; d.dismiss(); });
 
-    await alpha.getByTitle('Edit').click();
+    await alpha.locator('.ex-name').click();
     await page.fill('#ed-wger-q', 'something'); // search box is not form data
     await page.keyboard.press('Escape');
     await expect(modal).not.toHaveClass(/open/);
     expect(dialogs).toBe(0);
 
-    await alpha.getByTitle('Edit').click();
+    await alpha.locator('.ex-name').click();
     await page.fill('#ed-name', 'Changed');
     await page.keyboard.press('Escape');      // dismissed → stays open
     await expect(modal).toHaveClass(/open/);

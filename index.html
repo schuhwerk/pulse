@@ -99,11 +99,9 @@ input:focus,textarea:focus{border-color:rgba(255,255,255,.22)}
 .exercise-card .ex-name{font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .exercise-card .ex-dur{font-size:13px;color:var(--text2);font-variant-numeric:tabular-nums;margin-top:5px;display:flex;align-items:center;gap:2px}
 .exercise-card .ex-dur .dur{min-width:36px;text-align:center}
-.exercise-card .ex-actions{display:flex;flex-shrink:0}
-.exercise-card .ex-actions button{width:32px;height:32px;border-radius:50%;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
-.exercise-card .ex-actions button:hover{background:var(--surface2);color:var(--text)}
-.exercise-card .ex-actions button.del:hover{color:var(--danger)}
-.exercise-card .ex-actions svg{width:18px;height:18px;stroke-width:1.75}
+.ex-dup{width:32px;height:32px;flex-shrink:0;border-radius:50%;color:var(--text3);display:flex;align-items:center;justify-content:center}
+.ex-dup:hover{background:var(--surface2);color:var(--text)}
+.ex-dup svg{width:18px;height:18px;stroke-width:1.75}
 .quick-btn{font-size:12px;font-weight:500;color:var(--text2);background:var(--surface2);border-radius:6px;height:24px;padding:0 7px;font-variant-numeric:tabular-nums}
 .quick-btn:hover{background:var(--surface3);color:var(--text)}
 /* Drag reorder */
@@ -191,7 +189,7 @@ a{color:var(--accent)}
 .modal-header{padding:16px 12px 8px 20px;display:flex;align-items:center;gap:12px;position:relative}
 .modal-header::before{content:'';position:absolute;top:7px;left:50%;width:36px;height:4px;margin-left:-18px;border-radius:2px;background:var(--surface3)}
 .modal-header h2{font-size:19px;font-weight:700;letter-spacing:-.01em;flex:1}
-.modal-body{padding:8px 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.modal-body{padding:8px 20px 24px;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:16px}
 .exform{display:flex;flex-direction:column;gap:16px}
 .exhead{display:flex;gap:12px;align-items:flex-end}
 .illu{position:relative;width:70px;height:70px;flex-shrink:0;border-radius:12px;background:var(--surface2);border:1px solid transparent;overflow:hidden}
@@ -237,19 +235,22 @@ a{color:var(--accent)}
 .player-phase{--ph:var(--text2);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ph);background:color-mix(in srgb,var(--ph) 14%,transparent);padding:6px 14px;border-radius:999px;margin-bottom:20px}
 .player-phase.is-exercise{--ph:var(--accent)}
 .player-phase.is-rest{--ph:var(--rest)}
-.player-exercise{flex-shrink:0;font-size:30px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px;line-height:1.15;padding:0 8px;max-width:100%;text-wrap:balance;overflow-wrap:anywhere}
-.player-desc-wrap{position:relative;flex-shrink:0;padding:0 8px;min-height:0;max-width:34em}
-.player-desc{font-size:15px;color:var(--text2);line-height:1.5;max-height:12em;overflow:hidden;text-wrap:balance}
-.player-desc-wrap.expanded .player-desc{max-height:none;overflow:visible}
-.player-desc-wrap .more-btn{display:none;margin-top:4px;font-size:13px;color:var(--text);font-weight:500;padding:2px 0}
-.player-desc-wrap.has-overflow .more-btn{display:inline-block}
-.player-image-wrap{position:relative;flex-shrink:0;margin-bottom:24px}
+.player-exercise{font-size:2em;font-weight:700;letter-spacing:-.02em;margin-bottom:8px;line-height:1.15;text-wrap:balance;overflow-wrap:anywhere}
+.player-exercise,.player-desc{display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+.player-exercise{-webkit-line-clamp:2}
+/* Room for a two-line name and the description, so the image above never moves */
+.pl-text{--lines:4;width:100%;max-width:34em;font-size:15px;line-height:1.5;height:calc(4.6em + 8px + (var(--lines) + 1.1) * 1lh);padding:0 8px}
+.player-desc{color:var(--text2);-webkit-line-clamp:var(--lines);text-wrap:balance}
+.pl-text .more-btn{margin-top:4px;font-size:13px;color:var(--text3);font-weight:500}
+.pl-text .more-btn:hover{color:var(--text)}
+/* The box fits the larger photo tile, so the emoji circle sits at the same height */
+.player-image-wrap{--img:200px;position:relative;flex-shrink:0;height:var(--img);display:flex;align-items:center;margin-bottom:24px}
 .player-image{position:relative;width:156px;height:156px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:72px}
 .player-image:not(:has(img)){background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,0) 60%),rgba(39,37,34,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 0 0 1px rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.35)}
-.player-image:has(img){border-radius:28px;width:200px;height:200px}
+.player-image:has(img){border-radius:28px;width:var(--img);height:var(--img)}
 .player-image:has(img.wger-img){background:#ede8e1}
 .player-image img{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);object-fit:contain;background:inherit}
-@media (max-height:700px){.player-image{width:120px;height:120px;font-size:56px}.player-image:has(img){width:150px;height:150px}.player-image-wrap{margin-bottom:18px}.player-phase{margin-bottom:14px}}
+@media (max-height:700px){.player-image{width:96px;height:96px;font-size:48px}.player-image-wrap{--img:120px;margin-bottom:14px}.player-phase{margin-bottom:12px}.pl-text{--lines:2}.player-timer{font-size:80px}}
 #pl-upnext{position:absolute;bottom:-16px;left:50%;background:rgba(51,48,44,.72);color:var(--rest);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 15px;border-radius:16px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
 #pl-upnext.on{opacity:1}
 .player-mid-zone{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px}
@@ -301,10 +302,8 @@ a{color:var(--accent)}
 .setting-label small{display:block;color:var(--text2);font-size:13px;font-weight:400;margin-top:2px;line-height:1.35}
 .toggle{position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0}
 /* Minimum touch target: compact controls keep their look but get an invisible hit area of at least --tap */
-.quick-btn,.chip,.btn-sm,.setting-row .btn,.tab,.lang-toggle button,.more-btn,.exercise-card .ex-actions button{position:relative}
-.quick-btn::after,.chip::after,.btn-sm::after,.setting-row .btn::after,.tab::after,.lang-toggle button::after,.more-btn::after,.toggle::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,var(--tap));height:max(100%,var(--tap));transform:translate(-50%,-50%)}
-/* Card actions sit edge to edge, so only their height grows */
-.exercise-card .ex-actions button::after{content:'';position:absolute;left:0;right:0;top:50%;height:var(--tap);transform:translateY(-50%)}
+.quick-btn,.chip,.btn-sm,.setting-row .btn,.tab,.lang-toggle button,.more-btn,.ex-dup{position:relative}
+.quick-btn::after,.chip::after,.btn-sm::after,.setting-row .btn::after,.tab::after,.lang-toggle button::after,.more-btn::after,.ex-dup::after,.toggle::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,var(--tap));height:max(100%,var(--tap));transform:translate(-50%,-50%)}
 .toggle input{opacity:0;width:0;height:0;position:absolute}
 .toggle-slider{position:absolute;inset:0;border-radius:13px;background:rgba(255,255,255,.14);cursor:pointer;transition:background .2s}
 .toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s}
@@ -316,8 +315,8 @@ a{color:var(--accent)}
 /* Inline tag */
 .tag{display:inline-block;background:var(--surface2);color:var(--text2);font-size:12px;padding:2px 7px;border-radius:6px;margin-left:6px}
 /* Motion */
-.btn,.btn-icon,.fab,.chip,.tab,.quick-btn,.lang-toggle button,.training-card .play-btn,.player-controls button,.exercise-card .ex-actions button{transition:background .15s,color .15s,transform .25s var(--spring)}
-.btn:active,.btn-icon:active,.fab:active,.chip:active,.quick-btn:active,.training-card .play-btn:active,.player-controls button:active,.exercise-card .ex-actions button:active{transform:scale(.95)}
+.btn,.btn-icon,.fab,.chip,.tab,.quick-btn,.lang-toggle button,.training-card .play-btn,.player-controls button,.ex-dup{transition:background .15s,color .15s,transform .25s var(--spring)}
+.btn:active,.btn-icon:active,.fab:active,.chip:active,.quick-btn:active,.training-card .play-btn:active,.player-controls button:active,.ex-dup:active{transform:scale(.95)}
 .card{transition:background .15s,transform .25s var(--spring)}
 .card:active{transform:scale(.985)}
 .view.active{animation:view-in .35s var(--ease-out)}
@@ -325,8 +324,8 @@ a{color:var(--accent)}
 .modal-overlay.open{animation:fade-in .2s ease-out}
 .modal-overlay.open .modal{animation:sheet-up .4s var(--ease-out)}
 .player-top-zone.swap .player-image{animation:settle .45s var(--ease-out)}
-.player-top-zone.swap .player-exercise,.player-top-zone.swap .player-desc-wrap{animation:rise .4s var(--ease-out) both}
-.player-top-zone.swap .player-desc-wrap{animation-delay:.05s}
+.player-top-zone.swap .pl-text>*{animation:rise .4s var(--ease-out) both}
+.player-top-zone.swap .pl-text>*+*{animation-delay:.05s}
 .player-timer.tick{animation:tick .35s var(--spring)}
 .player-image.trophy{animation:pop-in .5s var(--spring) both}
 @keyframes view-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
@@ -440,10 +439,10 @@ a{color:var(--accent)}
           <div class="player-image" id="pl-image">💪</div>
           <div id="pl-upnext">Up next</div>
         </div>
-        <div class="player-exercise" id="pl-name">—</div>
-        <div class="player-desc-wrap" id="pl-desc-wrap">
+        <div class="pl-text">
+          <div class="player-exercise" id="pl-name">—</div>
           <div class="player-desc" id="pl-desc"></div>
-          <button class="more-btn" id="pl-more" onclick="toggleDesc()">more ▾</button>
+          <button class="more-btn" id="pl-more" onclick="showDesc()" hidden>more</button>
         </div>
       </div>
     </div>
@@ -479,7 +478,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.41';
+const APP_VERSION = '1.0.42';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -845,11 +844,7 @@ function renderDetail(){
     return `<div class="card exercise-card" data-idx="${i}" style="--i:${i}">
       <div class="thumb">${thumb}</div>
       <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button><span class="dur">${e.s}s</span><button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
-      <div class="ex-actions">
-        <button onclick="dupExercise(${i})" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
-        <button onclick="editExercise(${i})" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="del" onclick="removeExercise(${i})" title="Remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
-      </div>
+      <button class="ex-dup" onclick="dupExercise(${i})" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
     </div>`;
   }).join('');
 }
@@ -881,7 +876,7 @@ function deleteTraining(){
   state.trainings=state.trainings.filter(t=>t.id!==currentTrainingId);
   save(); closeModal(); goHome();
 }
-function removeExercise(i){ const t=getTraining();t.exercises.splice(i,1);save();renderDetail(); }
+function removeExercise(i){ getTraining().exercises.splice(i,1); save(); closeModal(); renderDetail(); }
 
 function editExercise(i){
   const t=getTraining(),e=t.exercises[i];
@@ -893,7 +888,8 @@ function editExercise(i){
         <button class="btn btn-secondary" onclick="enhanceExerciseFromWger()">Search</button>
       </div>
       <div id="ed-wger-status"></div>
-    </div>`})}</div>`,{guard:true});
+    </div>`})}
+    <button class="btn btn-text-danger btn-block btn-sm" onclick="removeExercise(${i})">Delete exercise</button></div>`,{guard:true});
   renderIllu('ed');
   renderLangToggle('ed-lang-toggle');
 }
@@ -1270,21 +1266,16 @@ function beginRest(){
   const nx=pl.training.exercises[pl.exerciseIdx+1]; if(nx) say('Next: '+nx.name);
 }
 
-// Static content of a segment. During rest the upcoming exercise is shown.
+// The exercise on the card: during rest the upcoming one.
+const shownEx=()=>pl.phase==='rest'&&pl.training.exercises[pl.exerciseIdx+1]||curEx();
+// Static content of a segment.
 function renderSegment(){
-  const exs=pl.training.exercises, e=curEx(), next=exs[pl.exerciseIdx+1];
-  const rest=pl.phase==='rest', shown=rest?(next||e):e;
+  const exs=pl.training.exercises, next=exs[pl.exerciseIdx+1], rest=pl.phase==='rest', shown=shownEx();
   slideTo(viewAt(segOrd()),()=>{
     $('pl-phase').textContent={prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
     $('pl-phase').className='player-phase is-'+pl.phase;
     $('pl-name').textContent=shown.name;
-    const descWrap=$('pl-desc-wrap'), descEl=$('pl-desc');
-    descWrap.classList.remove('expanded','has-overflow');
-    descEl.innerHTML=autolink(shown.description||'');
-    $('pl-more').textContent='more ▾';
-    requestAnimationFrame(()=>{
-      if(descEl.scrollHeight>descEl.clientHeight+2) descWrap.classList.add('has-overflow');
-    });
+    setDesc(autolink(shown.description||''));
     $('pl-image').innerHTML=esc(shown.emoji||'💪')+imgTag(shown.imageUrl);
   });
   $('player-area').dataset.phase=pl.phase;
@@ -1335,10 +1326,13 @@ function tickStep(){
 }
 
 function playerToggle(){ pl.running=!pl.running; if(pl.running)startTick(); else clearInterval(pl.timer); renderPlayer(); }
-function toggleDesc(){
-  const exp=$('pl-desc-wrap').classList.toggle('expanded');
-  $('pl-more').textContent=exp?'less ▴':'more ▾';
+// The description is clamped; "more" shows it whole in a sheet.
+function setDesc(html){
+  const d=$('pl-desc');
+  d.innerHTML=html;
+  $('pl-more').hidden=d.scrollHeight<=d.clientHeight+2;
 }
+function showDesc(){ const e=shownEx(); openModal(e.name,`<p class="modal-text">${autolink(e.description)}</p>`); }
 // Natural flow: prepause → exercise 0 → rest 0 → exercise 1 → … → finish.
 function playerNext(){
   clearInterval(pl.timer);
@@ -1374,8 +1368,7 @@ function finishWorkout(){
     $('pl-phase').textContent='DONE';
     $('pl-phase').className='player-phase';
     $('pl-name').textContent='Well done! 🎉';
-    $('pl-desc').textContent='Workout complete.';
-    $('pl-desc-wrap').classList.remove('expanded','has-overflow');
+    setDesc('Workout complete.');
     $('pl-image').className='player-image';
     $('pl-image').innerHTML='🏆';
     replay($('pl-image'),'trophy');
@@ -1461,7 +1454,7 @@ function slideTo(v,update){
 // Horizontal swipe on the player: pill and card (or badge) follow the
 // finger; release past a threshold or with a flick moves one position.
 // Measurements are taken once per drag so moves only write styles.
-const sw={id:null,x:0,y:0,dx:0,vx:0,t:0,drag:false,clicked:false,v:null,W:0,D:0,half:0};
+const sw={id:null,x:0,y:0,dx:0,vx:0,t:0,drag:false,v:null,W:0,D:0,half:0};
 const swEls=()=>[$('pl-card'),$('pl-upnext'),$('pl-phase')];
 function dragStart(){
   swEls().forEach(grab);
@@ -1513,7 +1506,7 @@ function springBack(){
     sw.id=null;
     if(!sw.drag)return;
     area.classList.remove('dragging');
-    sw.clicked=true; setTimeout(()=>sw.clicked=false,0);
+    swallowClick();
     const dx=sw.dx, dir=dx<0?1:-1, cur=pl.view, to=cur&&viewAt(cur.ord+dir);
     const thr=to&&to.card!==cur.card?sw.W*.25:sw.D*.5;
     const flick=Math.abs(dx)>30&&Math.sign(sw.vx)===Math.sign(dx)&&Math.abs(sw.vx)>.4;
@@ -1522,7 +1515,6 @@ function springBack(){
   };
   area.addEventListener('pointerup',end);
   area.addEventListener('pointercancel',end);
-  area.addEventListener('click',e=>{ if(sw.clicked){ e.stopPropagation(); e.preventDefault(); } },true);
 })();
 
 // ─── Audio ────────────────────────────────────────────────────
@@ -1767,6 +1759,51 @@ function answerModal(which){
 }
 function modalList(items){ return `<ul class="modal-list">${items.map(i=>`<li>${i}</li>`).join('')}</ul>`; }
 
+// Swipe down dismisses the bottom sheet: from the header always, from the body
+// only when it is scrolled to the top. Wide screens show a dialog instead.
+const dialogMQ=matchMedia('(min-width:720px) and (min-height:560px)');
+(()=>{
+  const ov=$('modal'), sheet=ov.querySelector('.modal'), body=$('modal-body');
+  const d={id:null,x:0,y:0,dy:0,v:0,t:0,drag:false,top:false};
+  const settle=()=>{ const {transform}=grab(sheet); if(!reducedMotion.matches) sheet.animate([{transform},{transform:'none'}],{duration:250,easing:EASE_OUT}); };
+  const dismiss=()=>{
+    const {transform}=grab(sheet);
+    if(reducedMotion.matches) return closeModal();
+    ov.animate([{opacity:1},{opacity:0}],{duration:200});
+    sheet.animate([{transform},{transform:'translateY(100%)'}],{duration:200,easing:EASE_ON}).onfinish=closeModal;
+  };
+  sheet.addEventListener('pointerdown',e=>{
+    if(d.id!=null||e.button>0||dialogMQ.matches||e.target.closest('input,textarea,select'))return;
+    Object.assign(d,{id:e.pointerId,x:e.clientX,y:e.clientY,dy:0,v:0,t:e.timeStamp,drag:false,top:!body.contains(e.target)||body.scrollTop<=0});
+  });
+  sheet.addEventListener('pointermove',e=>{
+    if(e.pointerId!==d.id)return;
+    const dy=e.clientY-d.y, dx=e.clientX-d.x;
+    if(!d.drag){
+      if(Math.max(Math.abs(dx),Math.abs(dy))<4) return;
+      if(!d.top||dy<=Math.abs(dx)){ d.id=null; return; }
+      d.drag=true; sheet.setPointerCapture(e.pointerId);
+    }
+    const y=Math.max(0,dy), dt=e.timeStamp-d.t;
+    if(dt>0) d.v=.7*(y-d.dy)/dt+.3*d.v;
+    d.dy=y; d.t=e.timeStamp;
+    sheet.style.transform=`translateY(${y}px)`;
+  });
+  // Pointer events can't stop touch scrolling; a non-passive touchmove can.
+  sheet.addEventListener('touchmove',e=>{ if(d.drag)e.preventDefault(); },{passive:false});
+  const end=e=>{
+    if(e.pointerId!==d.id)return;
+    d.id=null;
+    if(!d.drag)return;
+    swallowClick();
+    const far=d.dy>sheet.offsetHeight/4||d.dy>30&&d.v>.4;
+    if(e.type==='pointerup'&&far&&confirmDiscard(body)) dismiss();
+    else settle();
+  };
+  sheet.addEventListener('pointerup',end);
+  sheet.addEventListener('pointercancel',end);
+})();
+
 // ─── Unsaved-changes guard ────────────────────────────────────
 // guardForm snapshots a container's field values; it counts as dirty once they
 // differ. Fields marked data-noguard (e.g. search boxes) are ignored.
@@ -1803,6 +1840,12 @@ function downloadJson(filename,obj){
   a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}));
   a.download=filename; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+// Swallows the click that the pointerup ending a drag would fire.
+function swallowClick(){
+  const f=e=>{ e.stopPropagation(); e.preventDefault(); };
+  addEventListener('click',f,true);
+  setTimeout(()=>removeEventListener('click',f,true),0);
 }
 function isWgerUrl(url){ return !!url&&url.includes('wger.de'); }
 function wgerImg(url){if(!url)return '';return url.startsWith('/')?'https://wger.de'+url:url;}

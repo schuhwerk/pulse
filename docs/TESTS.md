@@ -35,6 +35,7 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | `// ─── player: cycle, pause, skip, exit` | `player.spec.js` | Full exercise→rest→done cycle, pause halts timer, next-skip, exit to detail |
 | `// ─── player: playerPrev navigation` | `player.spec.js` | Audio-player-style back: mid-segment restart vs. prev-segment navigation; uses 10 s exercises |
 | `// ─── player: swipe navigation` | `player.spec.js` | Mouse drags across `#pl-timer`: swipe forward/back, no-op at prepause, short drag springs back, swipe to DONE |
+| `// ─── player: card layout` | `player.spec.js` | Image stays at the same height across segments; long description shows `more`, which opens a sheet |
 | `// ─── player: edge cases` | `player.spec.js` | Refuses to start with no exercises |
 | `// ─── unsaved-changes guard` | `crud.spec.js` | Discard-confirm on modal close (Esc) and leaving the Manual add form; save never asks |
 | `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |

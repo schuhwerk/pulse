@@ -35,7 +35,7 @@ Anchors (script section comments — all match `^// ───`):
 | `// ─── Audio`                      | `beep`, audio context lifecycle, volume                    |
 | `// ─── Wake Lock`                  | screen wake lock + visibilitychange resync                 |
 | `// ─── Settings / Import`          | settings modal, export/import, update check, reset         |
-| `// ─── Modal`                      | modal open/close, esc                                      |
+| `// ─── Modal`                      | modal open/close, esc, swipe-down to dismiss the sheet     |
 | `// ─── Unsaved-changes guard`    | `guardForm`/`confirmDiscard`, beforeunload, add-view leave |
 | `// ─── Helpers`                    | `autolink`, `wgerImg`, misc                                |
 | `// ─── Init`                       | startup                                                    |
@@ -69,7 +69,7 @@ pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, phase, training }
 **`playerNext`** skips to the next segment in the natural flow; `tickStep` calls it on expiry:
 prepause → exercise 0 → rest 0 → exercise 1 → … → finishWorkout.
 
-**Slide / swipe.** The flow is a strip of positions (`segOrd`: prepause=0, exercise N=2N+1, rest N=2N+2, done=2n). `viewAt(ord)` gives `{card, badge}`: prepause and rest show the upcoming exercise's card (`#pl-card`: emoji, name, description) with the `#pl-upnext` badge. `renderSegment` calls `slideTo`, which always slides the `#pl-phase` pill, and slides the card when it changes (old content as a `.pl-ghost` clone) or only the badge when the card stays; direction comes from the ord delta. Swiping left calls `playerNext`, right calls `playerBack` (strict previous segment, no restart).
+**Slide / swipe.** The flow is a strip of positions (`segOrd`: prepause=0, exercise N=2N+1, rest N=2N+2, done=2n). `viewAt(ord)` gives `{card, badge}`: prepause and rest show the upcoming exercise's card (`#pl-card`: emoji, name, description) with the `#pl-upnext` badge. The card has a fixed height (image box sized for the photo tile, `.pl-text` sized for a 2-line name plus `--lines` description lines) so the image never moves between segments; longer descriptions get a `more` link that opens them in a sheet (`showDesc`). `renderSegment` calls `slideTo`, which always slides the `#pl-phase` pill, and slides the card when it changes (old content as a `.pl-ghost` clone) or only the badge when the card stays; direction comes from the ord delta. Swiping left calls `playerNext`, right calls `playerBack` (strict previous segment, no restart).
 
 **`playerPrev`** works like an audio-player back button. "At start" is defined as `secondsLeft >= segmentDuration() - 1` (within the first second of the segment):
 - mid-segment → restart current segment
