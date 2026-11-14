@@ -10,7 +10,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="description" content="Free workout timer for bodyweight training. Runs in the browser, works offline, no account.">
 <title>PULSE — Workout Timer</title>
 <style>
 /* Figtree (SIL OFL 1.1, fonts/OFL.txt), self-hosted: no requests to Google. Variable weight, latin subset. */
@@ -249,15 +250,17 @@ a{color:var(--accent)}
 .pl-text .more-btn{margin-top:4px;font-size:13px;color:var(--text3);font-weight:500}
 .pl-text .more-btn:hover{color:var(--text)}
 /* The box fits the larger photo tile, so the emoji circle sits at the same height */
-.player-image-wrap{--img:200px;position:relative;flex-shrink:0;height:var(--img);display:flex;align-items:center;margin-bottom:24px}
-.player-image{position:relative;width:156px;height:156px;border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:72px}
+/* --img shrinks with the window height, so the card (pill, image, text) always fits its zone */
+.player-image-wrap{--img:clamp(120px,100vh - 622px,200px);--img:clamp(120px,100dvh - 622px,200px);position:relative;flex-shrink:0;height:var(--img);display:flex;align-items:center;margin-bottom:24px}
+.player-image{position:relative;width:calc(var(--img) * .78);height:calc(var(--img) * .78);border-radius:50%;background:var(--surface);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:calc(var(--img) * .36)}
 .player-image:not(:has(img)){background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,0) 60%),rgba(39,37,34,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),inset 0 0 0 1px rgba(255,255,255,.03),0 12px 32px -18px rgba(0,0,0,.35)}
 .player-image:has(img){border-radius:28px;width:var(--img);height:var(--img)}
 .player-image:has(img.wger-img){background:#ede8e1}
 .player-image img{position:absolute;inset:12px;width:calc(100% - 24px);height:calc(100% - 24px);object-fit:contain;background:inherit}
-@media (max-height:700px){.player-image{width:96px;height:96px;font-size:48px}.player-image-wrap{--img:120px;margin-bottom:14px}.player-phase{margin-bottom:12px}.pl-text{--lines:2}.player-timer{font-size:80px}}
-#pl-upnext{position:absolute;bottom:-16px;left:50%;background:rgba(51,48,44,.72);color:var(--rest);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 15px;border-radius:16px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
-#pl-upnext.on{opacity:1}
+@media (max-height:760px){.player-image-wrap{--img:clamp(80px,100vh - 560px,200px);--img:clamp(80px,100dvh - 560px,200px);margin-bottom:14px}.player-phase{margin-bottom:12px}.pl-text{--lines:2}.player-timer{font-size:80px}}
+/* Styled by class: the sliding ghost copy of the card has its ids removed */
+.pl-upnext{position:absolute;bottom:-16px;left:50%;background:rgba(51,48,44,.72);color:var(--rest);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:7px 15px;border-radius:16px;white-space:nowrap;z-index:3;box-shadow:0 2px 10px rgba(0,0,0,.4);pointer-events:none;transform:translateX(-50%);opacity:0}
+.pl-upnext.on{opacity:1}
 .player-mid-zone{display:flex;flex-direction:column;align-items:center;padding:16px 0 8px}
 .player-timer{font-size:100px;font-weight:600;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .player-timer.rest-time{color:var(--rest)}
@@ -281,6 +284,43 @@ a{color:var(--accent)}
 .player-controls .play-pause svg{width:28px;height:28px}
 .player-timer.finish-check{color:#111;background:var(--shine),var(--accent);box-shadow:var(--lift);width:88px;height:88px;animation:pop-in .6s var(--spring) .15s both;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:600;letter-spacing:0;margin:16px auto;cursor:pointer;border:none;transition:transform .15s}
 .player-timer.finish-check:active{transform:scale(.96)}
+/* Wider than a phone: the player fills the window, so glow and wash are not cut off at the column edges */
+@media (min-width:481px){
+  #app:has(#view-player.active){max-width:none}
+  .player-top{top:20px;left:20px;right:20px}
+}
+/* Wide landscape (desktop, tablet): card on the left, timer and controls on the right, sized to be read from across the room */
+@media (min-width:640px) and (min-aspect-ratio:5/4){
+  .player{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto auto 1fr;column-gap:clamp(24px,5vw,96px);padding:0 clamp(32px,6vw,120px)}
+  .player::before{background:radial-gradient(42% 62% at 74% 50%,var(--glow),transparent 72%)}
+  /* The card slides inside its column: fade it out at the column edges instead of cutting it */
+  .player-top-zone{grid-column:1;grid-row:1/-1;margin:0;padding:0 32px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent);mask-image:linear-gradient(90deg,transparent,#000 56px,#000 calc(100% - 56px),transparent)}
+  .player-mid-zone{grid-column:2;grid-row:2;padding:0}
+  .player-bot-zone{grid-column:2;grid-row:3;padding-bottom:0}
+  .player-phase{font-size:clamp(12px,1.6vh,16px);margin-bottom:clamp(12px,3vh,28px)}
+  .player-image-wrap{--img:clamp(200px,38vh,440px);margin-bottom:clamp(24px,4vh,36px)}
+  .player-image:has(img){border-radius:calc(var(--img) * .14)}
+  .player-image img{inset:6%;width:88%;height:88%}
+  .pl-upnext{font-size:clamp(13px,1.7vh,17px)}
+  .pl-text{--lines:4;font-size:clamp(15px,2.1vh,24px)}
+  .player-timer{font-size:clamp(96px,30vh,340px)}
+  .player-progress{max-width:min(clamp(280px,55vh,600px),100%);height:8px;border-radius:4px;margin-top:clamp(16px,4vh,44px)}
+  .player-progress-bar{border-radius:4px}
+  .player-meta{font-size:clamp(14px,2vh,20px);margin-top:clamp(6px,1.6vh,16px)}
+  .player-controls{--c:clamp(52px,7.5vh,84px);gap:calc(var(--c) * .46);margin-top:clamp(12px,4vh,44px)}
+  .player-controls button{width:var(--c);height:var(--c)}
+  .player-controls button svg{width:42%;height:42%}
+  .player-controls .play-pause,.player-controls .play-pause:hover{width:calc(var(--c) * 1.46);height:calc(var(--c) * 1.46)}
+  .player-controls .play-pause svg{width:37%;height:37%}
+  .player-timer.finish-check{width:clamp(88px,15vh,160px);height:clamp(88px,15vh,160px);font-size:clamp(44px,7.5vh,80px)}
+}
+/* Low landscape (phone on its side): same two columns with a shorter card */
+@media (min-width:640px) and (min-aspect-ratio:5/4) and (max-height:519px){
+  .player-top{top:10px;left:10px;right:10px}
+  .player-image-wrap{--img:clamp(80px,100vh - 268px,200px);--img:clamp(80px,100dvh - 268px,200px);margin-bottom:24px}
+  .pl-text{--lines:2}
+}
 
 /* Toast */
 .toast-wrap{position:fixed;bottom:calc(96px + env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;z-index:200;pointer-events:none;padding:0 16px}
@@ -352,7 +392,6 @@ a{color:var(--accent)}
   .view{--hh:96px}
   #view-home{--hh:116px}
   .header,#view-home .header{padding-top:40px}
-  #view-player{padding-top:32px}
   .modal-overlay{align-items:center;padding:24px}
   .modal{border-radius:24px;max-height:min(760px,86vh);padding-bottom:0;box-shadow:0 24px 64px rgba(0,0,0,.5)}
   .modal-header{padding-top:14px}
@@ -387,7 +426,7 @@ a{color:var(--accent)}
 <!-- TRAINING DETAIL VIEW -->
 <div id="view-detail" class="view">
   <div class="header">
-    <button class="btn-icon" onclick="goHome()">
+    <button class="btn-icon" onclick="goHome()" aria-label="Back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div class="header-title"><h1 id="detail-title">Training</h1><div class="subtitle" id="detail-duration">0:00</div></div>
@@ -408,7 +447,7 @@ a{color:var(--accent)}
 <!-- ADD EXERCISE VIEW -->
 <div id="view-add" class="view">
   <div class="header">
-    <button class="btn-icon" onclick="goDetail()">
+    <button class="btn-icon" onclick="goDetail()" aria-label="Back">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <div class="header-title"><h1>Add exercise</h1></div>
@@ -450,7 +489,7 @@ a{color:var(--accent)}
       <div class="pl-card" id="pl-card">
         <div class="player-image-wrap">
           <div class="player-image" id="pl-image">💪</div>
-          <div id="pl-upnext">Up next</div>
+          <div id="pl-upnext" class="pl-upnext">Up next</div>
         </div>
         <div class="pl-text">
           <div class="player-exercise" id="pl-name">—</div>
@@ -466,12 +505,12 @@ a{color:var(--accent)}
     <div class="player-bot-zone">
       <div class="player-meta"><span class="player-counter" id="pl-counter">0 / 0</span><span class="player-upcoming" id="pl-next"></span></div>
       <div class="player-controls">
-        <button onclick="playerPrev()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-        <button class="play-pause" id="pl-playpause" onclick="playerToggle()">
+        <button onclick="playerPrev()" aria-label="Previous"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button class="play-pause" id="pl-playpause" onclick="playerToggle()" aria-label="Pause">
           <svg id="pp-pause" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
           <svg id="pp-play" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
         </button>
-        <button onclick="playerNext()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 18h2V6h-2zM6 18l8.5-6L6 6z"/></svg></button>
+        <button onclick="playerNext()" aria-label="Next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 18h2V6h-2zM6 18l8.5-6L6 6z"/></svg></button>
       </div>
     </div>
   </div>
@@ -491,7 +530,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.44';
+const APP_VERSION = '1.0.45';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -719,8 +758,10 @@ function load(){
     const d=localStorage.getItem(LS_KEY);
     if(!d) return defaultState();
     const parsed=JSON.parse(d);
+    if(!parsed||!Array.isArray(parsed.trainings)) return defaultState();
+    if(!parsed.settings||typeof parsed.settings!=='object') parsed.settings={};
     // Defensive: ensure every exercise has a numeric `s` so the UI never shows NaN
-    for(const t of parsed.trainings||[]){
+    for(const t of parsed.trainings){
       for(const e of t.exercises||[]){ if(!Number.isFinite(e.s)) e.s=Number.isFinite(e.durationSeconds)?e.durationSeconds:DEFAULT_DUR; }
     }
     return parsed;
@@ -1325,6 +1366,7 @@ function renderPlayer(){
   $('pl-bar').style.width=(max?(max-pl.secondsLeft)/max*100:100)+'%';
   $('pp-pause').style.display=pl.running?'':'none';
   $('pp-play').style.display=pl.running?'none':'';
+  $('pl-playpause').setAttribute('aria-label',pl.running?'Pause':'Play');
 }
 
 function startTick(){
@@ -1688,15 +1730,15 @@ function setVol(key,el,preview){
   el.classList.toggle('muted',n<=0);
   if(preview&&n>0){ if(key==='speechVolume') say('Test',1); else soundHalf(); }
 }
-function volSlider(id,key,vol){
-  return `<input id="${id}" type="range" min="0" max="150" value="${vol}" oninput="setVol('${key}',this)" onchange="setVol('${key}',this,1)" class="${vol<=0?'muted':''}">`;
+function volSlider(id,key,vol,label){
+  return `<input id="${id}" type="range" min="0" max="150" value="${vol}" aria-label="${label}" oninput="setVol('${key}',this)" onchange="setVol('${key}',this,1)" class="${vol<=0?'muted':''}">`;
 }
 function openSettings(){
   const vol=Math.round(audioVolume()*100);
   const svol=Math.round(speechVolume()*100);
   openModal('Settings',`
-    <div class="setting-row"><div class="setting-label">Audio volume<small>Beeps during the workout</small></div>${volSlider('vol-slider','audioVolume',vol)}</div>
-    <div class="setting-row"><div class="setting-label">Speech volume<small>Announces the next exercise (experimental)</small></div>${volSlider('speech-slider','speechVolume',svol)}</div>
+    <div class="setting-row"><div class="setting-label">Audio volume<small>Beeps during the workout</small></div>${volSlider('vol-slider','audioVolume',vol,'Audio volume')}</div>
+    <div class="setting-row"><div class="setting-label">Speech volume<small>Announces the next exercise (experimental)</small></div>${volSlider('speech-slider','speechVolume',svol,'Speech volume')}</div>
     <div class="setting-row"><div class="setting-label">Export trainings<small>Download all trainings as JSON</small></div><button class="btn btn-secondary" onclick="exportData()">Export</button></div>
     <div class="setting-row"><div class="setting-label">Import trainings<small>Add trainings from a JSON file</small></div><button class="btn btn-secondary" onclick="$('import-file').click()">Import</button><input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)"></div>
     <div class="setting-row"><div class="setting-label">Reset all<small>Delete everything and start fresh</small></div><button class="btn btn-danger" onclick="resetAll()">Reset</button></div>
@@ -1899,7 +1941,8 @@ function firstGrapheme(str){
   if(window.Intl&&Intl.Segmenter){ for(const {segment} of new Intl.Segmenter().segment(str))return segment; }
   return Array.from(str)[0];
 }
-function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+// Safe in text and in quoted attribute values: innerHTML leaves quotes alone, so escape them too.
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function autolink(s){return esc(s).replace(/\n/g,'<br>').replace(/(https?:\/\/[^\s<]+)/g,(u)=>{const label=u.length>40?u.slice(0,37)+'…':u;return '<a href="'+u+'" target="_blank" rel="noopener">'+label+'</a>';});}
 function downloadJson(filename,obj){
   const a=document.createElement('a');

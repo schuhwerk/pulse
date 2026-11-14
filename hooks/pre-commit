@@ -1,5 +1,5 @@
 #!/bin/bash
-# Auto-bump version (patch) on commits that touch index.html or sw.js.
+# Auto-bump version (patch) on commits that touch index.html.
 # Skips if APP_VERSION was already changed manually in this commit.
 
 # Only act if index.html is staged

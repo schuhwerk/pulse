@@ -38,10 +38,10 @@ Each `test.describe` block is prefixed with a greppable `// ─── ` anchor (
 | `// ─── player: card layout` | `player.spec.js` | Image stays at the same height across segments; long description shows `more`, which opens a sheet |
 | `// ─── player: edge cases` | `player.spec.js` | Refuses to start with no exercises |
 | `// ─── unsaved-changes guard` | `crud.spec.js` | Discard-confirm on modal close (Esc) and leaving the Manual add form; save never asks |
-| `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close |
+| `// ─── settings` | `settings.spec.js` | Volume persistence, reset-all, auto-update toggle, builtin-update modal (keep/update), ESC close, stored state of the wrong shape |
 | `// ─── wger: attribution` | `wger.spec.js` | Stubbed wger search: picked/enhanced exercises store `src` (license + author), credit in edit form and player sheet, thumbnails in search, About text |
 | `// ─── wger: share & import keep attribution` | `wger.spec.js` | `src` survives share payload round trip; imported `src` is sanitized and escaped |
-| `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, trainings file import (add/skip duplicates, replace all), export format, round-trip payload |
+| `// ─── share links & import` | `share-import.spec.js` | Share-link import confirm modal, invalid link toast, trainings file import (add/skip duplicates, replace all), export format, round-trip payload, quotes in imported text can't add attributes |
 
 ## Motion
 

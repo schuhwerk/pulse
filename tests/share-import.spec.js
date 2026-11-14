@@ -183,4 +183,30 @@ test.describe('share links & import', () => {
     await page.evaluate(() => shareTraining());
     await expect(page.locator('#toast')).toContainText('too large for a link');
   });
+
+  test('quotes in imported text cannot add attributes', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    const evil = {
+      name: 'Evil', restSeconds: 5,
+      description: 'see http://x.test/"onmouseover="window.__hit=1',
+      exercises: [{ name: 'A" onfocus="window.__hit=1', emoji: '💪', s: 10, imageUrl: 'x" onerror="window.__hit=1' }],
+    };
+    // @ts-ignore
+    await page.evaluate((t) => confirmImportTraining(t), evil);
+    const attrs = (sel) => page.locator(sel).evaluate((el) => el.getAttributeNames().sort());
+    expect(await attrs('#modal-body a')).toEqual(['href', 'rel', 'target']);
+
+    await page.getByRole('button', { name: 'Import' }).click();
+    await expect(page.locator('#view-detail.active')).toBeVisible();
+    expect(await attrs('#detail-desc a')).toEqual(['href', 'rel', 'target']);
+    // The broken image removes itself through the app's own onerror, not an injected one.
+    await expect(page.locator('.exercise-card img')).toHaveCount(0);
+
+    await page.locator('.exercise-card .ex-name').click();
+    await expect(page.locator('#ed-name')).toHaveValue(evil.exercises[0].name);
+    await expect(page.locator('#ed-img')).toHaveValue(evil.exercises[0].imageUrl);
+    // @ts-ignore
+    expect(await page.evaluate(() => window.__hit)).toBeUndefined();
+  });
 });

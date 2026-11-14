@@ -1,5 +1,5 @@
 // @ts-check
-import { test, expect, seedState, makeState, APP_VERSION } from './fixtures.js';
+import { test, expect, seedState, makeState, makeTraining, APP_VERSION } from './fixtures.js';
 
 /** A stored training that pretends to be the 7min builtin but with a stale hash. */
 function staleBuiltin(nameOverride = '7 Minute Workout') {
@@ -167,5 +167,17 @@ test.describe('welcome', () => {
     await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
     await page.reload();
     await expect(page.locator('#modal-title')).toHaveText('Welcome to Pulse');
+  });
+
+  test('stored state without settings, or of the wrong shape, still loads', async ({ page }) => {
+    await seedState(page, { trainings: [makeTraining()] });
+    await page.goto('/index.html');
+    await expect(page.locator('.training-card')).toHaveCount(1);
+    await page.locator('button[title="Settings"]').click();
+    await expect(page.locator('#modal-title')).toHaveText('Settings');
+
+    await page.evaluate(() => localStorage.setItem('pulse_data', '5'));
+    await page.reload();
+    await expect(page.locator('.training-card')).toHaveCount(3);
   });
 });
