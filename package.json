@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "bun scripts/dev.js",
+    "screenshots": "bun scripts/screenshots.js",
     "test": "bunx playwright test",
     "test:headed": "bunx playwright test --headed",
     "test:ui": "bunx playwright test --ui",
