@@ -103,7 +103,9 @@ test.describe('share links & import', () => {
   });
 
   test('share payload round-trip preserves exercises', async ({ page }) => {
-    await seedState(page, makeState());
+    const t = makeTraining();
+    t.exercises[1].sides = true;
+    await seedState(page, makeState([t]));
     await page.goto('/index.html');
     const result = await page.evaluate(async () => {
       // @ts-ignore
@@ -113,8 +115,11 @@ test.describe('share links & import', () => {
       const b64 = url.split('#import=')[1];
       // @ts-ignore
       const decoded = await decodeSharePayload(b64);
-      return { decoded, original: { name: t.name, exCount: t.exercises.length, firstName: t.exercises[0].name } };
+      // @ts-ignore
+      const sides = hydrateTraining(decoded).exercises.map(e => !!e.sides);
+      return { decoded, sides, original: { name: t.name, exCount: t.exercises.length, firstName: t.exercises[0].name } };
     });
+    expect(result.sides).toEqual([false, true]);
     expect(result.decoded.name).toBe(result.original.name);
     expect(result.decoded.exercises.length).toBe(result.original.exCount);
     expect(result.decoded.exercises[0].name).toBe(result.original.firstName);

@@ -219,13 +219,15 @@ a{color:var(--accent)}
 .player[data-phase=exercise],.player[data-phase=done]{--glow:rgba(196,236,90,.10)}
 .player[data-phase=rest],.player[data-phase=prepause]{--glow:rgba(238,176,80,.09)}
 /* Exercise progress: a fill level rising from the bottom. --p = elapsed share of the exercise (0…1);
-   the bright edge is the level and touches the top of the screen when the time runs out. Flashes at half-time. */
+   the bright edge is the level and touches the top of the screen when the time runs out. Flashes at half-time.
+   Two-sided exercises fill once per side: .drain eases the full level back down at the switch. */
 .player::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;transform:translateY(calc((1 - var(--p,0)) * 100%));
   background:linear-gradient(to bottom,color-mix(in srgb,var(--accent) 38%,transparent),var(--wash) 3px,var(--wash) 40px,color-mix(in srgb,var(--wash) 45%,transparent));
   opacity:0;transition:transform 1s linear,opacity .6s ease}
 .player[data-phase=exercise]::after{opacity:1}
 .player:not([data-phase=exercise])::after{transition:opacity .6s ease,transform 0s .6s}
 .player.half::after{animation:half-flash 1.1s ease-out}
+.player.drain::after{transition:transform .9s cubic-bezier(.5,0,.25,1),opacity .6s ease}
 @property --wash{syntax:'<color>';inherits:false;initial-value:rgba(196,236,90,.14)}
 @keyframes half-flash{15%{--wash:rgba(196,236,90,.34)}100%{--wash:rgba(196,236,90,.14)}}
 .player-top{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;z-index:2}
@@ -345,6 +347,7 @@ a{color:var(--accent)}
 .setting-row input[type=range].muted::-moz-range-thumb{background:var(--danger)}
 .setting-label{font-size:15px;font-weight:500;min-width:0}
 .setting-label small{display:block;color:var(--text2);font-size:13px;font-weight:400;margin-top:2px;line-height:1.35}
+.sides-row{border-bottom:none;padding:2px 0 16px;cursor:pointer}
 .toggle{position:relative;display:inline-block;width:44px;height:26px;flex-shrink:0}
 /* Minimum touch target: compact controls keep their look but get an invisible hit area of at least --tap */
 .quick-btn,.chip,.btn-sm,.setting-row .btn,.tab,.lang-toggle button,.more-btn,.ex-dup{position:relative}
@@ -366,7 +369,7 @@ a{color:var(--accent)}
 .about-welcome{margin:8px 0 10px}
 
 /* Inline tag */
-.tag{display:inline-block;background:var(--surface2);color:var(--text2);font-size:12px;padding:2px 7px;border-radius:6px;margin-left:6px}
+.tag{display:inline-block;white-space:nowrap;background:var(--surface2);color:var(--text2);font-size:12px;padding:2px 7px;border-radius:6px;margin-left:6px}
 /* Motion */
 .btn,.btn-icon,.fab,.chip,.tab,.quick-btn,.lang-toggle button,.training-card .play-btn,.player-controls button,.ex-dup{transition:background .15s,color .15s,transform .25s var(--spring)}
 .btn:active,.btn-icon:active,.fab:active,.chip:active,.quick-btn:active,.training-card .play-btn:active,.player-controls button:active,.ex-dup:active{transform:scale(.95)}
@@ -530,7 +533,7 @@ a{color:var(--accent)}
 </div>
 
 <script>
-const APP_VERSION = '1.0.45';
+const APP_VERSION = '1.0.46';
 let _swWaiting = null; // holds waiting service worker
 
 // ─── Service Worker Registration ─────────────────────────────
@@ -580,32 +583,30 @@ const BUILTIN_TRAININGS=[
       ex('High Knees','🏃',30,'images/high-knees.svg','Run in place, driving knees up to hip height alternately.'),
       ex('Lunges','🚶',30,'images/lunges.svg','Step one foot forward, lower back knee toward floor, alternate legs.'),
       ex('Push-ups with Rotation','🔄',30,'images/push-ups-rotation.svg','Do a push-up, then rotate to side plank lifting one arm skyward, alternate sides.'),
-      ex('Side Plank','↗️',30,'images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.'),
+      ex('Side Plank','↗️',30,'images/side-plank.svg','Hold side plank on one forearm, switch sides halfway.',null,true),
     ]},
     { builtinId:'7min-adv', name:'7 Minute Workout (Advanced)', restSeconds:5, description:'NYT follow-up to the original. Compound moves with dumbbells targeting full body — harder exercises, longer sets.', exercises:[
       ex('Reverse Lunge with Rotation','🔀',30,'','Step one foot back into a lunge, bring elbow to front instep, then rotate arm skyward. Alternate sides.'),
-      ex('Lateral Pillar Bridge (Left)','↙️',30,'','Lie on left side, raise hips off floor supported on left forearm and feet. Hold straight.'),
+      ex('Lateral Pillar Bridge','↗️',60,'','Lie on one side, raise hips off floor supported on forearm and feet. Hold straight. Switch sides halfway.',null,true),
       ex('Push-up to Row to Burpee','💥',60,'','Push-up, then row each dumbbell, then jump feet forward and stand. Repeat.'),
-      ex('Lateral Pillar Bridge (Right)','↗️',30,'','Lie on right side, raise hips off floor supported on right forearm and feet. Hold straight.'),
-      ex('Single-Leg Deadlift to Curl to Press (Left)','🏋️',60,'','Balance on left foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
-      ex('Single-Leg Deadlift to Curl to Press (Right)','🏋️',60,'','Balance on right foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat.'),
+      ex('Single-Leg Deadlift to Curl to Press','🏋️',120,'','Balance on one foot, hinge forward reaching weights toward floor, stand, curl, then press overhead. Repeat. Switch legs halfway.',null,true),
       ex('Plank with Arm Lift','🧘',30,'','Hold forearm plank, alternately lift one arm forward and hold briefly.'),
       ex('Lateral Lunge to Triceps Extension','💪',60,'','Step wide to one side into a lateral lunge, then extend arms overhead with weights. Alternate sides.'),
       ex('Bent-Over Row','🚣',60,'','Hinge at hips, back flat, pull dumbbells to ribcage alternately or together.'),
     ]},
     // builtinId stays 'vitus-2026' so existing copies get the update prompt.
     { builtinId:'vitus-2026', name:'Full Body, No Jumps', restSeconds:10, description:'Strength for the whole body without jumping or running (it was put together around a toe injury). Muscle groups take turns, so each one gets a break.\n\nPrepare:\n- Good music: https://open.spotify.com/playlist/50jIVRnFVJyF96xq5pEhwe?si=4xCtb47JSSiuqD2kPPP6iQ&pi=Ayn3W4IgSLqM-\n- Remove distractions\n- Resistance band: one on a door, one for the hips\n- 1 kg weights (water bottles work)\n- Pull-up bar, chair, wall\n- Towel or socks for the leg curls\n- Finger trainer (grip ring or hangboard)', exercises:[
-      ex('Internal Rotation with Band','🔁',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, pull your forearm in toward your belly, then slowly back. Switch arms halfway.'),
-      ex('Side Plank Crunch','↗️',80,'','Side plank on one forearm. Pull your top elbow and top knee together, then stretch out again. Switch sides halfway.',15),
-      ex('Clamshells with Band','🐚',60,'','Band around your thighs above the knees. Lie on your side, knees bent, feet together. Open the top knee like a clamshell, then lower slowly. Switch sides halfway.',15),
+      ex('Internal Rotation with Band','🔁',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, pull your forearm in toward your belly, then slowly back. Switch arms halfway.',null,true),
+      ex('Side Plank Crunch','↗️',80,'','Side plank on one forearm. Pull your top elbow and top knee together, then stretch out again. Switch sides halfway.',15,true),
+      ex('Clamshells with Band','🐚',60,'','Band around your thighs above the knees. Lie on your side, knees bent, feet together. Open the top knee like a clamshell, then lower slowly. Switch sides halfway.',15,true),
       ex('Chair Dips','🪑',40,'','Hands on chair edge, lower body by bending arms, push back up.',15),
       ex('Pull-ups','🧗',40,'','Hang from a pull-up bar with overhand grip, pull yourself up until chin is above the bar. No bar? Band rows: band on the door at chest height, pull your elbows back.',20),
       ex('Hip Raise with Band','🍑',60,'','Lying on your back with feet flat on the floor, raise your hips up evenly as high as you can and hold.',15),
-      ex('External Rotation with Band','↪️',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, rotate your forearm outward, away from your belly, then slowly back. Switch arms halfway.'),
+      ex('External Rotation with Band','↪️',60,'','Band tied to a door at elbow height. Elbow bent 90° at your side, rotate your forearm outward, away from your belly, then slowly back. Switch arms halfway.',null,true),
       ex('Push-up Rotations','🔄',60,'','Push-up, then rotate to side plank, alternate sides.'),
       ex('Wall Sit','🧱',70,'','Back flat against wall, thighs parallel to ground.'),
       ex('Superman Hold','🦸',40,'','Lie face down, arms stretched forward. Lift arms, chest and legs a little off the floor and hold. Look at the floor to keep your neck long.'),
-      ex('Triceps Extension with Internal Rotation','💪',50,'','Single-arm: hold the band at the opposite shoulder with elbow bent, rotate toward the band and straighten the elbow across the body. Switch arms halfway.'),
+      ex('Triceps Extension with Internal Rotation','💪',50,'','Single-arm: hold the band at the opposite shoulder with elbow bent, rotate toward the band and straighten the elbow across the body. Switch arms halfway.',null,true),
       ex('Finger Training','🤏',60,'','Squeeze a grip ring for 5 s, release, repeat. With a hangboard: hang 7 s, rest 3 s.'),
       ex('Crunches','🔥',60,'','Lie on back, curl shoulders toward pelvis, engaging the core.'),
       ex('Leg Curls with Towel or Socks','🧦',30,'','Lie on your back, heels on a towel or in socks on a smooth floor. Lift your hips, pull your heels toward your bottom, slide them back out.',15),
@@ -619,7 +620,7 @@ const $=id=>document.getElementById(id);
 function defaultState(){
   return { trainings: BUILTIN_TRAININGS.map(hydrateBuiltin), settings:{ autoUpdate:true }, version: APP_VERSION };
 }
-function ex(name,emoji,dur,img,desc,rest){ const e={name,emoji,s:dur,description:desc,imageUrl:img}; if(rest!=null) e.restAfterSeconds=rest; return e; }
+function ex(name,emoji,dur,img,desc,rest,sides){ const e={name,emoji,s:dur,description:desc,imageUrl:img}; if(rest!=null) e.restAfterSeconds=rest; if(sides) e.sides=true; return e; }
 function validateSharePayload(obj){
   if(!obj || typeof obj!=='object' || !Array.isArray(obj.exercises)) throw new Error('Invalid training payload');
   return obj;
@@ -672,6 +673,7 @@ function hydrateTraining(t){
     exercises: (t.exercises||[]).map(e=>{
       const o={ id:uid(), name:String(e.name||''), description:e.description||'', imageUrl:wgerImg(e.imageUrl||''), emoji:e.emoji||'💪', s:Number.isFinite(e.s)?e.s:defaultSeconds };
       if(e.restAfterSeconds!=null) o.restAfterSeconds=Number(e.restAfterSeconds);
+      if(e.sides) o.sides=true;
       const src=cleanSrc(e.src); if(src) o.src=src;
       return o;
     }),
@@ -696,6 +698,7 @@ function toSharePayload(t){
     // Strip the wger host to save URL space; hydrateTraining re-expands via wgerImg().
     if(e.imageUrl) o.imageUrl=e.imageUrl.replace(/^https:\/\/wger\.de/,'');
     if(e.restAfterSeconds!=null) o.restAfterSeconds=e.restAfterSeconds;
+    if(e.sides) o.sides=1;
     // wger content is CC BY-SA: the attribution travels with it.
     if(e.src) o.src=e.src;
     return o;
@@ -898,7 +901,7 @@ function renderDetail(){
     const thumb=esc(e.emoji||'💪')+imgTag(e.imageUrl,'loading="lazy"');
     return `<div class="card exercise-card" data-idx="${i}" style="--i:${i}">
       <div class="thumb">${thumb}</div>
-      <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button><span class="dur">${e.s}s</span><button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
+      <div class="info"><div class="ex-name">${esc(e.name)}</div><div class="ex-dur"><button class="quick-btn" onclick="adjDur(${i},-10)">−10</button><span class="dur">${e.s}s</span><button class="quick-btn" onclick="adjDur(${i},10)">+10</button>${e.sides?' <span class="tag">2 sides</span>':''}${e.restAfterSeconds!=null?' <span class="tag">rest '+e.restAfterSeconds+'s</span>':''}</div></div>
       <button class="ex-dup" onclick="dupExercise(${i})" title="Duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
     </div>`;
   }).join('');
@@ -1273,6 +1276,7 @@ function exFormHtml(p,e,t,o){
       <div class="field grow"><label>Duration</label><div class="dur-input"><input id="${p}-dur" type="number" value="${e.s||30}" min="5" max="600"><span>s</span></div></div>
       <div class="field grow"><label>Rest after</label><div class="dur-input"><input id="${p}-rest" type="number" value="${e.restAfterSeconds!=null?e.restAfterSeconds:''}" min="0" max="300" placeholder="${t?t.restSeconds:''}"><span>s</span></div></div>
     </div>
+    <label class="setting-row sides-row"><span class="setting-label">Two sides<small>Switch sides at half time</small></span><span class="toggle"><input id="${p}-sides" type="checkbox" ${e.sides?'checked':''}><span class="toggle-slider"></span></span></label>
     <button class="btn btn-primary btn-block btn-lg" onclick="${o.onSubmit}">${o.submit}</button>`;
 }
 function renderIllu(p){
@@ -1297,6 +1301,7 @@ function readExForm(p){
     description:v('desc'),
     s:parseInt(v('dur'))||30,
     restAfterSeconds:rv!==''?parseInt(rv):null,
+    sides:$(p+'-sides').checked,
   };
 }
 
@@ -1317,6 +1322,11 @@ function startPlayer(){
 }
 
 const curEx=()=>pl.training.exercises[pl.exerciseIdx];
+// The halfway cue fires when secondsLeft reaches this; two-sided exercises switch sides there.
+const halfAt=e=>Math.floor(e.s/2);
+// 0 unless a two-sided exercise is on; then the side being worked, 1 or 2.
+const curSide=()=>pl.phase==='exercise'&&curEx().sides?(pl.secondsLeft>halfAt(curEx())?1:2):0;
+const phaseLabel=()=>curSide()?'SIDE '+curSide():{prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
 function segmentDuration(){
   return pl.phase==='prepause' ? PREPAUSE_SECONDS
     : pl.phase==='rest' ? getRestAfter(curEx(),pl.training)
@@ -1341,7 +1351,7 @@ const shownEx=()=>pl.phase==='rest'&&pl.training.exercises[pl.exerciseIdx+1]||cu
 function renderSegment(){
   const exs=pl.training.exercises, next=exs[pl.exerciseIdx+1], rest=pl.phase==='rest', shown=shownEx();
   slideTo(viewAt(segOrd()),()=>{
-    $('pl-phase').textContent={prepause:'GET READY',exercise:'EXERCISE',rest:'REST'}[pl.phase];
+    $('pl-phase').textContent=phaseLabel();
     $('pl-phase').className='player-phase is-'+pl.phase;
     $('pl-name').textContent=shown.name;
     setDesc(autolink(shown.description||''));
@@ -1361,14 +1371,24 @@ function renderPlayer(){
   const tm=$('pl-timer'), txt=String(pl.secondsLeft);
   if(tm.textContent!==txt){ tm.textContent=txt; if(pl.secondsLeft<=3&&pl.secondsLeft>0)replay(tm,'tick'); }
   $('pl-playpause').classList.toggle('running',pl.running);
+  const ph=$('pl-phase'), label=phaseLabel(); if(ph.textContent!==label) ph.textContent=label;
+  $('player-area').style.setProperty('--p',fillLevel());
   const max=segmentDuration();
-  $('player-area').style.setProperty('--p',pl.phase==='exercise'&&max?Math.min(1,(max-pl.secondsLeft+(pl.running?1:0))/max):0);
   $('pl-bar').style.width=(max?(max-pl.secondsLeft)/max*100:100)+'%';
   $('pp-pause').style.display=pl.running?'':'none';
   $('pp-play').style.display=pl.running?'none':'';
   $('pl-playpause').setAttribute('aria-label',pl.running?'Pause':'Play');
 }
 
+// Share of the exercise done, 0…1, one second ahead while running: the level's
+// transition takes the second to get there. Two-sided exercises fill once per side.
+function fillLevel(){
+  const max=segmentDuration(); if(pl.phase!=='exercise'||!max) return 0;
+  const run=pl.running?1:0, h=halfAt(curEx()), side=curSide();
+  const done=side===2?h-pl.secondsLeft:max-pl.secondsLeft, len=side===1?max-h:side===2?h:max;
+  return Math.min(1,(done+run)/len);
+}
+let _drainT=0;
 function startTick(){
   clearInterval(pl.timer);
   // Anchor to wall-clock so the timer stays accurate even when the browser
@@ -1383,9 +1403,17 @@ function tickStep(){
   // Fire beeps for seconds we just crossed. If the tab was backgrounded
   // and many seconds passed, skip the catch-up beeps (no audio flood).
   if(a.lastLeft-newLeft<=2){
-    const half=pl.phase==='exercise'?Math.floor(curEx().s/2):null;
+    const half=pl.phase==='exercise'?halfAt(curEx()):null;
     for(let s=a.lastLeft-1;s>=newLeft&&s>0;s--){
-      if(s===half){ soundHalf(); replay($('player-area'),'half'); }
+      if(s===half){
+        const area=$('player-area'); replay(area,'half');
+        if(!curEx().sides) soundHalf();
+        else {
+          soundSwitch(); say('Switch sides');
+          // The full level drains back down, then rises again for side 2.
+          area.classList.add('drain'); clearTimeout(_drainT); _drainT=setTimeout(()=>area.classList.remove('drain'),900);
+        }
+      }
       if(s<=3)soundCount(s===1);
     }
   }
@@ -1692,6 +1720,7 @@ function soundRun(notes){
 }
 // Cue functions — called from the player
 function soundHalf() {soundRun([{ratio:1/_TH},{ratio:1,dt:0.15}]);}
+function soundSwitch(){soundRun([{ratio:_F},{ratio:1,dt:0.14},{ratio:_F,dt:0.28,accent:true}]);}
 function soundCount(last){soundRun([{ratio:last?_F:1,accent:last}]);}
 function soundDone() {soundRun([{ratio:1},{ratio:_TH,dt:0.12},{ratio:_F,dt:0.24,accent:true}]);}
 

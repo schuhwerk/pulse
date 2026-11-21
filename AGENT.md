@@ -66,6 +66,8 @@ pl = { running, timer, tickAnchor, exerciseIdx, secondsLeft, phase, training }
 
 `beginPrepause` / `beginExercise` / `beginRest` are thin wrappers around `beginSegment(phase)`, which sets the phase, resets `secondsLeft` from `segmentDuration()`, renders static content once (`renderSegment`) and starts the tick. `renderPlayer` only does per-tick updates (timer, progress bar, play/pause icon, and the `--p` 0…1 custom property on `#player-area` that drives the rising exercise wash). `renderSegment` sets `data-phase` on `#player-area`, which CSS uses for the phase glow and wash. `startTick` uses `pl.tickAnchor = {startMs, startLeft, lastLeft}` so the timer stays accurate when `setInterval` is throttled in a backgrounded tab; the `visibilitychange` handler calls `tickStep()` to resync on return.
 
+**Two sides.** An exercise with `sides:true` (toggle "Two sides" in the Exercise Form, `2 sides` tag in the list) gets a switch cue instead of the plain halfway beep when `secondsLeft` reaches `halfAt(e)`: `soundSwitch`, "Switch sides" spoken, and the `.drain` class, which eases the fill level back down. `curSide()` gives 1 or 2 and the pill reads `SIDE 1`/`SIDE 2` (`phaseLabel`). `fillLevel()` fills `--p` once per side. It's a single segment, so the flow, `segOrd` and back/next are unchanged.
+
 **`playerNext`** skips to the next segment in the natural flow; `tickStep` calls it on expiry:
 prepause → exercise 0 → rest 0 → exercise 1 → … → finishWorkout.
 

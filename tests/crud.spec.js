@@ -112,6 +112,20 @@ test.describe('training CRUD', () => {
     await expect(alpha.locator('.thumb')).toHaveText('🔥');
   });
 
+  test('edit exercise: two sides toggle persists and shows a tag', async ({ page }) => {
+    await seedState(page, makeState());
+    await page.goto('/index.html');
+    await page.locator('.training-card').click();
+    const alpha = page.locator('.exercise-card', { hasText: 'Alpha' });
+    await expect(alpha.locator('.tag')).toHaveCount(0);
+    await alpha.locator('.ex-name').click();
+    await page.getByText('Two sides').click();
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(alpha.locator('.tag')).toHaveText('2 sides');
+    await alpha.locator('.ex-name').click();
+    await expect(page.locator('#ed-sides')).toBeChecked();
+  });
+
   test('manual add uses the same form', async ({ page }) => {
     await seedState(page, makeState());
     await page.goto('/index.html');

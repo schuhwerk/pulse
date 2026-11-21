@@ -155,6 +155,34 @@ test.describe('playerPrev', () => {
   });
 });
 
+// ─── player: two sides ──────────────────────────────────────────────────────
+test.describe('player two sides', () => {
+  test('pill shows the side, the fill level restarts for side 2', async ({ page }) => {
+    await page.clock.install();
+    await seedState(page, makeState([makeTraining({
+      exercises: [{ id: 'e1', name: 'Side Plank', emoji: '↗️', s: 10, description: '', sides: true }],
+    })]));
+    await page.goto('/index.html');
+    await page.locator('.training-card', { hasText: 'Test Workout' }).click();
+    await expect(page.locator('.exercise-card .tag')).toHaveText('2 sides');
+    await page.locator('.play-fab').click();
+    await skipPrepause(page);
+    const level = () => page.locator('#player-area').evaluate(el => Number(el.style.getPropertyValue('--p')));
+    await expect(page.locator('#pl-phase')).toHaveText('SIDE 1');
+    expect(await level()).toBeCloseTo(0.2);
+    // Side 1 is 5 of the 10 s: the level is full one second before the switch.
+    await page.clock.runFor(4000);
+    await expect(page.locator('#pl-phase')).toHaveText('SIDE 1');
+    expect(await level()).toBeCloseTo(1);
+    await page.clock.runFor(1000);
+    await expect(page.locator('#pl-phase')).toHaveText('SIDE 2');
+    expect(await level()).toBeCloseTo(0.2);
+    // Back mid-segment restarts the exercise on side 1.
+    await page.locator('.player-controls button').nth(0).click();
+    await expect(page.locator('#pl-phase')).toHaveText('SIDE 1');
+  });
+});
+
 // ─── player: edge cases ─────────────────────────────────────────────────────
 // Separate describe so beforeEach doesn't pre-seed a training with exercises.
 test.describe('player edge cases', () => {
